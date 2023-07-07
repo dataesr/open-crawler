@@ -17,18 +17,21 @@ class BaseConfig:
     MONGODB_COLLECTION = "scanr_html"
 
     CELERY_BROKER_URL: str = f"pyamqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}//"
-    CELERY_RESULT_BACKEND: str = "rpc://"
+    result_backend: str = "rpc://"
 
-    # The following two lines make celery execute in the same thread as the currently executing thread.
-    CELERY_ALWAYS_EAGER = True
-    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+    # The following two lines make celery execute tasks locally
+    # task_always_eager = True
+    # task_eager_propagates = True
 
-    CELERY_TASK_QUEUES: list = (
+    task_queues: list = (
         # default queue
         Queue("celery"),
         # Custom queue
         Queue(RABBITMQ_QUEUE_NAME),
     )
+
+    def get(self, attribute_name: str):
+        return self.__getattribute__(attribute_name)
 
 
 class DevelopmentConfig(BaseConfig):
@@ -46,4 +49,3 @@ def get_settings():
 
 
 settings = get_settings()
-

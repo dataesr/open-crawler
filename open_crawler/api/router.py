@@ -1,17 +1,25 @@
+from celery.result import AsyncResult
 from fastapi import APIRouter
-from scrapy.utils.project import get_project_settings
+from pydantic import BaseModel
 
-from open_crawler.celery_broker.tasks import get_crawl_task
+from open_crawler.celery_broker.tasks import start_crawl_process
 
-crawl_router = APIRouter(prefix='/crawl', tags=['crawler'], responses={404: {"description": "Not found"}})
-
-
-@crawl_router.post("/demo")
-async def demo(url: str):
-    project_settings = get_project_settings()
-    get_crawl_task.apply_async(args=[url])
-    return {"message": "Crawling started"}
+crawl_router = APIRouter(prefix="/crawl", tags=["crawler"], responses={404: {"description": "Not found"}})
 
 
+class CrawlRequest(BaseModel):
+    url: str
+    depth: int = 2
+    limit: int = 50
+    headers: dict = None
 
 
+@crawl_router.post("")
+async def create_task(crawl_request: CrawlRequest):
+    task = start_crawl_process.delay(crawl_request.url, crawl_request.depth, crawl_request.limit, crawl_request.headers)
+    return {"task_id": task.id}
+
+
+@crawl_router.get("/task/{task_id}/status")
+async def get_task_status(task_id: str):
+    return {"status": AsyncResult(task_id).state}

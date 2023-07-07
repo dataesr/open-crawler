@@ -1,21 +1,27 @@
+import logging
+from multiprocessing import Process
+
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from open_crawler.celery_broker.utils import create_celery_app
-from open_crawler.config.config import settings
-from open_crawler.crawler.spiders.demo_spider import DemoSpider
+from celery_broker.main import celery_app
+from open_crawler.crawler.spiders.menesr import MenesrSpider
 
-celery_app = create_celery_app()
+logger = logging.getLogger(__name__)
 
 
-@celery_app.task(queue=settings.RABBITMQ_QUEUE_NAME)
-def get_crawl_task(url: str):
-    # Use logs in real task
-    print("Get crawl task with url" + url)
-    # FIXME, project settings not good
+def crawl(url: str, depth: int, limit: int, headers: dict):
     crawler_settings = get_project_settings()
-    process = CrawlerProcess(crawler_settings)
-    items = process.crawl(DemoSpider, start_urls=[url])
+    crawler_settings.set("DEPTH_LIMIT", depth)
+    crawler_settings.set("CLOSESPIDER_PAGECOUNT", limit)
+    crawler_settings.set("CUSTOM_HEADERS", headers or {})
+    process = CrawlerProcess(settings=crawler_settings)
+    process.crawl(MenesrSpider, url=url)
     process.start()
-    for item in items:
-        print(item)
+
+
+@celery_app.task()
+def start_crawl_process(url: str, depth: int, limit: int, headers: dict):
+    p = Process(target=crawl, kwargs={"url": url, "depth": depth, "limit": limit, "headers": headers})
+    p.start()
+    p.join()

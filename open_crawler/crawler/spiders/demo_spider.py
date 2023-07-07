@@ -15,8 +15,8 @@ class DemoSpider(scrapy.Spider):
         html = response.body
 
         item = DemoItem()
-        item['url'] = url
-        item['html'] = html
+        item["url"] = url
+        item["html"] = html
 
         # return the item to the pipeline
         yield item
