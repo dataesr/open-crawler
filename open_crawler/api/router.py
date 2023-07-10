@@ -9,9 +9,10 @@ crawl_router = APIRouter(prefix="/crawl", tags=["crawler"], responses={404: {"de
 
 class CrawlRequest(BaseModel):
     url: str
-    depth: int = 2
-    limit: int = 50
+    depth: int = None
+    limit: int = None
     headers: dict = None
+    metadata: dict = None
 
 
 @crawl_router.post("")
