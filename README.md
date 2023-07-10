@@ -22,6 +22,6 @@ Execute a POST request to http://127.0.0.1:9000/crawl with a body
     "headers": {"foo":"bar"}
 }
 url: Url from which to start the crawl
-depth: Maximum allowed depth for the crawler (value of 0 is not handled yet)
-limit: Maximum allowed pages to scrape (value of 0 is not handled yet)
+depth: Maximum allowed depth for the crawler (value of 0 means no depth limit)
+limit: Maximum allowed pages to scrape (value of 0 means no pages limit)
 headers: Dictionary containing key/value pairs to add in the headers of each requests
