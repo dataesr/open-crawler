@@ -57,7 +57,7 @@ class HtmlStorageMiddleware:
         file_path.write_text(response.text)
 
     def process_response(self, request, response, spider):
-        if self.current_page_count >= self.page_limit:
+        if self.page_limit != 0 and self.current_page_count >= self.page_limit:
             raise IgnoreRequest(f"Page limit reached. Ignoring request {request}")
         logger.debug(f"Processing request {request} response")
         if request.url.endswith("robots.txt"):
