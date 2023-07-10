@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
 from scrapy.exceptions import IgnoreRequest
@@ -49,7 +50,9 @@ class HtmlStorageMiddleware:
         domain = spider.allowed_domains[0]
         file_path = response.url.split(f"{domain}/")[-1] or "index.html"
         file_path = f"{file_path}{'' if file_path.endswith('.html') else '.html'}"
-        return Path(f"{self.dir_path}/{domain}/{datetime.date.today().strftime('%Y%m%d')}/{file_path}")
+        return Path(
+            f"{self.dir_path}/{domain}/{datetime.date.today().strftime('%Y%m%d')}-{urlparse(response.url).scheme}/{file_path}"
+        )
 
     def _save_html_locally(self, response, spider):
         file_path = self._format_file_path(response, spider)
