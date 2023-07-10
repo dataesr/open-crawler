@@ -25,13 +25,13 @@ ROBOTSTXT_OBEY = True
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
+# DOWNLOAD_DELAY = 2
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -49,24 +49,26 @@ ROBOTSTXT_OBEY = True
 # }
 
 DEPTH_LIMIT = 2
-# PAGE_LIMIT = 5
 CLOSESPIDER_PAGECOUNT = 5
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware": None,
-    "crawler.middlewares.CustomHeadersMiddleware": 543,
-    "crawler.middlewares.HtmlStorageMiddleware": 600,
+    "scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware": None,  # Disabled because replaced by the custom one
+    "crawler.middlewares.CustomHeadersMiddleware": 400,  # Replaces the DefaultHeadersMiddleware position
+    "crawler.middlewares.HtmlStorageMiddleware": 99,  # Just after the last middleware (because only needed when the response passed all checks from all middlewares)
 }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-# EXTENSIONS = {"scrapy.extensions.closespider.CloseSpider": None, 'crawler.middlewares.CustomCloseSpider': 100}
+EXTENSIONS = {
+    "scrapy.extensions.closespider.CloseSpider": None,  # Disabled because replaced by the custom one
+    "crawler.middlewares.CustomCloseSpider": 0,  # It doesn't depend on any other extension, therefore we can set it at the same level as the others
+}
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {"crawler.pipelines.CrawlerPipeline": 300, "crawler.pipelines.MongoDBPipeline": 300}
+# ITEM_PIPELINES = {"crawler.pipelines.CrawlerPipeline": 300, "crawler.pipelines.MongoDBPipeline": 300}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -94,6 +96,6 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-# DEPTH_PRIORITY = 1
-# SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
-# SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
+SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"

@@ -1,32 +1,16 @@
-import tldextract
-from scrapy.exceptions import CloseSpider
+from urllib.parse import urlparse
 
 from scrapy.spiders import CrawlSpider, Rule
 
 
-def extract_domain(url: str):
-    extract_result = tldextract.extract(url)
-    return f"{extract_result.domain}.{extract_result.suffix}"
-
-
 class MenesrSpider(CrawlSpider):
     name = "menesr"
-
     rules = (Rule(),)
 
     def __init__(self, url: str, *a, **kw):
         super().__init__(*a, **kw)
-        self.allowed_domains = [extract_domain(url)]
+        self.allowed_domains = [urlparse(url).netloc]
         self.start_urls = [url]
-        self.count = 0
-        self.max_count = 5
-
-        def parse(self, response):
-            if self.count >= self.max_count:
-                raise CloseSpider(reason="Reached maximum page count")
-            super().parse(response)
-
-            self.count += 1
 
 
 if __name__ == "__main__":
