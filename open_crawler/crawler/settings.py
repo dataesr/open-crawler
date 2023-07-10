@@ -49,7 +49,7 @@ COOKIES_ENABLED = False
 # }
 
 DEPTH_LIMIT = 2
-CLOSESPIDER_PAGECOUNT = 5
+CLOSESPIDER_PAGECOUNT = 50
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
