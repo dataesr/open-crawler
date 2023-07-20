@@ -6,7 +6,7 @@
 
 # useful for handling different item types with a single interface
 from pymongo import MongoClient
-from open_crawler.config.config import settings
+from config.config import settings
 
 
 class CrawlerPipeline:

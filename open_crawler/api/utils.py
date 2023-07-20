@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from open_crawler.api import router
+from api import router, testing_router
 
 
 def create_api_app() -> FastAPI:
@@ -11,4 +11,5 @@ def create_api_app() -> FastAPI:
     )
 
     api_app.include_router(router.crawl_router)
+    api_app.include_router(testing_router.test_router)  # TODO only useful for testing purposes, should be commented
     return api_app

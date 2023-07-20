@@ -1,0 +1,65 @@
+services:
+  web_api:
+    container_name: web_api
+    build: .
+    env_file: .env
+    command: uvicorn api.main:api_app --reload --port 80 --host 0.0.0.0
+    ports:
+      - "8080:80"
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./open_crawler:/app
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.12.2-management
+    hostname: rabbitmq
+    env_file: .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  crawl_worker: &worker
+    container_name: crawl_worker
+    build: .
+    env_file: .env
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue'
+    depends_on:
+      - rabbitmq
+      - web_api
+    volumes:
+      - ./open_crawler:/app
+      - data:/html_files
+
+  upload_worker:
+    <<: *worker
+    container_name: upload_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n upload_worker -Q upload_queue'
+
+  flower:
+    container_name: flower
+    image: mher/flower
+    command: celery flower -p 5555
+    env_file: .env
+    ports:
+      - "5555:5555"
+    depends_on:
+      - rabbitmq
+      - web_api
+
+  minio:
+    container_name: minio
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio:/data
+    env_file: .env
+    command: server --console-address ":9090" /data
+
+
+volumes:
+  minio:
+  data:

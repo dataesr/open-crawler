@@ -1,6 +1,6 @@
 import scrapy
 
-from open_crawler.crawler.items import DemoItem
+from crawler.items import DemoItem
 
 
 class DemoSpider(scrapy.Spider):

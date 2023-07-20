@@ -9,7 +9,7 @@
 
 BOT_NAME = "crawler"
 
-# SPIDER_MODULES = ["open_crawler.crawler.spiders"]
+# SPIDER_MODULES = ["crawler.spiders"]
 # NEWSPIDER_MODULE = "spiders"
 
 

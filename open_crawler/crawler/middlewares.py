@@ -51,7 +51,7 @@ class HtmlStorageMiddleware:
         file_path = response.url.split(f"{domain}/")[-1] or "index.html"
         file_path = f"{file_path}{'' if file_path.endswith('.html') else '.html'}"
         return Path(
-            f"{self.dir_path}/{domain}/{datetime.date.today().strftime('%Y%m%d')}-{urlparse(response.url).scheme}/{file_path}"
+            f"/html_files/{domain}/{datetime.date.today().strftime('%Y%m%d')}-{urlparse(response.url).scheme}/{file_path}"
         )
 
     def _save_html_locally(self, response, spider):
