@@ -3,7 +3,7 @@ import logging
 from celery import chain
 from fastapi import APIRouter
 
-from api.models import CrawlRequest
+from models.request import CrawlRequest
 from celery_broker.tasks import start_crawl_process, upload_html
 from database.mongo_adapter import mongo
 from models.crawl import CrawlProcess
