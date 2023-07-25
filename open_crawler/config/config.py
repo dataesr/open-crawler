@@ -8,10 +8,10 @@ class BaseConfig:
     CRAWL_QUEUE_NAME = "crawl_queue"
     UPLOAD_QUEUE_NAME = "upload_queue"
 
-    MONGODB_HOST = "localhost"
-    MONGODB_PORT = 27017
-    MONGODB_DATABASE = "scanr_db"
-    MONGODB_COLLECTION = "scanr_html"
+    # MONGODB_HOST = "localhost"
+    # MONGODB_PORT = 27017
+    # MONGODB_DATABASE = "scanr_db"
+    # MONGODB_COLLECTION = "scanr_html"
 
     result_backend: str = "rpc://"
 

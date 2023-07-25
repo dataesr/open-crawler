@@ -12,31 +12,41 @@ from scrapy.utils.python import without_none_values
 
 from celery_broker.main import celery_app
 from crawler.spiders.menesr import MenesrSpider
+from database.mongo_adapter import mongo
+from models.crawl import CrawlProcess
+from models.enums import ProcessStatus
 
 logger = logging.getLogger(__name__)
 
 
-def crawl(url: str, depth: int, limit: int, headers: dict):
+def crawl(crawl_process: CrawlProcess):
     crawler_settings = get_project_settings()
     custom_settings = without_none_values(
-        {"DEPTH_LIMIT": depth, "CLOSESPIDER_PAGECOUNT": limit, "CUSTOM_HEADERS": headers or {}}
+        {
+            "DEPTH_LIMIT": crawl_process.config.parameters.depth,
+            "CLOSESPIDER_PAGECOUNT": crawl_process.config.parameters.limit,
+            "CUSTOM_HEADERS": crawl_process.config.headers or {}
+        }
     )
     crawler_settings.update(custom_settings)
     process = CrawlerProcess(settings=crawler_settings)
-    process.crawl(MenesrSpider, url=url)
+    process.crawl(MenesrSpider, url=crawl_process.config.url)
     process.start()
 
 
 @celery_app.task(name="crawl")
-def start_crawl_process(url: str, depth: int, limit: int, headers: dict):
-    p = Process(target=crawl, kwargs={"url": url, "depth": depth, "limit": limit, "headers": headers})
+def start_crawl_process(crawl_process: CrawlProcess):
+    p = Process(target=crawl, kwargs={"crawl_process": crawl_process})
     p.start()
     p.join()
+    crawl_process.status = ProcessStatus.STARTED
+    mongo.update_crawl(crawl_process)
+    return crawl_process
 
 
 @celery_app.task(name="upload_html")
-def upload_html(url: str):
-    tmp_folder = "/html_files/"
+def upload_html(crawl_process: CrawlProcess):
+    tmp_folder = "/html/"
     bucket_name = "html"
 
     client = Minio(
@@ -49,7 +59,7 @@ def upload_html(url: str):
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
 
-    upload_root = pathlib.Path(f"{tmp_folder}{urlparse(url).netloc}")
+    upload_root = pathlib.Path(f"{tmp_folder}{urlparse(crawl_process.config.url).netloc}")
 
     for html_file in upload_root.rglob("*.html"):
         client.fput_object(
@@ -57,3 +67,6 @@ def upload_html(url: str):
         )
         os.remove(html_file)
     shutil.rmtree(upload_root, ignore_errors=True)
+    crawl_process.status = ProcessStatus.SUCCESS
+    mongo.update_crawl(crawl_process)
+

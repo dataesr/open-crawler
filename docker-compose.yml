@@ -30,7 +30,7 @@ services:
       - web_api
     volumes:
       - ./open_crawler:/app
-      - data:/html_files
+      - html:/html
 
   upload_worker:
     <<: *worker
@@ -59,7 +59,16 @@ services:
     env_file: .env
     command: server --console-address ":9090" /data
 
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+
 
 volumes:
   minio:
-  data:
+  html:
+  mongodb:
