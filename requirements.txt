@@ -5,3 +5,4 @@ uvicorn==0.23.1
 gevent==23.7.0
 watchfiles==0.19.0
 minio==7.1.15
+pymongo==4.4.1
