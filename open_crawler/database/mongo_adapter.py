@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Any
 
 from pymongo import MongoClient
 from pymongo.results import InsertOneResult
 
 from models.crawl import CrawlConfig, CrawlProcess
-from models.enums import ProcessStatus
 
 
 class MongoAdapter:

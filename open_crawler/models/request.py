@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from models.crawl import MetaDataConfig, CrawlConfig, CrawlParameters
 from models.enums import MetadataType
+from services.url_cleaner import clean_url
 
 
 class MetadataRequest(BaseModel):
@@ -24,7 +25,7 @@ class CrawlRequest(BaseModel):
 
     def to_config(self) -> CrawlConfig:
         return CrawlConfig(
-            url=self.url,
+            url=clean_url(self.url),
             parameters=CrawlParameters(depth=self.depth, limit=self.limit),
             headers=self.headers,
             metadata_config=[meta.to_config() for meta in self.metadata] if self.metadata else [],
