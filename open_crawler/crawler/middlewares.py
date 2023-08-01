@@ -2,7 +2,6 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import datetime
 import logging
 import os
 from pathlib import Path
@@ -48,11 +47,14 @@ class HtmlStorageMiddleware:
 
     def _format_file_path(self, response, spider) -> Path:
         domain = spider.allowed_domains[0]
-        file_path = response.url.split(f"{domain}/")[-1] or "index.html"
-        file_path = f"{file_path}{'' if file_path.endswith('.html') else '.html'}"
-        return Path(
-            f"/html/{domain}/{datetime.date.today().strftime('%Y%m%d')}-{urlparse(response.url).scheme}/{file_path}"
-        )
+        if not spider.crawl_process.base_file_path:
+            spider.crawl_process.base_file_path = (
+                f"/tmp/{domain}/{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}"
+            )
+        file_name = response.url.split(f"{domain}/")[-1] or "index.html"
+        if not file_name.endswith(".html"):
+            file_name = f"{file_name}.html"
+        return Path(f"{spider.crawl_process.base_file_path}/html/{file_name}")
 
     def _save_html_locally(self, response, spider):
         file_path = self._format_file_path(response, spider)
@@ -62,7 +64,6 @@ class HtmlStorageMiddleware:
     def process_response(self, request, response, spider):
         if self.page_limit != 0 and self.current_page_count >= self.page_limit:
             raise IgnoreRequest(f"Page limit reached. Ignoring request {request}")
-        logger.debug(f"Processing request {request} response")
         if request.url.endswith("robots.txt"):
             return response
         if response.status == 200:
@@ -70,3 +71,18 @@ class HtmlStorageMiddleware:
             self._save_html_locally(response, spider)
 
         return response
+
+
+class MetadataMiddleware:
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls()
+
+    def process_spider_output(self, response, result, spider):
+        spider.crawl_process.save_url_for_metadata(response.url, response.meta["depth"])
+        return result
+
+    async def process_spider_output_async(self, response, result, spider):
+        spider.crawl_process.save_url_for_metadata(response.url, response.meta["depth"])
+        async for r in result or ():
+            yield r

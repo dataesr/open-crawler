@@ -20,6 +20,14 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  redis:
+    container_name: redis
+    image: redis
+    hostname: redis
+    env_file: .env
+    ports:
+      - "6379:6379"
+
   crawl_worker: &worker
     container_name: crawl_worker
     build: .
@@ -30,7 +38,32 @@ services:
       - web_api
     volumes:
       - ./open_crawler:/app
-      - html:/html
+      - tmp:/tmp
+
+  accessibility_worker:
+    <<: *worker
+    container_name: accessibility_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n accessibility_worker -Q accessibility_queue'
+
+  technologies_worker:
+    <<: *worker
+    container_name: technologies_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
+
+  good_practices_worker:
+    <<: *worker
+    container_name: good_practices_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n good_practices_worker -Q good_practices_queue'
+
+  responsiveness_worker:
+    <<: *worker
+    container_name: responsiveness_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n responsiveness_worker -Q responsiveness_queue'
+
+  carbon_footprint_worker:
+    <<: *worker
+    container_name: carbon_footprint_worker
+    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n carbon_footprint_worker -Q carbon_footprint_queue'
 
   upload_worker:
     <<: *worker
@@ -70,5 +103,5 @@ services:
 
 volumes:
   minio:
-  html:
+  tmp:
   mongodb:

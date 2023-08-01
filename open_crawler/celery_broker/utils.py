@@ -9,8 +9,11 @@ def create_celery_app() -> Celery:
     celery_app = Celery(
         "scanr",
         broker=os.environ.get("CELERY_BROKER_URL"),
-        broker_connection_retry_on_startup=True,
-        include=["celery_broker.tasks"],
+        backend=os.environ.get("result_backend"),
+        # broker_connection_retry_on_startup=True,
+        include=[
+            "celery_broker.tasks",
+        ],
     )
     celery_app.config_from_object(settings, namespace="CELERY")
     celery_app.conf.update(task_track_started=True)
