@@ -81,3 +81,31 @@ To deploy this project run
 
 ![demo](./demo/demo.gif)
 
+
+## Monitor crawl tasks in Celery
+
+The docker-compose file deploys a Flower service which allows us to monitor tasks as they are beeing processed.
+In order to consult it, we need to navigate to http://localhost:5555
+
+![flower](./demo/flower.png)
+
+
+## Monitor crawl configuration and crawl process status in MongoDB 
+
+The docker-compose file deploys a MongoDB service in which we store the crawl configuration an the crawl process status during the execution.
+
+To access the two collections, use a MongoDB console (such as MongoDB Compass for example) and connect to http://localhost:27017
+
+**website_crawl** collection:
+![mongodb_process](./demo/mongodb_crawl_progression.png)
+
+**website_crawl_parameters** collection:
+![mongodb_config](./demo/mongodb_crawl_configuration.png)
+
+
+## Acces simple storage service
+
+At the end of the crawl process, all crawled html pages and metadata files are uploaded to a simple storage service (s3).
+The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090.
+
+![minio](./demo/minio.png)
