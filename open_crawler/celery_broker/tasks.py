@@ -4,7 +4,6 @@ import os
 import pathlib
 import shutil
 from multiprocessing import Process, Manager
-from urllib.parse import urlparse
 
 from minio import Minio
 from scrapy.crawler import CrawlerProcess
@@ -16,13 +15,9 @@ from crawler.spiders.menesr import MenesrSpider
 from database.mongo_adapter import mongo
 from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
-from services.carbon_calculator import CarbonCalculator
+from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 
 logger = logging.getLogger(__name__)
-
-
-# class CustomManager(BaseManager):
-#     pass
 
 
 def crawl(crawl_process: CrawlProcess, results: dict):
@@ -96,46 +91,67 @@ def get_carbon_footprint(crawl_process: CrawlProcess):
     result = {}
     if carbon_footprint_process := crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT):
         for url in carbon_footprint_process.urls:
-            carbon_footprint = carbon_calc.get_carbon_footprint(url)
+            try:
+                carbon_footprint = carbon_calc.get_carbon_footprint(url)
+            except CarbonCalculatorError as e:
+                crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
+                continue
             result[url] = carbon_footprint
-        file_path = pathlib.Path(f"{crawl_process.base_file_path}/metadata/{MetadataType.CARBON_FOOTPRINT}.json")
-        file_path.parent.mkdir(exist_ok=True, parents=True)
-        file_path.write_text(json.dumps(result, indent=4))
-    crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.SUCCESS
+        if not result:
+            crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.ERROR
+        store_metadata_result(crawl_process, result, MetadataType.CARBON_FOOTPRINT)
+    if crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status == ProcessStatus.STARTED:
+        crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.SUCCESS
     mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
     return result
 
 
+def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
+    # TODO en attente du retour client pour l'arborescence
+    file_path = pathlib.Path(f"{crawl_process.base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json")
+    file_path.parent.mkdir(exist_ok=True, parents=True)
+    file_path.write_text(json.dumps(result, indent=4))
+
+
 @celery_app.task(name="upload_html")
 def upload_html(crawl_process: CrawlProcess):
-    tmp_folder = "/tmp/"
-    bucket_name = "tmp"
-
     client = Minio(
-        "minio:9000",
-        access_key=os.environ["MINIO_ROOT_USER"],
-        secret_key=os.environ["MINIO_ROOT_PASSWORD"],
+        os.environ["STORAGE_SERVICE_URL"],
+        access_key=open(os.environ["STORAGE_SERVICE_USERNAME_FILE"]).readline(),
+        secret_key=open(os.environ["STORAGE_SERVICE_PASSWORD_FILE"]).readline(),
         secure=False,
     )
+
+    bucket_name = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
 
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
 
-    upload_root = pathlib.Path(f"{crawl_process.base_file_path}")
+    crawl_files_path = pathlib.Path(crawl_process.base_file_path)
+    local_files_folder = os.environ["LOCAL_FILES_PATH"]
 
-    for html_file in upload_root.rglob("*.html"):
+    for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
+        file_path = str(file)
         client.fput_object(
-            bucket_name, str(html_file).replace(tmp_folder, "", 1), str(html_file), content_type="text/html"
+            bucket_name=bucket_name,
+            object_name=file_path.removeprefix(local_files_folder),
+            file_path=file_path,
+            content_type=assume_content_type(file_path),
         )
-        os.remove(html_file)
-    for json_file in upload_root.rglob("*.json"):
-        client.fput_object(
-            bucket_name, str(json_file).replace(tmp_folder, "", 1), str(json_file), content_type="application/json"
-        )
-        os.remove(json_file)
-    shutil.rmtree(upload_root, ignore_errors=True)
+        os.remove(file)
+    shutil.rmtree(crawl_files_path, ignore_errors=True)
     crawl_process.status = ProcessStatus.SUCCESS
     mongo.update_crawl(crawl_process)
+
+
+def assume_content_type(file_path: str) -> str:
+    # sourcery skip: assign-if-exp, reintroduce-else
+    if file_path.endswith("html"):
+        return "text/html"
+    if file_path.endswith("json"):
+        return "application/json"
+    return ""
 
 
 METADATA_TASK_REGISTRY = {

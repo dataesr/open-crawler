@@ -45,7 +45,7 @@ COOKIES_ENABLED = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-    "crawler.middlewares.MetadataMiddleware": 1000,
+    "crawler.middlewares.MetadataMiddleware": 1000,  # WARNING: Middlewares order is highly important !! Must be > 900
 }
 
 DEPTH_LIMIT = 2

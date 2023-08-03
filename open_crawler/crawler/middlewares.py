@@ -34,27 +34,26 @@ class CustomHeadersMiddleware(DefaultHeadersMiddleware):
 
 
 class HtmlStorageMiddleware:
-    def __init__(self, page_limit: int, dir_path: str):
+    def __init__(self, page_limit: int):
         self.page_limit = page_limit
-        self.dir_path = dir_path
         self.current_page_count = 0
 
     @classmethod
     def from_crawler(cls, crawler):
         page_limit = crawler.settings.get("CLOSESPIDER_PAGECOUNT", 0)
-        dir_path = crawler.settings.get("TMP_HTML_DIR_PATH", f"{os.path.dirname(__file__)}/tmp")
-        return cls(page_limit, dir_path)
+        return cls(page_limit)
 
     def _format_file_path(self, response, spider) -> Path:
         domain = spider.allowed_domains[0]
         if not spider.crawl_process.base_file_path:
             spider.crawl_process.base_file_path = (
-                f"/tmp/{domain}/{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}"
+                f"{os.environ['LOCAL_FILES_PATH']},{domain}/",
+                f"{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}",
             )
         file_name = response.url.split(f"{domain}/")[-1] or "index.html"
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
-        return Path(f"{spider.crawl_process.base_file_path}/html/{file_name}")
+        return Path(f"{spider.crawl_process.base_file_path}/{os.environ['HTML_FOLDER_NAME']}/{file_name}")
 
     def _save_html_locally(self, response, spider):
         file_path = self._format_file_path(response, spider)
