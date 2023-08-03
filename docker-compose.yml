@@ -37,7 +37,7 @@ services:
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue'
     volumes:
       - ./open_crawler:/app
-      - local_files:${LOCAL_FILES_FOLDER}
+      - local_files:${LOCAL_FILES_PATH}
     depends_on:
       - rabbitmq
       - web_api
