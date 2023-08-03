@@ -47,8 +47,8 @@ class HtmlStorageMiddleware:
         domain = spider.allowed_domains[0]
         if not spider.crawl_process.base_file_path:
             spider.crawl_process.base_file_path = (
-                f"{os.environ['LOCAL_FILES_PATH']},{domain}/",
-                f"{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}",
+                f"{os.environ['LOCAL_FILES_PATH']},{domain}/"
+                f"{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}"
             )
         file_name = response.url.split(f"{domain}/")[-1] or "index.html"
         if not file_name.endswith(".html"):
