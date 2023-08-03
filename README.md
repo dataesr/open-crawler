@@ -107,5 +107,6 @@ To access the two collections, use a MongoDB console (such as MongoDB Compass fo
 
 At the end of the crawl process, all crawled html pages and metadata files are uploaded to a simple storage service (s3).
 The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090.
+The username and password to access the console are defined in the files [storage_service_username](./secrets/storage_service_username.txt) et [storage_service_password](./secrets/storage_service_password.txt).
 
 ![minio](./demo/minio.png)
