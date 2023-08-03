@@ -2,11 +2,11 @@ from enum import StrEnum
 
 
 class MetadataType(StrEnum):
-    RGAA = "accessibility"
-    TECHNOLOGIES = "technologies and trackers"
+    ACCESSIBILITY = "accessibility"
+    TECHNOLOGIES = "technologies_and_trackers"
     RESPONSIVENESS = "responsiveness"
-    GOODPRACTICES = "good practices"
-    CARBON = "carbon footprint"
+    GOOD_PRACTICES = "good_practices"
+    CARBON_FOOTPRINT = "carbon_footprint"
 
 
 class ProcessStatus(StrEnum):

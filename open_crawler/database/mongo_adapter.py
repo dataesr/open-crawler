@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from pymongo.results import InsertOneResult
 
 from models.crawl import CrawlConfig, CrawlProcess
+from models.enums import MetadataType
 
 
 class MongoAdapter:
@@ -34,6 +35,11 @@ class MongoAdapter:
 
     def update_crawl(self, crawl: CrawlProcess):
         self.crawl_collection.update_one(filter={"_id": crawl.id}, update={"$set": {"processStatus": crawl.status}})
+
+    def update_metadata(self, crawl: CrawlProcess, metadata: MetadataType):
+        self.crawl_collection.update_one(
+            filter={"_id": crawl.id}, update={"$set": {f"metadata.{metadata}": crawl.metadata[metadata].status}}
+        )
 
     def new_crawl(self, crawl: CrawlProcess) -> Any:
         self.save_crawl_params(crawl.config)

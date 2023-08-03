@@ -2,31 +2,30 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-from models.crawl import MetaDataConfig, CrawlConfig, CrawlParameters
+from models.crawl import MetadataConfig, CrawlConfig, CrawlParameters
 from models.enums import MetadataType
 from services.url_cleaner import clean_url
 
 
 class MetadataRequest(BaseModel):
     name: MetadataType
-    enabled: bool
-    depth: Optional[int] = 0
-
-    def to_config(self) -> MetaDataConfig:
-        return MetaDataConfig(name=self.name, enabled=self.enabled, depth=self.depth)
+    enabled: Optional[bool] = None
+    depth: Optional[int] = None
 
 
 class CrawlRequest(BaseModel):
     url: str
-    depth: int = None
-    limit: int = None
-    headers: dict[str, Any] = None
-    metadata: list[MetadataRequest] = None
+    depth: Optional[int] = None
+    limit: Optional[int] = None
+    headers: dict[str, Any] = {}
+    metadata: list[MetadataRequest] = []
 
     def to_config(self) -> CrawlConfig:
-        return CrawlConfig(
+        config = CrawlConfig(
             url=clean_url(self.url),
             parameters=CrawlParameters(depth=self.depth, limit=self.limit),
             headers=self.headers,
-            metadata_config=[meta.to_config() for meta in self.metadata] if self.metadata else [],
         )
+        for meta in self.metadata:
+            config.metadata_config[MetadataType(meta.name)].update(meta.enabled, meta.depth)
+        return config
