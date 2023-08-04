@@ -50,7 +50,7 @@ class HtmlStorageMiddleware:
                 f"{os.environ['LOCAL_FILES_PATH']}/{domain}/"
                 f"{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}"
             )
-        file_name = response.url.split(f"{domain}/")[-1] or "index.html"
+        file_name = response.url.split(f"{domain}")[-1] or "index.html"
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
         return Path(f"{spider.crawl_process.base_file_path}/{os.environ['HTML_FOLDER_NAME']}/{file_name}")
