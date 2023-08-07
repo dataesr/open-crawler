@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pymongo import MongoClient
@@ -28,17 +29,32 @@ class MongoAdapter:
                 "url": crawl.config.url,
                 "date": crawl.date.isoformat(timespec="seconds"),
                 "processStatus": crawl.status,
+                "tags": crawl.config.tags,
             }
         )
 
         crawl.id = result.inserted_id
 
     def update_crawl(self, crawl: CrawlProcess):
-        self.crawl_collection.update_one(filter={"_id": crawl.id}, update={"$set": {"processStatus": crawl.status}})
+        self.crawl_collection.update_one(
+            filter={"_id": crawl.id},
+            update={
+                "$set": {"processStatus": crawl.status, "lastUpdate": datetime.now().isoformat(timespec="seconds")}
+            },
+        )
 
     def update_metadata(self, crawl: CrawlProcess, metadata: MetadataType):
         self.crawl_collection.update_one(
-            filter={"_id": crawl.id}, update={"$set": {f"metadata.{metadata}": crawl.metadata[metadata].status}}
+            filter={"_id": crawl.id},
+            update={
+                "$set": {
+                    f"metadata.{metadata}": {
+                        "status": crawl.metadata[metadata].status,
+                        "lastUpdate": datetime.now().isoformat(timespec="seconds"),
+                        "depth": crawl.config.metadata_config[metadata].depth,
+                    }
+                }
+            },
         )
 
     def new_crawl(self, crawl: CrawlProcess) -> Any:
