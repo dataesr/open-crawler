@@ -12,6 +12,9 @@ services:
       - rabbitmq
     volumes:
       - ./open_crawler:/app
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   rabbitmq:
     container_name: rabbitmq
@@ -21,6 +24,9 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   redis:
     container_name: redis
@@ -29,9 +35,12 @@ services:
     env_file: .env
     ports:
       - "6379:6379"
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   crawl_worker: &worker
-    container_name: crawl_worker
+#    container_name: crawl_worker
     build: .
     env_file: .env
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue'
@@ -41,10 +50,14 @@ services:
     depends_on:
       - rabbitmq
       - web_api
+    deploy:
+      restart_policy:
+        condition: on-failure
+      replicas: 2
 
   accessibility_worker:
     <<: *worker
-    container_name: accessibility_worker
+#    container_name: accessibility_worker
     build:
       context: .
       dockerfile: Lighthouse.Dockerfile
@@ -52,12 +65,12 @@ services:
 
   technologies_worker:
     <<: *worker
-    container_name: technologies_worker
+#    container_name: technologies_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
 
   good_practices_worker:
     <<: *worker
-    container_name: good_practices_worker
+#    container_name: good_practices_worker
     build:
       context: .
       dockerfile: Lighthouse.Dockerfile
@@ -65,17 +78,17 @@ services:
 
   responsiveness_worker:
     <<: *worker
-    container_name: responsiveness_worker
+#    container_name: responsiveness_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n responsiveness_worker -Q responsiveness_queue'
 
   carbon_footprint_worker:
     <<: *worker
-    container_name: carbon_footprint_worker
+#    container_name: carbon_footprint_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n carbon_footprint_worker -Q carbon_footprint_queue'
 
   upload_worker:
     <<: *worker
-    container_name: upload_worker
+#    container_name: upload_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n upload_worker -Q upload_queue'
     environment:
       STORAGE_SERVICE_USERNAME_FILE: /run/secrets/storage-service-username
@@ -97,6 +110,9 @@ services:
     depends_on:
       - rabbitmq
       - web_api
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   minio:
     container_name: minio
@@ -116,6 +132,9 @@ services:
     secrets:
       - storage-service-username
       - storage-service-password
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   mongodb:
     container_name: mongodb
@@ -125,6 +144,9 @@ services:
     env_file: .env
     volumes:
       - mongodb:${MONGODB_PATH}
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 secrets:
   storage-service-username:
