@@ -7,6 +7,14 @@ Make sure you have installed :
 
 * git
 * docker-compose
+
+A Google Cloud API KEY is requested in order for the responsiveness metadata to work properly:
+https://developers.google.com/webmaster-tools/search-console-api/v1/configure?hl=fr
+
+Once you created the API KEY, you need to store its value in `GOOGLE_API_KEY` in the .env file.
+
+You also need to activate Google Search Console API: https://console.cloud.google.com/apis/dashboard
+
 ## Installation
 
 Git clone project
@@ -40,7 +48,9 @@ For storage service:
 
 `METADATA_FOLDER_NAME`
 
+For Google API KEY:
 
+`GOOGLE_API_KEY`
 
 ## Deployment
 

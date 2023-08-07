@@ -17,6 +17,7 @@ from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
 from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
+from services.responsiveness_calculator import ResponsivenessCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -113,9 +114,26 @@ def get_good_practices(crawl_process: CrawlProcess):
 
 @celery_app.task(name="get_responsiveness")
 def get_responsiveness(crawl_process: CrawlProcess):
-    if responsiveness_process := crawl_process.metadata.get(MetadataType.RESPONSIVENESS):
-        logger.info(responsiveness_process.urls)
-    # TODO implement this task
+    crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.STARTED
+    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
+    responsive_calc = ResponsivenessCalculator()
+    result = {}
+    if carbon_footprint_process := crawl_process.metadata.get(MetadataType.RESPONSIVENESS):
+        for url in carbon_footprint_process.urls:
+            try:
+                responsiveness = responsive_calc.get_responsiveness(url)
+            except CarbonCalculatorError as e:
+                crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
+                continue
+            result[url] = responsiveness
+        if not result:
+            crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.ERROR
+        store_metadata_result(crawl_process, result, MetadataType.RESPONSIVENESS)
+    if crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status == ProcessStatus.STARTED:
+        crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.SUCCESS
+    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
+    return result
 
 
 @celery_app.task(name="get_carbon_footprint")
@@ -144,7 +162,9 @@ def get_carbon_footprint(crawl_process: CrawlProcess):
 
 def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
     # TODO en attente du retour client pour l'arborescence
-    file_path = pathlib.Path(f"{crawl_process.base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json")
+    file_path = pathlib.Path(
+        f"{crawl_process.base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json"
+    )
     file_path.parent.mkdir(exist_ok=True, parents=True)
     file_path.write_text(json.dumps(result, indent=4))
 
