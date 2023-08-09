@@ -38,6 +38,7 @@ class CrawlConfig(BaseModel):
     parameters: CrawlParameters
     metadata_config: dict[MetadataType, MetadataConfig] = DEFAULT_METADATA_CONFIG
     headers: Optional[dict[str, Any]]
+    tags: list[str]
 
 
 class MetadataProcess(BaseModel):

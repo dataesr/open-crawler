@@ -19,12 +19,14 @@ class CrawlRequest(BaseModel):
     limit: Optional[int] = None
     headers: dict[str, Any] = {}
     metadata: list[MetadataRequest] = []
+    tags: list[str] = []
 
     def to_config(self) -> CrawlConfig:
         config = CrawlConfig(
             url=clean_url(self.url),
             parameters=CrawlParameters(depth=self.depth, limit=self.limit),
             headers=self.headers,
+            tags=self.tags,
         )
         for meta in self.metadata:
             config.metadata_config[MetadataType(meta.name)].update(meta.enabled, meta.depth)
