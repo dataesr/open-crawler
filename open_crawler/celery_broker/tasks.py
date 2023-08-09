@@ -15,7 +15,7 @@ from crawler.spiders.menesr import MenesrSpider
 from database.mongo_adapter import mongo
 from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
-from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError
+from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError, BestPracticesError
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 from services.responsiveness_calculator import ResponsivenessCalculator
 from services.technologies_calculator import TechnologiesCalculator, TechnologiesError
@@ -116,7 +116,7 @@ def get_good_practices(crawl_process: CrawlProcess):
         for url in best_practices_process.urls:
             try:
                 best_practices = best_practices_calc.get_best_practices(url)
-            except AccessibilityError as e:
+            except BestPracticesError as e:
                 crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.PARTIAL_ERROR
                 mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
                 continue
