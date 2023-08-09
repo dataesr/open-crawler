@@ -45,7 +45,10 @@ services:
   accessibility_worker:
     <<: *worker
     container_name: accessibility_worker
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n accessibility_worker -Q accessibility_queue'
+    build:
+      context: .
+      dockerfile: Lighthouse.Dockerfile
+    command: watchfiles --filter python '/bin/bash -c "source /opt/venv/bin/activate && celery -A celery_broker.main.celery_app worker -l info -P solo -n accessibility_worker -Q accessibility_queue"'
 
   technologies_worker:
     <<: *worker
@@ -55,7 +58,10 @@ services:
   good_practices_worker:
     <<: *worker
     container_name: good_practices_worker
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n good_practices_worker -Q good_practices_queue'
+    build:
+      context: .
+      dockerfile: Lighthouse.Dockerfile
+    command: watchfiles --filter python '/bin/bash -c "source /opt/venv/bin/activate && celery -A celery_broker.main.celery_app worker -l info -P solo -n good_practices_worker -Q good_practices_queue"'
 
   responsiveness_worker:
     <<: *worker
