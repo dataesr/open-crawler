@@ -15,6 +15,7 @@ from crawler.spiders.menesr import MenesrSpider
 from database.mongo_adapter import mongo
 from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
+from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 from services.responsiveness_calculator import ResponsivenessCalculator
 from services.technologies_calculator import TechnologiesCalculator, TechnologiesError
@@ -59,9 +60,26 @@ def start_crawl_process(crawl_process: CrawlProcess):
 
 @celery_app.task(name="get_accessibility")
 def get_accessibility(crawl_process: CrawlProcess):
+    crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.STARTED
+    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
+    accessibility_calc = LighthouseWrapper()
+    result = {}
     if accessibility_process := crawl_process.metadata.get(MetadataType.ACCESSIBILITY):
-        logger.info(accessibility_process.urls)
-    # TODO implement this task
+        for url in accessibility_process.urls:
+            try:
+                accessibility = accessibility_calc.get_accessibility(url)
+            except AccessibilityError as e:
+                crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
+                continue
+            result[url] = accessibility
+        if not result:
+            crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.ERROR
+        store_metadata_result(crawl_process, result, MetadataType.ACCESSIBILITY)
+    if crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status == ProcessStatus.STARTED:
+        crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.SUCCESS
+    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
+    return result
 
 
 @celery_app.task(name="get_technologies")
@@ -90,9 +108,26 @@ def get_technologies(crawl_process: CrawlProcess):
 
 @celery_app.task(name="get_good_practices")
 def get_good_practices(crawl_process: CrawlProcess):
-    if good_practices_process := crawl_process.metadata.get(MetadataType.GOOD_PRACTICES):
-        logger.info(good_practices_process.urls)
-    # TODO implement this task
+    crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.STARTED
+    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
+    best_practices_calc = LighthouseWrapper()
+    result = {}
+    if best_practices_process := crawl_process.metadata.get(MetadataType.GOOD_PRACTICES):
+        for url in best_practices_process.urls:
+            try:
+                best_practices = best_practices_calc.get_best_practices(url)
+            except AccessibilityError as e:
+                crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
+                continue
+            result[url] = best_practices
+        if not result:
+            crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.ERROR
+        store_metadata_result(crawl_process, result, MetadataType.GOOD_PRACTICES)
+    if crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status == ProcessStatus.STARTED:
+        crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.SUCCESS
+    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
+    return result
 
 
 @celery_app.task(name="get_responsiveness")
