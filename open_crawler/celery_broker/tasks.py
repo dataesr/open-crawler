@@ -75,8 +75,8 @@ def get_accessibility(crawl_process: CrawlProcess):
             except Exception:
                 logger.error("UNKNOWN ERROR")
                 # TODO Handle other errors
-                crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.PARTIAL_ERROR
-                mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
+                crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
                 continue
             result[url] = accessibility
     if not result:
@@ -129,8 +129,8 @@ def get_good_practices(crawl_process: CrawlProcess):
             except Exception:
                 logger.error("UNKNOWN ERROR")
                 # TODO Handle other errors
-                crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.PARTIAL_ERROR
-                mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
+                crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
                 continue
             result[url] = best_practices
     if not result:
@@ -159,8 +159,8 @@ def get_responsiveness(crawl_process: CrawlProcess):
             except Exception:
                 logger.error("UNKNOWN ERROR")
                 # TODO Handle other errors
-                crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.PARTIAL_ERROR
-                mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
+                crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
                 continue
             result[url] = responsiveness
     if not result:
