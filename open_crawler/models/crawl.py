@@ -44,6 +44,12 @@ class CrawlConfig(BaseModel):
 class MetadataProcess(BaseModel):
     urls: list[str] = []
     status: ProcessStatus = ProcessStatus.PENDING
+    to_save: bool = True
+
+    def set_status(self, status: ProcessStatus):
+        if self.status != status:
+            self.status = status
+            self.to_save = True
 
 
 class CrawlProcess(BaseModel):
@@ -69,3 +75,6 @@ class CrawlProcess(BaseModel):
         self.status = other.status
         self.id = other.id
         self.metadata = other.metadata
+
+    def set_metadata_status(self, meta: MetadataType, status: ProcessStatus):
+        self.metadata.get(meta).set_status(status)
