@@ -17,6 +17,7 @@ from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 from services.responsiveness_calculator import ResponsivenessCalculator
+from services.technologies_calculator import TechnologiesCalculator, TechnologiesError
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +66,26 @@ def get_accessibility(crawl_process: CrawlProcess):
 
 @celery_app.task(name="get_technologies")
 def get_technologies(crawl_process: CrawlProcess):
+    crawl_process.metadata.get(MetadataType.TECHNOLOGIES).status = ProcessStatus.STARTED
+    mongo.update_metadata(crawl_process, MetadataType.TECHNOLOGIES)
+    technologies_calc = TechnologiesCalculator()
+    result = {}
     if technologies_process := crawl_process.metadata.get(MetadataType.TECHNOLOGIES):
-        logger.info(technologies_process.urls)
-    # TODO implement this task
+        for url in technologies_process.urls:
+            try:
+                technologies = technologies_calc.get_technologies(url)
+            except TechnologiesError as e:
+                crawl_process.metadata.get(MetadataType.TECHNOLOGIES).status = ProcessStatus.PARTIAL_ERROR
+                mongo.update_metadata(crawl_process, MetadataType.TECHNOLOGIES)
+                continue
+            result[url] = technologies
+        if not result:
+            crawl_process.metadata.get(MetadataType.TECHNOLOGIES).status = ProcessStatus.ERROR
+        store_metadata_result(crawl_process, result, MetadataType.TECHNOLOGIES)
+    if crawl_process.metadata.get(MetadataType.TECHNOLOGIES).status == ProcessStatus.STARTED:
+        crawl_process.metadata.get(MetadataType.TECHNOLOGIES).status = ProcessStatus.SUCCESS
+    mongo.update_metadata(crawl_process, MetadataType.TECHNOLOGIES)
+    return result
 
 
 @celery_app.task(name="get_good_practices")

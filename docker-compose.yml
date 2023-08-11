@@ -63,7 +63,12 @@ services:
   technologies_worker:
     <<: *worker
 #    container_name: technologies_worker
+    build:
+      context: .
+      dockerfile: Wappalyzer.Dockerfile
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
+    deploy:
+      replicas: 1
 
   good_practices_worker:
     <<: *worker
