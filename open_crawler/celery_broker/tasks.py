@@ -1,3 +1,4 @@
+# Standard library imports
 import json
 import logging
 import os
@@ -5,11 +6,13 @@ import pathlib
 import shutil
 from multiprocessing import Process, Manager
 
+# Third-party imports
 from minio import Minio
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.python import without_none_values
 
+# Local imports
 from celery_broker.main import celery_app
 from crawler.spiders.menesr import MenesrSpider
 from database.mongo_adapter import mongo
@@ -17,28 +20,28 @@ from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
 from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError, BestPracticesError
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
-from services.responsiveness_calculator import ResponsivenessCalculator
+from services.responsiveness_calculator import ResponsivenessCalculator, ResponsivenessCalculatorError
+from services.technologies_calculator import TechnologiesCalculator, TechnologiesError
 
 logger = logging.getLogger(__name__)
 
 
-def crawl(crawl_process: CrawlProcess, results: dict):
-    crawler_settings = get_project_settings()
-    custom_settings = without_none_values(
-        {
-            "DEPTH_LIMIT": crawl_process.config.parameters.depth,
-            "CLOSESPIDER_PAGECOUNT": crawl_process.config.parameters.limit,
-            "CUSTOM_HEADERS": crawl_process.config.headers or {},
-        }
-    )
-    crawler_settings.update(custom_settings)
-    process = CrawlerProcess(settings=crawler_settings)
+def init_crawler_settings(crawl_process: CrawlProcess):
+    settings = get_project_settings()
+    custom_settings = without_none_values({
+        "DEPTH_LIMIT": crawl_process.config.parameters.depth,
+        "CLOSESPIDER_PAGECOUNT": crawl_process.config.parameters.limit,
+        "CUSTOM_HEADERS": crawl_process.config.headers or {},
+    })
+    settings.update(custom_settings)
+    return settings
+
+def start_crawler_process(crawl_process: CrawlProcess, results: dict):
+    process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
     process.crawl(MenesrSpider, crawl_process=crawl_process)
     process.start()
     results["base_file_path"] = crawl_process.base_file_path
-    logger.info(crawl_process.metadata)
     results["metadata"] = dict(crawl_process.metadata.items())
-
 
 @celery_app.task(name="crawl")
 def start_crawl_process(crawl_process: CrawlProcess):
@@ -46,167 +49,79 @@ def start_crawl_process(crawl_process: CrawlProcess):
     mongo.update_crawl(crawl_process)
     with Manager() as manager:
         shared_dict = manager.dict()
-        p = Process(target=crawl, kwargs={"crawl_process": crawl_process, "results": shared_dict})
+        p = Process(target=start_crawler_process, kwargs={"crawl_process": crawl_process, "results": shared_dict})
         p.start()
         p.join()
         crawl_process.base_file_path = shared_dict["base_file_path"]
-        for meta, meta_process in shared_dict["metadata"].items():
-            crawl_process.metadata[meta] = meta_process
+        crawl_process.metadata.update(shared_dict["metadata"])
     crawl_process.status = ProcessStatus.SUCCESS
     mongo.update_crawl(crawl_process)
     return crawl_process
 
+def update_process_metadata(crawl_process: CrawlProcess, metadata_type: MetadataType, status: ProcessStatus):
+    crawl_process.set_metadata_status(metadata_type, status)
+    if crawl_process.metadata_needs_save(metadata_type):
+        mongo.update_metadata(crawl_process, metadata_type)
 
-@celery_app.task(name="get_accessibility")
-def get_accessibility(crawl_process: CrawlProcess):
-    crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.STARTED
-    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
-    accessibility_calc = LighthouseWrapper()
-    result = {}
-    if accessibility_process := crawl_process.metadata.get(MetadataType.ACCESSIBILITY):
-        for url in accessibility_process.urls:
-            try:
-                accessibility = accessibility_calc.get_accessibility(url)
-            except AccessibilityError as e:
-                crawl_process.set_metadata_status(MetadataType.ACCESSIBILITY, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.ACCESSIBILITY).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
-                continue
-            except Exception:
-                logger.error("UNKNOWN ERROR")
-                # TODO Handle other errors
-                crawl_process.set_metadata_status(MetadataType.ACCESSIBILITY, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.ACCESSIBILITY).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
-                continue
-            result[url] = accessibility
+
+def handle_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
     if not result:
-        crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.ERROR
-        mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
+        update_process_metadata(crawl_process, metadata_type, ProcessStatus.ERROR)
         return
-    store_metadata_result(crawl_process, result, MetadataType.ACCESSIBILITY)
-    if crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status == ProcessStatus.STARTED:
-        crawl_process.metadata.get(MetadataType.ACCESSIBILITY).status = ProcessStatus.SUCCESS
-    mongo.update_metadata(crawl_process, MetadataType.ACCESSIBILITY)
-    return result
-
-
-@celery_app.task(name="get_technologies")
-def get_technologies(crawl_process: CrawlProcess):
-    if technologies_process := crawl_process.metadata.get(MetadataType.TECHNOLOGIES):
-        logger.info(technologies_process.urls)
-    # TODO implement this task
-
-
-@celery_app.task(name="get_good_practices")
-def get_good_practices(crawl_process: CrawlProcess):
-    crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.STARTED
-    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
-    best_practices_calc = LighthouseWrapper()
-    result = {}
-    if best_practices_process := crawl_process.metadata.get(MetadataType.GOOD_PRACTICES):
-        for url in best_practices_process.urls:
-            try:
-                best_practices = best_practices_calc.get_best_practices(url)
-            except BestPracticesError as e:
-                crawl_process.set_metadata_status(MetadataType.GOOD_PRACTICES, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
-                continue
-            except Exception:
-                logger.error("UNKNOWN ERROR")
-                # TODO Handle other errors
-                crawl_process.set_metadata_status(MetadataType.GOOD_PRACTICES, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
-                continue
-            result[url] = best_practices
-    if not result:
-        crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.ERROR
-        mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
-        return
-    store_metadata_result(crawl_process, result, MetadataType.GOOD_PRACTICES)
-    if crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status == ProcessStatus.STARTED:
-        crawl_process.metadata.get(MetadataType.GOOD_PRACTICES).status = ProcessStatus.SUCCESS
-    mongo.update_metadata(crawl_process, MetadataType.GOOD_PRACTICES)
-    return result
-
-
-@celery_app.task(name="get_responsiveness")
-def get_responsiveness(crawl_process: CrawlProcess):
-    crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.STARTED
-    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
-    responsive_calc = ResponsivenessCalculator()
-    result = {}
-    if carbon_footprint_process := crawl_process.metadata.get(MetadataType.RESPONSIVENESS):
-        for url in carbon_footprint_process.urls:
-            try:
-                responsiveness = responsive_calc.get_responsiveness(url)
-            except CarbonCalculatorError as e:
-                crawl_process.set_metadata_status(MetadataType.RESPONSIVENESS, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.RESPONSIVENESS).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
-                continue
-            except Exception:
-                logger.error("UNKNOWN ERROR")
-                # TODO Handle other errors
-                crawl_process.set_metadata_status(MetadataType.RESPONSIVENESS, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.RESPONSIVENESS).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
-                continue
-            result[url] = responsiveness
-    if not result:
-        crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.ERROR
-        mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
-        return
-    store_metadata_result(crawl_process, result, MetadataType.RESPONSIVENESS)
-    if crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status == ProcessStatus.STARTED:
-        crawl_process.metadata.get(MetadataType.RESPONSIVENESS).status = ProcessStatus.SUCCESS
-    mongo.update_metadata(crawl_process, MetadataType.RESPONSIVENESS)
-    return result
-
-
-@celery_app.task(name="get_carbon_footprint")
-def get_carbon_footprint(crawl_process: CrawlProcess):
-    crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.STARTED
-    mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
-    carbon_calc = CarbonCalculator()
-    result = {}
-    if carbon_footprint_process := crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT):
-        for url in carbon_footprint_process.urls:
-            try:
-                carbon_footprint = carbon_calc.get_carbon_footprint(url)
-            except CarbonCalculatorError as e:
-                crawl_process.set_metadata_status(MetadataType.CARBON_FOOTPRINT, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
-                continue
-            except Exception:
-                logger.error("UNKNOWN ERROR")
-                # TODO Handle other errors
-                crawl_process.set_metadata_status(MetadataType.CARBON_FOOTPRINT, ProcessStatus.PARTIAL_ERROR)
-                if crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).to_save:
-                    mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
-                continue
-            result[url] = carbon_footprint
-    if not result:
-        crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.ERROR
-        mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
-        return
-    store_metadata_result(crawl_process, result, MetadataType.CARBON_FOOTPRINT)
-    if crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status == ProcessStatus.STARTED:
-        crawl_process.metadata.get(MetadataType.CARBON_FOOTPRINT).status = ProcessStatus.SUCCESS
-    mongo.update_metadata(crawl_process, MetadataType.CARBON_FOOTPRINT)
+    store_metadata_result(crawl_process, result, metadata_type)
+    if crawl_process.metadata.get(metadata_type).status == ProcessStatus.STARTED:
+        update_process_metadata(crawl_process, metadata_type, ProcessStatus.SUCCESS)
     return result
 
 
 def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
-    # TODO en attente du retour client pour l'arborescence
     file_path = pathlib.Path(
         f"{crawl_process.base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json"
     )
     file_path.parent.mkdir(exist_ok=True, parents=True)
     file_path.write_text(json.dumps(result, indent=4))
+
+def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calculator, method_name: str):
+    update_process_metadata(crawl_process, metadata_type, ProcessStatus.STARTED)
+    calc_method = getattr(calculator, method_name)
+    result = {}
+    if metadata_process := crawl_process.metadata.get(metadata_type):
+        for url in metadata_process.urls:
+            try:
+                data = calc_method(url)
+                result[url] = data
+            except (AccessibilityError, BestPracticesError, TechnologiesError, ResponsivenessCalculatorError, CarbonCalculatorError):
+                update_process_metadata(crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                continue
+            except Exception:
+                logger.error("Unknown error")
+                update_process_metadata(crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                continue
+    return handle_metadata_result(crawl_process, result, metadata_type)
+
+@celery_app.task(name="get_accessibility")
+def get_accessibility(crawl_process: CrawlProcess):
+    return metadata_task(crawl_process, MetadataType.ACCESSIBILITY, LighthouseWrapper(), 'get_accessibility')
+
+
+@celery_app.task(name="get_technologies")
+def get_technologies(crawl_process: CrawlProcess):
+    return metadata_task(crawl_process, MetadataType.TECHNOLOGIES, TechnologiesCalculator(), 'get_technologies')
+
+
+@celery_app.task(name="get_good_practices")
+def get_good_practices(crawl_process: CrawlProcess):
+    return metadata_task(crawl_process, MetadataType.GOOD_PRACTICES, LighthouseWrapper(), 'get_best_practices')
+
+
+@celery_app.task(name="get_responsiveness")
+def get_responsiveness(crawl_process: CrawlProcess):
+    return metadata_task(crawl_process, MetadataType.RESPONSIVENESS, ResponsivenessCalculator(), 'get_responsiveness')
+
+
+@celery_app.task(name="get_carbon_footprint")
+def get_carbon_footprint(crawl_process: CrawlProcess):
+    return metadata_task(crawl_process, MetadataType.CARBON_FOOTPRINT, CarbonCalculator(), 'get_carbon_footprint')
 
 
 @celery_app.task(name="upload_html")
@@ -256,3 +171,7 @@ METADATA_TASK_REGISTRY = {
     MetadataType.RESPONSIVENESS: get_responsiveness,
     MetadataType.CARBON_FOOTPRINT: get_carbon_footprint,
 }
+
+
+
+

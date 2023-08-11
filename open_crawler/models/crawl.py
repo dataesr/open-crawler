@@ -78,3 +78,6 @@ class CrawlProcess(BaseModel):
 
     def set_metadata_status(self, meta: MetadataType, status: ProcessStatus):
         self.metadata.get(meta).set_status(status)
+
+    def metadata_needs_save(self, meta: MetadataType):
+        return self.metadata.get(meta).to_save
