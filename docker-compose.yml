@@ -53,7 +53,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-      replicas: 2
+#      replicas: 2
 
   accessibility_worker:
     <<: *worker
