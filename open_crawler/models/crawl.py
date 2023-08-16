@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Any, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from models.enums import MetadataType, ProcessStatus
 
@@ -20,8 +20,8 @@ class MetadataConfig(BaseModel):
 
 
 class CrawlParameters(BaseModel):
-    depth: int
-    limit: int
+    depth: Optional[int]
+    limit: Optional[int]
 
 
 DEFAULT_METADATA_CONFIG: dict[MetadataType, MetadataConfig] = {
@@ -54,7 +54,7 @@ class MetadataProcess(BaseModel):
 
 class CrawlProcess(BaseModel):
     config: CrawlConfig = None
-    date: datetime = datetime.now()
+    date: datetime = Field(default_factory=datetime.now)
     status: ProcessStatus = ProcessStatus.PENDING
     id: str = ""
     metadata: dict[MetadataType, MetadataProcess] = {}
