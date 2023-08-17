@@ -1,6 +1,6 @@
 # open-crawler
 
-This is ScanR crawler application. It is a web crawler developped in python.
+This is ScanR crawler application. It is a web crawler developed in python.
 ## Prerequisites
 
 Make sure you have installed :
@@ -27,12 +27,6 @@ Git clone project
 ## Environment Variables
 
 To configure this project, you will need to change the following environment variables in your .env file
-
-For RabbitMQ :
-
-`RABBITMQ_USERNAME`
-
-`RABBITMQ_PASSWORD`
 
 For volumes mount:
 
