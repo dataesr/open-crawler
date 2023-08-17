@@ -9,21 +9,9 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - rabbitmq
+      - redis
     volumes:
       - ./open_crawler:/app
-    deploy:
-      restart_policy:
-        condition: on-failure
-
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.12.2-management
-    hostname: rabbitmq
-    env_file: .env
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     deploy:
       restart_policy:
         condition: on-failure
@@ -48,7 +36,7 @@ services:
       - ./open_crawler:/app
       - local_files:${LOCAL_FILES_PATH}
     depends_on:
-      - rabbitmq
+      - redis
       - web_api
     deploy:
       restart_policy:
@@ -110,7 +98,7 @@ services:
     ports:
       - "5555:5555"
     depends_on:
-      - rabbitmq
+      - redis
       - web_api
     deploy:
       restart_policy:
