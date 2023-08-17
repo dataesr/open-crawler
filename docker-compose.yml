@@ -95,14 +95,11 @@ services:
     <<: *worker
 #    container_name: upload_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n upload_worker -Q upload_queue'
+    env_file: .env
     environment:
-      STORAGE_SERVICE_USERNAME_FILE: /run/secrets/storage-service-username
-      STORAGE_SERVICE_PASSWORD_FILE: /run/secrets/storage-service-password
       STORAGE_SERVICE_URL: "minio:9000"
       STORAGE_SERVICE_BUCKET_NAME: "test" # TODO: Change value before build
-    secrets:
-      - storage-service-username
-      - storage-service-password
+
 
 
   flower:
@@ -127,16 +124,13 @@ services:
       - "9090:9090"
     env_file: .env
     environment:
-      MINIO_ROOT_USER_FILE: /run/secrets/storage-service-username
-      MINIO_ROOT_PASSWORD_FILE: /run/secrets/storage-service-password
-      MINIO_ACCESS_KEY_FILE: /run/secrets/storage-service-username
-      MINIO_SECRET_KEY_FILE: /run/secrets/storage-service-password
+      MINIO_ROOT_USER: ${STORAGE_SERVICE_USERNAME}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SERVICE_PASSWORD}
+      MINIO_ACCESS_KEY: ${STORAGE_SERVICE_USERNAME}
+      MINIO_SECRET_KEY: ${STORAGE_SERVICE_PASSWORD}
     command: server --console-address ":9090" /data
     volumes:
       - minio:${MINIO_PATH}
-    secrets:
-      - storage-service-username
-      - storage-service-password
     deploy:
       restart_policy:
         condition: on-failure
@@ -153,11 +147,6 @@ services:
       restart_policy:
         condition: on-failure
 
-secrets:
-  storage-service-username:
-    file: ./secrets/storage_service_username.txt
-  storage-service-password:
-    file: ./secrets/storage_service_password.txt
 
 volumes:
   minio:

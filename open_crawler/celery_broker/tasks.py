@@ -28,13 +28,16 @@ logger = logging.getLogger(__name__)
 
 def init_crawler_settings(crawl_process: CrawlProcess):
     settings = get_project_settings()
-    custom_settings = without_none_values({
-        "DEPTH_LIMIT": crawl_process.config.parameters.depth,
-        "CLOSESPIDER_PAGECOUNT": crawl_process.config.parameters.limit,
-        "CUSTOM_HEADERS": crawl_process.config.headers or {},
-    })
+    custom_settings = without_none_values(
+        {
+            "DEPTH_LIMIT": crawl_process.config.parameters.depth,
+            "CLOSESPIDER_PAGECOUNT": crawl_process.config.parameters.limit,
+            "CUSTOM_HEADERS": crawl_process.config.headers or {},
+        }
+    )
     settings.update(custom_settings)
     return settings
+
 
 def start_crawler_process(crawl_process: CrawlProcess, results: dict):
     process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
@@ -42,6 +45,7 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
     process.start()
     results["base_file_path"] = crawl_process.base_file_path
     results["metadata"] = dict(crawl_process.metadata.items())
+
 
 @celery_app.task(name="crawl")
 def start_crawl_process(crawl_process: CrawlProcess):
@@ -57,6 +61,7 @@ def start_crawl_process(crawl_process: CrawlProcess):
     crawl_process.status = ProcessStatus.SUCCESS
     mongo.update_crawl(crawl_process)
     return crawl_process
+
 
 def update_process_metadata(crawl_process: CrawlProcess, metadata_type: MetadataType, status: ProcessStatus):
     crawl_process.set_metadata_status(metadata_type, status)
@@ -81,6 +86,7 @@ def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_ty
     file_path.parent.mkdir(exist_ok=True, parents=True)
     file_path.write_text(json.dumps(result, indent=4))
 
+
 def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calculator, method_name: str):
     update_process_metadata(crawl_process, metadata_type, ProcessStatus.STARTED)
     calc_method = getattr(calculator, method_name)
@@ -90,7 +96,13 @@ def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calc
             try:
                 data = calc_method(url)
                 result[url] = data
-            except (AccessibilityError, BestPracticesError, TechnologiesError, ResponsivenessCalculatorError, CarbonCalculatorError):
+            except (
+                AccessibilityError,
+                BestPracticesError,
+                TechnologiesError,
+                ResponsivenessCalculatorError,
+                CarbonCalculatorError,
+            ):
                 update_process_metadata(crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
                 continue
             except Exception:
@@ -99,37 +111,38 @@ def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calc
                 continue
     return handle_metadata_result(crawl_process, result, metadata_type)
 
+
 @celery_app.task(name="get_accessibility")
 def get_accessibility(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.ACCESSIBILITY, LighthouseWrapper(), 'get_accessibility')
+    return metadata_task(crawl_process, MetadataType.ACCESSIBILITY, LighthouseWrapper(), "get_accessibility")
 
 
 @celery_app.task(name="get_technologies")
 def get_technologies(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.TECHNOLOGIES, TechnologiesCalculator(), 'get_technologies')
+    return metadata_task(crawl_process, MetadataType.TECHNOLOGIES, TechnologiesCalculator(), "get_technologies")
 
 
 @celery_app.task(name="get_good_practices")
 def get_good_practices(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.GOOD_PRACTICES, LighthouseWrapper(), 'get_best_practices')
+    return metadata_task(crawl_process, MetadataType.GOOD_PRACTICES, LighthouseWrapper(), "get_best_practices")
 
 
 @celery_app.task(name="get_responsiveness")
 def get_responsiveness(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.RESPONSIVENESS, ResponsivenessCalculator(), 'get_responsiveness')
+    return metadata_task(crawl_process, MetadataType.RESPONSIVENESS, ResponsivenessCalculator(), "get_responsiveness")
 
 
 @celery_app.task(name="get_carbon_footprint")
 def get_carbon_footprint(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.CARBON_FOOTPRINT, CarbonCalculator(), 'get_carbon_footprint')
+    return metadata_task(crawl_process, MetadataType.CARBON_FOOTPRINT, CarbonCalculator(), "get_carbon_footprint")
 
 
 @celery_app.task(name="upload_html")
 def upload_html(crawl_process: CrawlProcess):
     client = Minio(
         os.environ["STORAGE_SERVICE_URL"],
-        access_key=open(os.environ["STORAGE_SERVICE_USERNAME_FILE"]).readline(),
-        secret_key=open(os.environ["STORAGE_SERVICE_PASSWORD_FILE"]).readline(),
+        access_key=os.environ["STORAGE_SERVICE_USERNAME"],
+        secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
         secure=False,
     )
 
@@ -171,7 +184,3 @@ METADATA_TASK_REGISTRY = {
     MetadataType.RESPONSIVENESS: get_responsiveness,
     MetadataType.CARBON_FOOTPRINT: get_carbon_footprint,
 }
-
-
-
-
