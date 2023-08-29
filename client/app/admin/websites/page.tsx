@@ -3,7 +3,7 @@ import { Container, Title } from "../../_dsfr";
 import ManagmentBar from "./components/ManagmentBar";
 import { Website as TWebsite } from "@/app/_types/websites";
 
-export async function getData() {
+async function getData() {
   const websites: TWebsite[] = await fetch(`${process.env.API_URL}/websites`, { cache: 'no-store' })
     .then(res => res.json());
   return websites;

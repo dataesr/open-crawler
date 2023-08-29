@@ -3,7 +3,7 @@ import { Crawl } from "@/app/_types/crawls";
 
 type Props = { params: { id: string } }
 
-export async function getData(id: string) {
+async function getData(id: string) {
   const crawls: Crawl[] = await fetch(`${process.env.API_URL}/websites/${id}/crawls`, { cache: 'no-store' })
     .then(res => res.json())
     .catch(err => []);

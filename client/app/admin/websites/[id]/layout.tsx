@@ -7,7 +7,7 @@ type Props = {
   children: React.ReactNode,
 }
 
-export async function getData(id: string) {
+async function getData(id: string) {
   const data = await fetch(`${process.env.API_URL}/websites/${id}`, { cache: 'no-store' })
     .then(res => res.json())
   return data || {}
