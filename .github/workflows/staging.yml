@@ -43,7 +43,7 @@ jobs:
       #   run: docker build -f Wappalyzer.Dockerfile -t ${{ steps.repository.outputs.name }}-wappalyzer:${{ steps.version.outputs.tag }} .
 
       - name: Build client image
-        run: docker build -f client/Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
+        run: docker build -f Client.Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
 
 
       - name: Push images
