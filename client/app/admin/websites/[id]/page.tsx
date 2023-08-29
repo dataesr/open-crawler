@@ -7,11 +7,11 @@ type Props = {
 }
 
 export default async function Page(props: Props) {
-  const website: Website = await fetch(`http://localhost:8080/websites/${props.params.id}`, { cache: 'no-store' })
+  const website: Website = await fetch(`${process.env.API_URL}/websites/${props.params.id}`, { cache: 'no-store' })
     .then(res => res.json());
   return (
     <Container fluid>
-      <Title className="fr-mt-3w fr-mb-1w" look="h6">Résumé</Title>
+      <Title className="fr-mt-3w fr-mb-1w" look="h6">Résumé de {website.id}</Title>
     </Container>
   )
 }

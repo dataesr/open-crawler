@@ -9,7 +9,7 @@ type Props = {
 
 export default async function WebsiteLayout({ params, children }: Props) {
   const currentPath = `/admin/websites/${params.id}`;
-  const website: Website = await fetch(`http://localhost:8080/websites/${params.id}`, { cache: 'no-store' })
+  const website: Website = await fetch(`${process.env.API_URL}/websites/${params.id}`, { cache: 'no-store' })
     .then(res => res.json());
 
   return (

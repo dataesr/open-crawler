@@ -4,7 +4,7 @@ import ManagmentBar from "./components/ManagmentBar";
 import { Website as TWebsite } from "@/app/_types/websites";
 
 export default async function Websites() {
-  const websites: TWebsite[] = await fetch('http://localhost:8080/websites', { cache: 'no-store' })
+  const websites: TWebsite[] = await fetch(`${process.env.API_URL}/websites`, { cache: 'no-store' })
     .then(res => res.json());
   return (
     <Container as="main" className="fr-my-6w">

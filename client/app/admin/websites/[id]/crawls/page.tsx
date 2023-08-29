@@ -9,7 +9,7 @@ type Props = {
 }
 
 export default async function WebsiteCrawlHistory({ params }: Props) {
-  const crawls: Crawl = await fetch(`http://localhost:8080/websites/${params.id}/crawls`, { cache: 'no-store' })
+  const crawls: Crawl = await fetch(`${process.env.API_URL}/websites/${params.id}/crawls`, { cache: 'no-store' })
     .then(res => res.json());
   return (
     <Container fluid>

@@ -8,7 +8,7 @@ from models.crawl import CrawlProcess
 from models.website import CreateWebsiteModel, WebsiteModel, UpdateWebsiteModel
 
 websites_router = APIRouter(
-    prefix="/websites", tags=["websites"], responses={404: {"description": "Not found"}})
+    prefix="/api/websites", tags=["websites"], responses={404: {"description": "Not found"}})
 
 logger = logging.getLogger(__name__)
 
