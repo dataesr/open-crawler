@@ -1,0 +1,11 @@
+$icons:
+  ("contract-left-line", "/node_modules/remixicon/icons/Arrows/contract-left-fill.svg")
+  ("contract-left-fill", "/node_modules/remixicon/icons/Arrows/contract-left-fill.svg");
+
+@each $name, $mask in $icons {
+  .fr-icon-#{$name}::before,
+  .fr-icon-#{$name}::after {
+    -webkit-mask-image: url(#{$mask});
+    mask-image: url(#{$mask});
+  }
+}

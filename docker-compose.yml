@@ -84,16 +84,13 @@ services:
 #    container_name: upload_worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n upload_worker -Q upload_queue'
     env_file: .env
-    environment:
-      STORAGE_SERVICE_URL: "minio:9000"
-      STORAGE_SERVICE_BUCKET_NAME: "test" # TODO: Change value before build
 
 
 
   flower:
     container_name: flower
     image: mher/flower
-    command: celery flower -p 5555
+    command: celery flower -p 5555 --url_prefix=flower
     env_file: .env
     ports:
       - "5555:5555"
@@ -114,8 +111,6 @@ services:
     environment:
       MINIO_ROOT_USER: ${STORAGE_SERVICE_USERNAME}
       MINIO_ROOT_PASSWORD: ${STORAGE_SERVICE_PASSWORD}
-      MINIO_ACCESS_KEY: ${STORAGE_SERVICE_USERNAME}
-      MINIO_SECRET_KEY: ${STORAGE_SERVICE_PASSWORD}
     command: server --console-address ":9090" /data
     volumes:
       - minio:${MINIO_PATH}

@@ -27,7 +27,8 @@ class CustomCloseSpider(CloseSpider):
 class CustomHeadersMiddleware(DefaultHeadersMiddleware):
     @classmethod
     def from_crawler(cls, crawler):
-        headers = without_none_values(crawler.settings["DEFAULT_REQUEST_HEADERS"])
+        headers = without_none_values(
+            crawler.settings["DEFAULT_REQUEST_HEADERS"])
         if custom_header := without_none_values(crawler.settings.get("CUSTOM_HEADERS")):
             headers.update(custom_header)
         return cls(headers.items())
@@ -48,7 +49,7 @@ class HtmlStorageMiddleware:
         if not spider.crawl_process.base_file_path:
             spider.crawl_process.base_file_path = (
                 f"{os.environ['LOCAL_FILES_PATH']}/{domain}/"
-                f"{spider.crawl_process.date.isoformat()}-{urlparse(response.url).scheme}"
+                f"{spider.crawl_process.id}"
             )
         file_name = response.url.split(f"{domain}")[-1] or "index.html"
         if not file_name.endswith(".html"):
@@ -62,7 +63,8 @@ class HtmlStorageMiddleware:
 
     def process_response(self, request, response, spider):
         if self.page_limit != 0 and self.current_page_count >= self.page_limit:
-            raise IgnoreRequest(f"Page limit reached. Ignoring request {request}")
+            raise IgnoreRequest(
+                f"Page limit reached. Ignoring request {request}")
         if request.url.endswith("robots.txt"):
             return response
         if response.status == 200:
@@ -78,10 +80,12 @@ class MetadataMiddleware:
         return cls()
 
     def process_spider_output(self, response, result, spider):
-        spider.crawl_process.save_url_for_metadata(response.url, response.meta["depth"])
+        spider.crawl_process.save_url_for_metadata(
+            response.url, response.meta["depth"])
         return result
 
     async def process_spider_output_async(self, response, result, spider):
-        spider.crawl_process.save_url_for_metadata(response.url, response.meta["depth"])
+        spider.crawl_process.save_url_for_metadata(
+            response.url, response.meta["depth"])
         async for r in result or ():
             yield r

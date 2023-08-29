@@ -10,6 +10,6 @@ def create_api_app() -> FastAPI:
         version="1.0.0",
     )
 
-    api_app.include_router(router.crawl_router)
+    api_app.include_router(router.websites_router)
     api_app.include_router(testing_router.test_router)  # TODO only useful for testing purposes, should be commented
     return api_app
