@@ -3,7 +3,7 @@ import '@gouvfr/dsfr/dist/utility/utility.min.css';
 import './globals.css';
 import Script from 'next/script';
 import Link from 'next/link';
-import { DSFRConfig, Header, Logo, Service } from './_dsfr';
+import { DSFRConfig } from './_dsfr';
 
 export const metadata = {
   title: 'OpenCrawler',
