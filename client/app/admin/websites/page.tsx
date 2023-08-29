@@ -5,7 +5,7 @@ import { Website as TWebsite } from "@/app/_types/websites";
 
 export default async function Websites() {
   const websites: TWebsite[] = await fetch(`${process.env.API_URL}/websites`, { cache: 'no-store' })
-    .then(res => res.json());
+    .then(res => res.json()).catch(err => []);
   return (
     <Container as="main" className="fr-my-6w">
       <Title look="h3">Sites web</Title>
