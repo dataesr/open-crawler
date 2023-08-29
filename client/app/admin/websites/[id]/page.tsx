@@ -1,5 +1,8 @@
 import { Badge, BadgeGroup, Container, Link, Nav, Text, Title } from "@/app/_dsfr"
 import { Website } from "@/app/_types/websites"
+
+export const dynamic = 'force-dynamic'
+
 type Props = {
   params: {
     id: string,
