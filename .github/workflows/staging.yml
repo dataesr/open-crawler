@@ -33,6 +33,9 @@ jobs:
       - name: Log into registry
         run: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build client image
+        run: docker build -f Client.Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
+
       - name: Build web api image
         run: docker build -f Dockerfile -t ${{ steps.repository.outputs.name }}:${{ steps.version.outputs.tag }} .
 
@@ -42,8 +45,6 @@ jobs:
       # - name: Build wappalyzer worker image
       #   run: docker build -f Wappalyzer.Dockerfile -t ${{ steps.repository.outputs.name }}-wappalyzer:${{ steps.version.outputs.tag }} .
 
-      - name: Build client image
-        run: docker build -f Client.Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
 
 
       - name: Push images

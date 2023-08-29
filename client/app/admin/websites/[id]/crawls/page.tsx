@@ -1,12 +1,7 @@
 import { Container, Title } from "@/app/_dsfr";
 import { Crawl } from "@/app/_types/crawls";
 
-type Props = {
-  params: {
-    id: string,
-  },
-  children: React.ReactNode,
-}
+type Props = { params: { id: string } }
 
 export default async function WebsiteCrawlHistory({ params }: Props) {
   const crawls: Crawl = await fetch(`${process.env.API_URL}/websites/${params.id}/crawls`, { cache: 'no-store' })
