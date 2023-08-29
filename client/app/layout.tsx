@@ -1,5 +1,5 @@
-import '@gouvfr/dsfr/dist/dsfr.css';
-import '@gouvfr/dsfr/dist/utility/utility.css';
+import '/node_modules/@gouvfr/dsfr/dist/dsfr.css';
+import '/node_modules/@gouvfr/dsfr/dist/utility/utility.css';
 import './globals.css';
 import Script from 'next/script';
 import Link from 'next/link';
