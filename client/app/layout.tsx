@@ -1,5 +1,5 @@
-// import '@gouvfr/dsfr/dist/dsfr.min.css';
-// import '@gouvfr/dsfr/dist/utility/utility.min.css';
+import '@gouvfr/dsfr/dist/dsfr.min.css';
+import '@gouvfr/dsfr/dist/utility/utility.min.css';
 import './globals.css';
 import Script from 'next/script';
 import Link from 'next/link';

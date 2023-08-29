@@ -7,10 +7,15 @@ type Props = {
   children: React.ReactNode,
 }
 
+export async function getData(id: string) {
+  const data = await fetch(`${process.env.API_URL}/websites/${id}`, { cache: 'no-store' })
+    .then(res => res.json())
+  return data || {}
+}
+
 export default async function WebsiteLayout({ params, children }: Props) {
   const currentPath = `/admin/websites/${params.id}`;
-  const website: Website = await fetch(`${process.env.API_URL}/websites/${params.id}`, { cache: 'no-store' })
-    .then(res => res.json()).catch(err => { });
+  const website: Website = await getData(params.id);
 
   return (
     <Container as="main" className="fr-my-3w">
