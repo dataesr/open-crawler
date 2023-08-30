@@ -1,5 +1,6 @@
 celery==5.3.1
 fastapi==0.100.0
+# https://github.com/scrapy/scrapy/issues/6024
 Twisted==22.10.0
 Scrapy==2.9.0
 uvicorn==0.23.1

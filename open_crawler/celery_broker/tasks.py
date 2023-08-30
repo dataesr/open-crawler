@@ -4,7 +4,7 @@ import logging
 import os
 import pathlib
 import shutil
-# from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager
 
 # Third-party imports
 from minio import Minio
@@ -40,13 +40,26 @@ def init_crawler_settings(crawl_process: CrawlProcess):
     return settings
 
 
+def start_crawler_process(crawl_process: CrawlProcess, results: dict):
+    process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
+    process.crawl(MenesrSpider, crawl_process=crawl_process)
+    process.start()
+    results["base_file_path"] = crawl_process.base_file_path
+    results["metadata"] = dict(crawl_process.metadata.items())
+
+
 @celery_app.task(name="crawl")
 def start_crawl_process(crawl_process: CrawlProcess):
     crawl_process.status = ProcessStatus.STARTED
     repositories.crawls.update_status(data=crawl_process)
-    process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
-    process.crawl(MenesrSpider, crawl_process=crawl_process)
-    process.start()
+    with Manager() as manager:
+        shared_dict = manager.dict()
+        p = Process(target=start_crawler_process, kwargs={
+                    "crawl_process": crawl_process, "results": shared_dict})
+        p.start()
+        p.join()
+        crawl_process.base_file_path = shared_dict["base_file_path"]
+        crawl_process.metadata.update(shared_dict["metadata"])
     crawl_process.status = ProcessStatus.SUCCESS
     repositories.crawls.update_status(crawl_process)
     return crawl_process
