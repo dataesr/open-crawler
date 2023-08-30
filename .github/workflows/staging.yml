@@ -8,6 +8,7 @@ on:
 env:
   # Must match k8s deployment name
   DEPLOYMENT: open-crawler
+  CLIENT_DEPLOYMENT: open-crawler-client
   DEPLOYMENT_NAMESPACE: open-crawler
   DEPLOYMENT_URL: https://open-crawler.dataesr.ovh
   MM_NOTIFICATION_CHANNEL: 'bots'
@@ -55,19 +56,27 @@ jobs:
 # docker push -a ${{ steps.repository.outputs.name }}-wappalyzer
 
 
-  # deploy:
-  #   name: Update staging deployment
-  #   runs-on: ubuntu-latest
-  #   needs: publish-ghcr
-  #   steps:
-  #     - name: Deploy to Cluster
-  #       id: kubectl-deploy
-  #       uses: dataesr/kubectl-deploy@v1.1
-  #       env:
-  #         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DOAD_STAGING }}
-  #       with:
-  #         namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
-  #         restart: ${{ env.DEPLOYMENT }}
+  deploy:
+    name: Update staging deployment
+    runs-on: ubuntu-latest
+    needs: publish-ghcr
+    steps:
+      - name: Restart crawler deployment
+        id: kubectl-crawler-deploy
+        uses: dataesr/kubectl-deploy@v1.1
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DOAD_STAGING }}
+        with:
+          namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
+          restart: ${{ env.DEPLOYMENT }}
+      - name: Restart client deployment
+        id: kubectl--client-deploy
+        uses: dataesr/kubectl-deploy@v1.1
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DOAD_STAGING }}
+        with:
+          namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
+          restart: ${{ env.CLIENT_DEPLOYMENT }}
 
   # notify:
   #   needs: deploy
