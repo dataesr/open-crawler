@@ -4,7 +4,7 @@ import logging
 import os
 import pathlib
 import shutil
-from multiprocessing import Process, Manager
+# from multiprocessing import Process, Manager
 
 # Third-party imports
 from minio import Minio
@@ -52,17 +52,9 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
 def start_crawl_process(crawl_process: CrawlProcess):
     crawl_process.status = ProcessStatus.STARTED
     repositories.crawls.update_status(data=crawl_process)
-    with Manager() as manager:
-        shared_dict = manager.dict()
-        p = Process(target=start_crawler_process, kwargs={
-                    "crawl_process": crawl_process, "results": shared_dict})
-        p.start()
-        p.join()
-        print('-------------------')
-        print(shared_dict, flush=True)
-        print('-------------------')
-        crawl_process.base_file_path = shared_dict["base_file_path"]
-        crawl_process.metadata.update(shared_dict["metadata"])
+    process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
+    process.crawl(MenesrSpider, crawl_process=crawl_process)
+    process.start()
     crawl_process.status = ProcessStatus.SUCCESS
     repositories.crawls.update_status(crawl_process)
     return crawl_process
