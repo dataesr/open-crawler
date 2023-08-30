@@ -58,6 +58,9 @@ def start_crawl_process(crawl_process: CrawlProcess):
                     "crawl_process": crawl_process, "results": shared_dict})
         p.start()
         p.join()
+        print('-------------------')
+        print(shared_dict, flush=True)
+        print('-------------------')
         crawl_process.base_file_path = shared_dict["base_file_path"]
         crawl_process.metadata.update(shared_dict["metadata"])
     crawl_process.status = ProcessStatus.SUCCESS
