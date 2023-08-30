@@ -40,14 +40,6 @@ def init_crawler_settings(crawl_process: CrawlProcess):
     return settings
 
 
-def start_crawler_process(crawl_process: CrawlProcess, results: dict):
-    process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
-    process.crawl(MenesrSpider, crawl_process=crawl_process)
-    process.start()
-    results["base_file_path"] = crawl_process.base_file_path
-    results["metadata"] = dict(crawl_process.metadata.items())
-
-
 @celery_app.task(name="crawl")
 def start_crawl_process(crawl_process: CrawlProcess):
     crawl_process.status = ProcessStatus.STARTED

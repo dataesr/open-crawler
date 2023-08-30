@@ -1,5 +1,6 @@
 celery==5.3.1
 fastapi==0.100.0
+Twisted==22.10.0
 Scrapy==2.9.0
 uvicorn==0.23.1
 gevent==23.7.0
