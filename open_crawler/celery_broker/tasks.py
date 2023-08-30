@@ -150,7 +150,7 @@ def upload_html(crawl_process: CrawlProcess):
         endpoint=os.environ["STORAGE_SERVICE_URL"],
         access_key=os.environ["STORAGE_SERVICE_USERNAME"],
         secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
-        secure=os.environ["STORAGE_SERVICE_SECURE"] | False,
+        secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
     )
 
     bucket_name = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
