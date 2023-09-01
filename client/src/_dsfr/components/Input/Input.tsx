@@ -82,10 +82,10 @@ export const Input: React.FC<InputProps> = forwardRef<HTMLInputElement | HTMLTex
     <div className={inputGroupClass}>
       <label className={cn("fr-label", css['fr-label'])} htmlFor={inputId}>
         {label}
-        {props.required ? extendRequiredFieldsLabelsWith : extendOptionalFieldsLabelsWith}
+        {label ? (props.required) ? extendRequiredFieldsLabelsWith : extendOptionalFieldsLabelsWith : null}
         {hint && <span className={cn("fr-hint-text", css['fr-hint-text'])}>{hint}</span>}
       </label>
-      <div className={cn('fr-input-wrap', { [`fr-icon-${icon}`]: icon }, css['fr-input-wrap'])}>
+      <div className={cn('fr-input-wrap', { [`fr-icon-${icon}`]: icon, 'fr-mt-0': !label }, css['fr-input-wrap'])}>
         {textarea ? (
           <textarea
             id={inputId}

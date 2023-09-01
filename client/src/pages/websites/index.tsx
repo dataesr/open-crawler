@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Title, Link, Badge, Breadcrumb, Text, Row, Button, SearchBar } from '../../_dsfr';
+import { Container, Title, Link, Badge, Breadcrumb, Text, Row, Button, Input } from '../../_dsfr';
 import { Website } from '../../_types/websites';
 import { getWebsites } from '../../_api/websites';
 
@@ -23,7 +23,7 @@ export default function WebsiteList() {
       </Row>
       <Row className="list-manager">
         <div className="grow">
-          <SearchBar disabled onSearch={() => { }} placeholder="Rechercher un site web" />
+          <Input disabled placeholder="Rechercher un site web" />
         </div>
         <div >
           <div className="fr-select-group">
