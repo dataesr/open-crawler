@@ -6,6 +6,7 @@ import WebsiteForm from "../../../../components/WebsiteForm";
 import { WebsiteFormBody } from "../../../../_types/websites";
 import { useState } from "react";
 import { queryClient } from "../../../../main";
+import { API_URL } from "../../../../_api/websites";
 
 export default function WebsiteConfigs() {
   const { id = "" } = useParams();
@@ -14,7 +15,7 @@ export default function WebsiteConfigs() {
   const { data: website, isLoading, error } = useQuery({ queryKey: ['websites', id], queryFn: () => getWebsiteInfo(id) });
   const { isLoading: isMutating, mutate } = useMutation({
     mutationFn: (body: WebsiteFormBody) =>
-      fetch(`${import.meta.env.VITE_API_URL}/websites/${id}`, { method: 'PATCH', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }),
+      fetch(`${API_URL}/${id}`, { method: 'PATCH', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', id, 'comments'] })
       setSuccess('Vos modifications ont été enregistrées.')

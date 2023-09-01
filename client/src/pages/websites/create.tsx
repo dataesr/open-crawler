@@ -4,13 +4,14 @@ import { Breadcrumb, Container, Notice, Link, Row, Title } from "../../_dsfr";
 import WebsiteForm from "../../components/WebsiteForm";
 import { WebsiteFormBody } from "../../_types/websites";
 import { useState } from "react";
+import { API_URL } from "../../_api/websites";
 
 export default function CreateWebsite() {
   const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate()
   const { isLoading: isMutating, mutate } = useMutation({
     mutationFn: (body: WebsiteFormBody) =>
-      fetch(`${import.meta.env.VITE_API_URL}/websites`, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } })
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } })
         .then((res) => res.json()),
     onSuccess: (res) => {
       navigate(`/websites/${res.id}`);
