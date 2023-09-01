@@ -35,7 +35,7 @@ jobs:
         run: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build client image
-        run: docker build -f Client.Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
+        run: docker build -f Client.Staging.Dockerfile -t ${{ steps.repository.outputs.name }}-client:${{ steps.version.outputs.tag }} .
 
       - name: Build web api image
         run: docker build -f Dockerfile -t ${{ steps.repository.outputs.name }}:${{ steps.version.outputs.tag }} .
