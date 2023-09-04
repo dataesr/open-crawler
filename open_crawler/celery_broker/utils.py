@@ -9,7 +9,7 @@ def create_celery_app() -> Celery:
     celery_app = Celery(
         "scanr",
         broker=os.environ.get("CELERY_BROKER_URL"),
-        backend=os.environ.get("result_backend"),
+        backend=os.environ.get("CELERY_RESULT_BACKEND"),
         broker_connection_retry_on_startup=True,
         include=[
             "celery_broker.tasks",

@@ -4,6 +4,7 @@ from typing import Optional, Any, Self
 from pydantic import BaseModel, Field
 
 from models.enums import MetadataType, ProcessStatus
+from models.utils import get_uuid
 
 
 class MetadataConfig(BaseModel):
@@ -36,7 +37,8 @@ DEFAULT_METADATA_CONFIG: dict[MetadataType, MetadataConfig] = {
 class CrawlConfig(BaseModel):
     url: str
     parameters: CrawlParameters
-    metadata_config: dict[MetadataType, MetadataConfig] = DEFAULT_METADATA_CONFIG
+    metadata_config: dict[MetadataType,
+                          MetadataConfig] = DEFAULT_METADATA_CONFIG
     headers: Optional[dict[str, Any]]
     tags: list[str]
 
@@ -53,21 +55,26 @@ class MetadataProcess(BaseModel):
 
 
 class CrawlProcess(BaseModel):
+    id: str = Field(default_factory=get_uuid)
+    website_id: str
     config: CrawlConfig = None
-    date: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now)
     status: ProcessStatus = ProcessStatus.PENDING
-    id: str = ""
     metadata: dict[MetadataType, MetadataProcess] = {}
     base_file_path: str = ""
 
     @property
     def enabled_metadata(self) -> list[MetadataType]:
-        return [meta_type for meta_type, meta_config in self.config.metadata_config.items() if meta_config.enabled]
+        return [meta_type
+                for meta_type, meta_config in self.config.metadata_config.items()
+                if meta_config.enabled
+                ]
 
     def save_url_for_metadata(self, url: str, depth: int):
         for meta in self.enabled_metadata:
             if depth <= self.config.metadata_config[meta].depth:
-                self.metadata.setdefault(meta, MetadataProcess()).urls.append(url)
+                self.metadata.setdefault(
+                    meta, MetadataProcess()).urls.append(url)
 
     def set_from(self, other: Self):
         self.config = other.config

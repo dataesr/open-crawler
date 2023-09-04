@@ -13,11 +13,12 @@ from scrapy.utils.project import get_project_settings
 from scrapy.utils.python import without_none_values
 
 # Local imports
+import repositories
 from celery_broker.main import celery_app
-from crawler.spiders.menesr import MenesrSpider
-from database.mongo_adapter import mongo
 from models.crawl import CrawlProcess
 from models.enums import MetadataType, ProcessStatus
+
+from crawler.spiders.menesr import MenesrSpider
 from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError, BestPracticesError
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 from services.responsiveness_calculator import ResponsivenessCalculator, ResponsivenessCalculatorError
@@ -50,32 +51,35 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
 @celery_app.task(name="crawl")
 def start_crawl_process(crawl_process: CrawlProcess):
     crawl_process.status = ProcessStatus.STARTED
-    mongo.update_crawl(crawl_process)
+    repositories.crawls.update_status(data=crawl_process)
     with Manager() as manager:
         shared_dict = manager.dict()
-        p = Process(target=start_crawler_process, kwargs={"crawl_process": crawl_process, "results": shared_dict})
+        p = Process(target=start_crawler_process, kwargs={
+                    "crawl_process": crawl_process, "results": shared_dict})
         p.start()
         p.join()
         crawl_process.base_file_path = shared_dict["base_file_path"]
         crawl_process.metadata.update(shared_dict["metadata"])
     crawl_process.status = ProcessStatus.SUCCESS
-    mongo.update_crawl(crawl_process)
+    repositories.crawls.update_status(crawl_process)
     return crawl_process
 
 
 def update_process_metadata(crawl_process: CrawlProcess, metadata_type: MetadataType, status: ProcessStatus):
     crawl_process.set_metadata_status(metadata_type, status)
     if crawl_process.metadata_needs_save(metadata_type):
-        mongo.update_metadata(crawl_process, metadata_type)
+        repositories.crawls.update_metadata(crawl_process, metadata_type)
 
 
 def handle_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
     if not result:
-        update_process_metadata(crawl_process, metadata_type, ProcessStatus.ERROR)
+        update_process_metadata(
+            crawl_process, metadata_type, ProcessStatus.ERROR)
         return
     store_metadata_result(crawl_process, result, metadata_type)
     if crawl_process.metadata.get(metadata_type).status == ProcessStatus.STARTED:
-        update_process_metadata(crawl_process, metadata_type, ProcessStatus.SUCCESS)
+        update_process_metadata(
+            crawl_process, metadata_type, ProcessStatus.SUCCESS)
     return result
 
 
@@ -88,7 +92,8 @@ def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_ty
 
 
 def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calculator, method_name: str):
-    update_process_metadata(crawl_process, metadata_type, ProcessStatus.STARTED)
+    update_process_metadata(
+        crawl_process, metadata_type, ProcessStatus.STARTED)
     calc_method = getattr(calculator, method_name)
     result = {}
     if metadata_process := crawl_process.metadata.get(metadata_type):
@@ -103,11 +108,13 @@ def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calc
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,
             ):
-                update_process_metadata(crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                update_process_metadata(
+                    crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
                 continue
             except Exception:
                 logger.error("Unknown error")
-                update_process_metadata(crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                update_process_metadata(
+                    crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
                 continue
     return handle_metadata_result(crawl_process, result, metadata_type)
 
@@ -140,10 +147,11 @@ def get_carbon_footprint(crawl_process: CrawlProcess):
 @celery_app.task(name="upload_html")
 def upload_html(crawl_process: CrawlProcess):
     client = Minio(
-        os.environ["STORAGE_SERVICE_URL"],
+        endpoint=os.environ["STORAGE_SERVICE_URL"],
         access_key=os.environ["STORAGE_SERVICE_USERNAME"],
         secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
-        secure=False,
+        secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
+        region=os.environ.get("STORAGE_SERVICE_REGION", None),
     )
 
     bucket_name = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
@@ -165,7 +173,7 @@ def upload_html(crawl_process: CrawlProcess):
         os.remove(file)
     shutil.rmtree(crawl_files_path, ignore_errors=True)
     crawl_process.status = ProcessStatus.SUCCESS
-    mongo.update_crawl(crawl_process)
+    repositories.crawls.update_status(crawl_process)
 
 
 def assume_content_type(file_path: str) -> str:
