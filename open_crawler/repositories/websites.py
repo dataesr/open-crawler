@@ -1,6 +1,6 @@
 import os
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
-from models.website import WebsiteModel, UpdateWebsiteModel
+from models.website import WebsiteModel, UpdateWebsiteRequest
 from models.enums import ProcessStatus
 
 from mongo import db
@@ -40,7 +40,7 @@ class WebsitesRepository:
         if data:
             return WebsiteModel(**data)
 
-    def update(self, id: str, data: UpdateWebsiteModel) -> bool:
+    def update(self, id: str, data: UpdateWebsiteRequest) -> bool:
         result: UpdateResult = self.collection.update_one(
             {"id": id}, {"$set": data.model_dump(exclude_unset=True)}
         )

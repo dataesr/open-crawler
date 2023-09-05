@@ -48,7 +48,7 @@ class WebsiteModel(BaseModel):
         )
 
 
-class UpdateWebsiteModel(BaseModel):
+class UpdateWebsiteRequest(BaseModel):
     depth: int | None = None
     limit: int | None = None
     accessibility: MetadataConfig | None = None
@@ -61,7 +61,7 @@ class UpdateWebsiteModel(BaseModel):
     crawl_every: int | None = Field(ge=0, default=None)
 
 
-class CreateWebsiteModel(BaseModel):
+class CreateWebsiteRequest(BaseModel):
     url: str
     depth: int = Field(ge=0, default=2)
     limit: int = Field(ge=0, default=400)
