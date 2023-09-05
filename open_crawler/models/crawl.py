@@ -27,15 +27,6 @@ class CrawlParameters(BaseModel):
     limit: Optional[int]
 
 
-DEFAULT_METADATA_CONFIG: dict[MetadataType, MetadataConfig] = {
-    MetadataType.ACCESSIBILITY: MetadataConfig(enabled=True, depth=0),
-    MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False, depth=0),
-    MetadataType.GOOD_PRACTICES: MetadataConfig(enabled=False, depth=0),
-    MetadataType.RESPONSIVENESS: MetadataConfig(enabled=False, depth=0),
-    MetadataType.CARBON_FOOTPRINT: MetadataConfig(enabled=False, depth=0),
-}
-
-
 class CrawlConfig(BaseModel):
     url: str
     parameters: CrawlParameters
@@ -81,7 +72,6 @@ class CrawlProcess(BaseModel):
 
     def set_from(self, other: Self):
         self.config = other.config
-        # self.date = other.date
         self.status = other.status
         self.id = other.id
         self.metadata = other.metadata

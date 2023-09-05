@@ -66,6 +66,7 @@ EXTENSIONS = {
     "crawler.middlewares.CustomCloseSpider": 0,  # It doesn't depend on any other extension, therefore we can set it at the same level as the others
 }
 
+
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 # ITEM_PIPELINES = {"crawler.pipelines.CrawlerPipeline": 300, "crawler.pipelines.MongoDBPipeline": 300}
