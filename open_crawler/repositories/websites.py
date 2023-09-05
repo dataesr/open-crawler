@@ -1,19 +1,25 @@
 import os
-from typing import Any
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
-from models.website import WebsiteModel, UpdateWebsiteModel
+from models.website import WebsiteModel, UpdateWebsiteRequest
 from models.enums import ProcessStatus
 
 from mongo import db
 
 
-class WebsitesRepository():
+class WebsitesRepository:
     """Operations for websites collection"""
 
     def __init__(self):
         self.collection = db[os.environ["MONGO_WEBSITES_COLLECTION"]]
 
-    def list(self, query: str, tags: list[str], status: list[ProcessStatus], skip: int = 0, limit: int = 20) -> list[WebsiteModel]:
+    def list(
+        self,
+        query: str,
+        tags: list[str],
+        status: list[ProcessStatus],
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[WebsiteModel]:
         filters = {}
         if query:
             filters["url"] = {"$regex": query}
@@ -34,9 +40,10 @@ class WebsitesRepository():
         if data:
             return WebsiteModel(**data)
 
-    def update(self, id: str, data: UpdateWebsiteModel) -> bool:
+    def update(self, id: str, data: UpdateWebsiteRequest) -> bool:
         result: UpdateResult = self.collection.update_one(
-            {"id": id}, {"$set": data.model_dump(exclude_unset=True)})
+            {"id": id}, {"$set": data.model_dump(exclude_unset=True)}
+        )
         assert result.acknowledged
 
     def delete(self, id: str) -> bool:

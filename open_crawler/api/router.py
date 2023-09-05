@@ -5,7 +5,7 @@ from fastapi import APIRouter,  HTTPException, status as statuscode
 import repositories
 from celery_broker.tasks import start_crawl_process, upload_html, METADATA_TASK_REGISTRY
 from models.crawl import CrawlProcess
-from models.website import CreateWebsiteModel, WebsiteModel, UpdateWebsiteModel
+from models.website import CreateWebsiteRequest, WebsiteModel, UpdateWebsiteRequest
 
 websites_router = APIRouter(
     prefix="/api/websites", tags=["websites"], responses={404: {"description": "Not found"}})
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
     description="Create a website, start a crawl and return the website read object",
     tags=["websites"]
 )
-def create(data: CreateWebsiteModel):
+def create(data: CreateWebsiteRequest):
     website = data.to_website_model()
     repositories.websites.create(website)
     crawl: CrawlProcess = CrawlProcess(
@@ -68,7 +68,7 @@ def get_website(id: str):
     summary="Update a website by its unique ID",
     tags=["websites"]
 )
-def patch_website(id: str, data: UpdateWebsiteModel) -> None:
+def patch_website(id: str, data: UpdateWebsiteRequest) -> None:
     repositories.websites.update(id, data)
     return {}
 
