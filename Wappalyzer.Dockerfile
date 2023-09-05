@@ -39,7 +39,7 @@ ENV CHROME_PATH=/usr/bin/google-chrome
 WORKDIR /
 
 # Clone the Wappalyzer repository
-RUN git clone https://github.com/wappalyzer/wappalyzer.git
+RUN git clone -b cli_support https://github.com/MenesrScanesrCoexya/wappalyzer.git
 
 ## Move into the wappalyzer directory
 WORKDIR /wappalyzer

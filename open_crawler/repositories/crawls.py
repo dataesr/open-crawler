@@ -9,7 +9,7 @@ from models.enums import MetadataType
 from mongo import db
 
 
-class CrawlsRepository():
+class CrawlsRepository:
     """Operations for crawls collection"""
 
     def __init__(self):
@@ -20,7 +20,9 @@ class CrawlsRepository():
         assert result.acknowledged
         return data.id
 
-    def list(self, website_id, skip: int = 0, limit: int = 20) -> list[CrawlProcess]:
+    def list(
+        self, website_id, skip: int = 0, limit: int = 20
+    ) -> list[CrawlProcess]:
         filters = {}
         if website_id:
             filters["website_id"] = website_id
