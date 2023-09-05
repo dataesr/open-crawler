@@ -11,7 +11,9 @@ class MetadataConfig(BaseModel):
     enabled: bool
     depth: int
 
-    def update(self, enabled: Optional[bool] = None, depth: Optional[int] = None):
+    def update(
+        self, enabled: Optional[bool] = None, depth: Optional[int] = None
+    ):
         if enabled is not None:
             self.enabled = enabled
         if depth is not None:
@@ -25,20 +27,10 @@ class CrawlParameters(BaseModel):
     limit: Optional[int]
 
 
-DEFAULT_METADATA_CONFIG: dict[MetadataType, MetadataConfig] = {
-    MetadataType.ACCESSIBILITY: MetadataConfig(enabled=True, depth=0),
-    MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False, depth=0),
-    MetadataType.GOOD_PRACTICES: MetadataConfig(enabled=False, depth=0),
-    MetadataType.RESPONSIVENESS: MetadataConfig(enabled=False, depth=0),
-    MetadataType.CARBON_FOOTPRINT: MetadataConfig(enabled=False, depth=0),
-}
-
-
 class CrawlConfig(BaseModel):
     url: str
     parameters: CrawlParameters
-    metadata_config: dict[MetadataType,
-                          MetadataConfig] = DEFAULT_METADATA_CONFIG
+    metadata_config: dict[MetadataType, MetadataConfig]
     headers: Optional[dict[str, Any]]
     tags: list[str]
 
@@ -65,20 +57,21 @@ class CrawlProcess(BaseModel):
 
     @property
     def enabled_metadata(self) -> list[MetadataType]:
-        return [meta_type
-                for meta_type, meta_config in self.config.metadata_config.items()
-                if meta_config.enabled
-                ]
+        return [
+            meta_type
+            for meta_type, meta_config in self.config.metadata_config.items()
+            if meta_config.enabled
+        ]
 
     def save_url_for_metadata(self, url: str, depth: int):
         for meta in self.enabled_metadata:
             if depth <= self.config.metadata_config[meta].depth:
-                self.metadata.setdefault(
-                    meta, MetadataProcess()).urls.append(url)
+                self.metadata.setdefault(meta, MetadataProcess()).urls.append(
+                    url
+                )
 
     def set_from(self, other: Self):
         self.config = other.config
-        self.date = other.date
         self.status = other.status
         self.id = other.id
         self.metadata = other.metadata

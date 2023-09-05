@@ -29,7 +29,7 @@ class WebsiteModel(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now)
     tags: list[str]
     crawl_every: int
-    next_crawl_at: datetime
+    next_crawl_at: Optional[datetime] = None
     last_crawl: Optional[dict[str, Any]] = None
 
     def to_config(self) -> CrawlConfig:
@@ -38,17 +38,17 @@ class WebsiteModel(BaseModel):
             parameters={"depth": self.depth, "limit": self.limit},
             headers=self.headers,
             tags=self.tags,
-            enabled_metadata=[
-                MetadataType.ACCESSIBILITY if self.accessibility.enabled else None,
-                MetadataType.TECHNOLOGIES if self.technologies_and_trackers.enabled else None,
-                MetadataType.RESPONSIVENESS if self.responsiveness.enabled else None,
-                MetadataType.GOOD_PRACTICES if self.good_practices.enabled else None,
-                MetadataType.CARBON_FOOTPRINT if self.carbon_footprint.enabled else None,
-            ],
+            metadata_config={
+                MetadataType.ACCESSIBILITY: self.accessibility.model_dump(),
+                MetadataType.TECHNOLOGIES: self.technologies_and_trackers.model_dump(),
+                MetadataType.RESPONSIVENESS: self.responsiveness.model_dump(),
+                MetadataType.GOOD_PRACTICES: self.good_practices.model_dump(),
+                MetadataType.CARBON_FOOTPRINT: self.carbon_footprint.model_dump(),
+            },
         )
 
 
-class UpdateWebsiteModel(BaseModel):
+class UpdateWebsiteRequest(BaseModel):
     depth: int | None = None
     limit: int | None = None
     accessibility: MetadataConfig | None = None
@@ -61,38 +61,31 @@ class UpdateWebsiteModel(BaseModel):
     crawl_every: int | None = Field(ge=0, default=None)
 
 
-class CreateWebsiteModel(BaseModel):
+class CreateWebsiteRequest(BaseModel):
     url: str
-    depth: Optional[int] = Field(ge=0, default=2)
-    limit: Optional[int] = Field(ge=0, default=400)
-    accessibility: Optional[MetadataConfig] = Field(default=MetadataConfig())
-    technologies_and_trackers: Optional[MetadataConfig] = Field(
-        default=MetadataConfig(enabled=False))
-    responsiveness: Optional[MetadataConfig] = Field(
-        default=MetadataConfig(enabled=False))
-    good_practices: Optional[MetadataConfig] = Field(
-        default=MetadataConfig(enabled=False))
-    carbon_footprint: Optional[MetadataConfig] = Field(
-        default=MetadataConfig(enabled=False))
-    headers: Optional[dict[str, Any]] = Field(default={})
-    tags: Optional[list[str]] = Field(default=[])
-    crawl_every: Optional[int] = Field(ge=0, default=30)
+    depth: int = Field(ge=0, default=2)
+    limit: int = Field(ge=0, default=400)
+    accessibility: MetadataConfig = Field(default=MetadataConfig())
+    technologies_and_trackers: MetadataConfig = Field(
+        default=MetadataConfig(enabled=False)
+    )
+    responsiveness: MetadataConfig = Field(
+        default=MetadataConfig(enabled=False)
+    )
+    good_practices: MetadataConfig = Field(
+        default=MetadataConfig(enabled=False)
+    )
+    carbon_footprint: MetadataConfig = Field(
+        default=MetadataConfig(enabled=False)
+    )
+    headers: dict[str, Any] = Field(default={})
+    tags: list[str] = Field(default=[])
+    crawl_every: int = Field(ge=0, default=30)
 
     def to_website_model(self) -> WebsiteModel:
-        website = self.model_dump()
-        website["next_crawl_at"] = datetime.now(
-        ) + timedelta(days=website["crawl_every"])
-        website["created_at"] = datetime.now()
-        website["updated_at"] = datetime.now()
-        if not self.accessibility:
-            website["accessibility"] = MetadataConfig()
-        if not self.technologies_and_trackers:
-            website["technologies_and_trackers"] = MetadataConfig()
-        if not self.responsiveness:
-            website["responsiveness"] = MetadataConfig()
-        if not self.good_practices:
-            website["good_practices"] = MetadataConfig()
-        if not self.carbon_footprint:
-            website["carbon_footprint"] = MetadataConfig()
+        website = WebsiteModel(**self.model_dump())
+        website.next_crawl_at = datetime.now() + timedelta(
+            days=self.crawl_every
+        )
 
-        return WebsiteModel(**website)
+        return website
