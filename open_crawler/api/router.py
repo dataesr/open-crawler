@@ -3,7 +3,8 @@ import logging
 import io
 from zipfile import ZipFile, ZIP_DEFLATED
 from celery import chain, group
-from fastapi import APIRouter,  HTTPException, status as statuscode, StreamingResponse
+from fastapi import APIRouter,  HTTPException, status as statuscode
+from fastapi.responses import StreamingResponse
 from minio import Minio
 
 import repositories
@@ -123,12 +124,12 @@ def list_crawls(id: str):
 
 
 @websites_router.get(
-    "/{id}/crawls/{crawl_id}/files",
+    "/{website_id}/crawls/{crawl_id}/files",
     status_code=statuscode.HTTP_200_OK,
     summary="Get a zip of all files from a crawl",
     tags=["websites"]
 )
-def get_crawl_files(crawl_id: str) -> str:
+def get_crawl_files(website_id, crawl_id: str) -> str:
     """Zip the files from the storage service"""
     client = Minio(
         endpoint=os.environ["STORAGE_SERVICE_URL"],
@@ -140,18 +141,18 @@ def get_crawl_files(crawl_id: str) -> str:
 
     bucket = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
     zip_io = io.BytesIO()
-    crawl = repositories.crawls.get(id, crawl_id)
-    url = crawl.get("config", {}).get("url", "").replace(
+    crawl = repositories.crawls.get(website_id, crawl_id)
+    url = crawl.config.url.replace(
         "https://", "").replace("http://", "")
+    prefix = f"{url}/{crawl_id}"
     objects = client.list_objects(
-        bucket, prefix=f"{url}/{crawl_id}", recursive=True)
-    print(objects[0])
+        bucket, prefix=prefix, recursive=True)
     with ZipFile(zip_io, "a", ZIP_DEFLATED, False) as zipper:
         for obj in objects:
-            file = client.get_object(bucket, obj).read()
-            zipper.writestr(file, file)
+            file = client.get_object(bucket, obj.object_name).read()
+            zipper.writestr(obj.object_name, file)
     return StreamingResponse(
         iter([zip_io.getvalue()]),
         media_type="application/x-zip-compressed",
-        headers={"Content-Disposition": f"attachment; filename=images.zip"}
+        headers={"Content-Disposition": f"attachment; filename={url}-{crawl_id}.zip"}
     )
