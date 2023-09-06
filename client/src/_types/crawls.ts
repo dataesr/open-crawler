@@ -5,6 +5,7 @@ export type Crawl = {
   url: string;
   depth: number;
   limit: number;
+  created_at: string;
 }
 
 export type CrawlCount = {
