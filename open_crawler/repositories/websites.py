@@ -21,12 +21,12 @@ class WebsitesRepository:
         limit: int = 20,
     ) -> list[WebsiteModel]:
         filters = {}
-        if query:
+        if query is not None:
             filters["url"] = {"$regex": query}
-        if tags:
-            filters["tags"] = {"$in": tags}
-        if status:
-            filters["status"] = {"$in": status}
+        if tags is not None:
+            filters["tags"] = {"$elemMatch": {"$in": tags}}
+        if status is not None:
+            filters["last_crawl.status"] = {{"$in": status}}
         cursor = self.collection.find(filters).skip(skip).limit(limit)
         return [WebsiteModel(**website) for website in cursor]
 

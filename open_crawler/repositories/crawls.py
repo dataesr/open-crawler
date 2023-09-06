@@ -29,6 +29,13 @@ class CrawlsRepository:
         cursor = self.collection.find(filters).skip(skip).limit(limit)
         return [CrawlProcess(**crawl) for crawl in cursor]
 
+    def get(self, website_id, crawl_id) -> CrawlProcess:
+        filters = {"id": crawl_id}
+        if website_id:
+            filters["website_id"] = website_id
+        crawl = self.collection.find_one(filters)
+        return CrawlProcess(**crawl)
+
     def update_status(self, data: CrawlProcess):
         self.collection.update_one(
             filter={"id": data.id},
