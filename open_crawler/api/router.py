@@ -1,6 +1,11 @@
+import os
 import logging
+import io
+from zipfile import ZipFile, ZIP_DEFLATED
 from celery import chain, group
 from fastapi import APIRouter,  HTTPException, status as statuscode
+from fastapi.responses import StreamingResponse
+from minio import Minio
 
 import repositories
 from celery_broker.tasks import start_crawl_process, upload_html, METADATA_TASK_REGISTRY
@@ -116,3 +121,38 @@ def crawl_website(id: str):
 def list_crawls(id: str):
     crawls = repositories.crawls.list(website_id=id)
     return crawls
+
+
+@websites_router.get(
+    "/{website_id}/crawls/{crawl_id}/files",
+    status_code=statuscode.HTTP_200_OK,
+    summary="Get a zip of all files from a crawl",
+    tags=["websites"]
+)
+def get_crawl_files(website_id, crawl_id: str) -> str:
+    """Zip the files from the storage service"""
+    client = Minio(
+        endpoint=os.environ["STORAGE_SERVICE_URL"],
+        access_key=os.environ["STORAGE_SERVICE_USERNAME"],
+        secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
+        secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
+        region=os.environ.get("STORAGE_SERVICE_REGION", None),
+    )
+
+    bucket = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
+    zip_io = io.BytesIO()
+    crawl = repositories.crawls.get(website_id, crawl_id)
+    url = crawl.config.url.replace(
+        "https://", "").replace("http://", "")
+    prefix = f"{url}/{crawl_id}"
+    objects = client.list_objects(
+        bucket, prefix=prefix, recursive=True)
+    with ZipFile(zip_io, "a", ZIP_DEFLATED, False) as zipper:
+        for obj in objects:
+            file = client.get_object(bucket, obj.object_name).read()
+            zipper.writestr(obj.object_name, file)
+    return StreamingResponse(
+        iter([zip_io.getvalue()]),
+        media_type="application/x-zip-compressed",
+        headers={"Content-Disposition": f"attachment; filename={url}-{crawl_id}.zip"}
+    )

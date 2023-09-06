@@ -1,7 +1,9 @@
-import { Container, Title } from "../../../../_dsfr";
+import { Container, Link, Title } from "../../../../_dsfr";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { getCrawls } from "../../../../_api/websites";
+import { getCrawls, API_URL } from "../../../../_api/websites";
+import { Crawl } from "../../../../_types/crawls";
+
 
 
 export default function WebsiteCrawlHistory() {
@@ -12,7 +14,13 @@ export default function WebsiteCrawlHistory() {
   return (
     <Container fluid>
       <Title className="fr-mt-3w fr-mb-1w" look="h6">Historique des crawls</Title>
-      <pre><code>{JSON.stringify(crawls, null, 2)}</code></pre>
-    </Container>
+      {
+        crawls.map((crawl: Crawl) => (
+          <div key={crawl.id}>
+            <Link href={`${API_URL}/${crawl.website_id}/crawls/${crawl.id}/files`} download>Download</Link>
+            <pre><code>{JSON.stringify(crawl, null, 2)}</code></pre>
+          </div>))
+      }
+    </Container >
   )
 }

@@ -43,8 +43,8 @@ jobs:
       - name: Build lighthouse worker image
         run: docker build -f Lighthouse.Dockerfile -t ${{ steps.repository.outputs.name }}-lighthouse:${{ steps.version.outputs.tag }} .
 
-      # - name: Build wappalyzer worker image
-      #   run: docker build -f Wappalyzer.Dockerfile -t ${{ steps.repository.outputs.name }}-wappalyzer:${{ steps.version.outputs.tag }} .
+      - name: Build wappalyzer worker image
+        run: docker build -f Wappalyzer.Dockerfile -t ${{ steps.repository.outputs.name }}-wappalyzer:${{ steps.version.outputs.tag }} .
 
 
 
@@ -53,7 +53,7 @@ jobs:
           docker push -a ${{ steps.repository.outputs.name }}
           docker push -a ${{ steps.repository.outputs.name }}-lighthouse
           docker push -a ${{ steps.repository.outputs.name }}-client
-# docker push -a ${{ steps.repository.outputs.name }}-wappalyzer
+          docker push -a ${{ steps.repository.outputs.name }}-wappalyzer
 
 
   deploy:
