@@ -6,7 +6,7 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
-from models.crawl import CrawlProcess
+from models.process import CrawlProcess
 
 logger = logging.getLogger(__name__)
 

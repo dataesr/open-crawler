@@ -4,6 +4,7 @@ import logging
 import os
 import pathlib
 import shutil
+from datetime import datetime
 from multiprocessing import Process, Manager
 
 # Third-party imports
@@ -15,16 +16,32 @@ from scrapy.utils.python import without_none_values
 # Local imports
 import repositories
 from celery_broker.main import celery_app
-from models.crawl import CrawlProcess
-from models.enums import MetadataType, ProcessStatus
-
 from crawler.spiders.menesr import MenesrSpider
-from services.accessibility_best_practices_calculator import LighthouseWrapper, AccessibilityError, BestPracticesError
+from models.crawl import CrawlModel
+from models.enums import MetadataType, ProcessStatus
+from models.metadata import MetadataTask
+from models.process import CrawlProcess
+from services.accessibility_best_practices_calculator import (
+    LighthouseWrapper,
+    AccessibilityError,
+    BestPracticesError,
+)
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
-from services.responsiveness_calculator import ResponsivenessCalculator, ResponsivenessCalculatorError
-from services.technologies_calculator import TechnologiesCalculator, TechnologiesError
+from services.responsiveness_calculator import (
+    ResponsivenessCalculator,
+    ResponsivenessCalculatorError,
+)
+from services.technologies_calculator import (
+    TechnologiesCalculator,
+    TechnologiesError,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def update_crawl_status(crawl: CrawlModel, status: ProcessStatus):
+    crawl.update_status(status=status)
+    repositories.crawls.update(crawl)
 
 
 def init_crawler_settings(crawl_process: CrawlProcess):
@@ -44,58 +61,88 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
     process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
     process.crawl(MenesrSpider, crawl_process=crawl_process)
     process.start()
-    results["base_file_path"] = crawl_process.base_file_path
     results["metadata"] = dict(crawl_process.metadata.items())
 
 
-@celery_app.task(name="crawl")
-def start_crawl_process(crawl_process: CrawlProcess):
-    crawl_process.status = ProcessStatus.STARTED
-    repositories.crawls.update_status(data=crawl_process)
+@celery_app.task(bind=True, name="crawl")
+def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
+    repositories.crawls.update_status(crawl_id=crawl.id, status=ProcessStatus.STARTED)
+    crawl.html_crawl.update(task_id=self.request.id, status=ProcessStatus.STARTED)
+    repositories.crawls.update_task(
+        crawl_id=crawl.id,
+        task_name="html_crawl",
+        task=crawl.html_crawl,
+    )
+    crawl_process = CrawlProcess.from_model(crawl)
     with Manager() as manager:
         shared_dict = manager.dict()
-        p = Process(target=start_crawler_process, kwargs={
-                    "crawl_process": crawl_process, "results": shared_dict})
+        p = Process(
+            target=start_crawler_process,
+            kwargs={"crawl_process": crawl_process, "results": shared_dict},
+        )
         p.start()
         p.join()
-        crawl_process.base_file_path = shared_dict["base_file_path"]
         crawl_process.metadata.update(shared_dict["metadata"])
-    crawl_process.status = ProcessStatus.SUCCESS
-    repositories.crawls.update_status(crawl_process)
+    crawl.html_crawl.update(status=ProcessStatus.SUCCESS)
+    repositories.crawls.update_task(
+        crawl_id=crawl.id,
+        task_name="html_crawl",
+        task=crawl.html_crawl,
+    )
     return crawl_process
 
 
-def update_process_metadata(crawl_process: CrawlProcess, metadata_type: MetadataType, status: ProcessStatus):
-    crawl_process.set_metadata_status(metadata_type, status)
-    if crawl_process.metadata_needs_save(metadata_type):
-        repositories.crawls.update_metadata(crawl_process, metadata_type)
-
-
-def handle_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
+def handle_metadata_result(
+    task: MetadataTask,
+    crawl_process: CrawlProcess,
+    result: dict,
+    metadata_type: MetadataType,
+):
     if not result:
-        update_process_metadata(
-            crawl_process, metadata_type, ProcessStatus.ERROR)
+        task.update(status=ProcessStatus.ERROR)
+        repositories.crawls.update_task(
+            crawl_id=crawl_process.id,
+            task_name=metadata_type,
+            task=task,
+        )
         return
     store_metadata_result(crawl_process, result, metadata_type)
-    if crawl_process.metadata.get(metadata_type).status == ProcessStatus.STARTED:
-        update_process_metadata(
-            crawl_process, metadata_type, ProcessStatus.SUCCESS)
+    if task.status == ProcessStatus.STARTED:
+        task.update(status=ProcessStatus.SUCCESS)
+        repositories.crawls.update_task(
+            crawl_id=crawl_process.id,
+            task_name=metadata_type,
+            task=task,
+        )
     return result
 
 
-def store_metadata_result(crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType):
+def store_metadata_result(
+    crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType
+):
+    base_file_path = f"{os.environ['LOCAL_FILES_PATH']}/{crawl_process.id}"
     file_path = pathlib.Path(
-        f"{crawl_process.base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json"
+        f"{base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json"
     )
     file_path.parent.mkdir(exist_ok=True, parents=True)
     file_path.write_text(json.dumps(result, indent=4))
 
 
-def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calculator, method_name: str):
-    update_process_metadata(
-        crawl_process, metadata_type, ProcessStatus.STARTED)
+def metadata_task(
+    task: MetadataTask,
+    crawl_process: CrawlProcess,
+    metadata_type: MetadataType,
+    calculator,
+    method_name: str,
+):
     calc_method = getattr(calculator, method_name)
     result = {}
+    task.update(status=ProcessStatus.STARTED)
+    repositories.crawls.update_task(
+        crawl_id=crawl_process.id,
+        task_name=metadata_type,
+        task=task,
+    )
     if metadata_process := crawl_process.metadata.get(metadata_type):
         for url in metadata_process.urls:
             try:
@@ -108,44 +155,92 @@ def metadata_task(crawl_process: CrawlProcess, metadata_type: MetadataType, calc
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,
             ):
-                update_process_metadata(
-                    crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                task.update(status=ProcessStatus.PARTIAL_ERROR)
+                repositories.crawls.update_task(
+                    crawl_id=crawl_process.id,
+                    task_name=metadata_type,
+                    task=task,
+                )
                 continue
             except Exception:
                 logger.error("Unknown error")
-                update_process_metadata(
-                    crawl_process, metadata_type, ProcessStatus.PARTIAL_ERROR)
+                task.update(status=ProcessStatus.PARTIAL_ERROR)
+                repositories.crawls.update_task(
+                    crawl_id=crawl_process.id,
+                    task_name=metadata_type,
+                    task=task,
+                )
                 continue
-    return handle_metadata_result(crawl_process, result, metadata_type)
+    return handle_metadata_result(task, crawl_process, result, metadata_type)
 
 
-@celery_app.task(name="get_accessibility")
-def get_accessibility(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.ACCESSIBILITY, LighthouseWrapper(), "get_accessibility")
+@celery_app.task(bind=True, name="get_accessibility")
+def get_accessibility(self, crawl_process: CrawlProcess):
+    return metadata_task(
+        task=MetadataTask(task_id=self.request.id),
+        crawl_process=crawl_process,
+        metadata_type=MetadataType.ACCESSIBILITY,
+        calculator=LighthouseWrapper(),
+        method_name="get_accessibility",
+    )
 
 
-@celery_app.task(name="get_technologies")
-def get_technologies(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.TECHNOLOGIES, TechnologiesCalculator(), "get_technologies")
+@celery_app.task(bind=True, name="get_technologies")
+def get_technologies(self, crawl_process: CrawlProcess):
+    return metadata_task(
+        task=MetadataTask(task_id=self.request.id),
+        crawl_process=crawl_process,
+        metadata_type=MetadataType.TECHNOLOGIES,
+        calculator=TechnologiesCalculator(),
+        method_name="get_technologies",
+    )
 
 
-@celery_app.task(name="get_good_practices")
-def get_good_practices(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.GOOD_PRACTICES, LighthouseWrapper(), "get_best_practices")
+@celery_app.task(bind=True, name="get_good_practices")
+def get_good_practices(self, crawl_process: CrawlProcess):
+    return metadata_task(
+        task=MetadataTask(task_id=self.request.id),
+        crawl_process=crawl_process,
+        metadata_type=MetadataType.GOOD_PRACTICES,
+        calculator=LighthouseWrapper(),
+        method_name="get_best_practices",
+    )
 
 
-@celery_app.task(name="get_responsiveness")
-def get_responsiveness(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.RESPONSIVENESS, ResponsivenessCalculator(), "get_responsiveness")
+@celery_app.task(bind=True, name="get_responsiveness")
+def get_responsiveness(self, crawl_process: CrawlProcess):
+    return metadata_task(
+        task=MetadataTask(task_id=self.request.id),
+        crawl_process=crawl_process,
+        metadata_type=MetadataType.RESPONSIVENESS,
+        calculator=ResponsivenessCalculator(),
+        method_name="get_responsiveness",
+    )
 
 
-@celery_app.task(name="get_carbon_footprint")
-def get_carbon_footprint(crawl_process: CrawlProcess):
-    return metadata_task(crawl_process, MetadataType.CARBON_FOOTPRINT, CarbonCalculator(), "get_carbon_footprint")
+@celery_app.task(bind=True, name="get_carbon_footprint")
+def get_carbon_footprint(self, crawl_process: CrawlProcess):
+    return metadata_task(
+        task=MetadataTask(task_id=self.request.id),
+        crawl_process=crawl_process,
+        metadata_type=MetadataType.CARBON_FOOTPRINT,
+        calculator=CarbonCalculator(),
+        method_name="get_carbon_footprint",
+    )
 
 
-@celery_app.task(name="upload_html")
-def upload_html(crawl_process: CrawlProcess):
+@celery_app.task(bind=True, name="upload_html")
+def upload_html(self, crawl: CrawlModel):
+    crawl.uploads.update(
+        task_id=self.request.id,
+        status=ProcessStatus.STARTED
+    )
+    repositories.crawls.update_task(
+        crawl_id=crawl.id,
+        task_name="uploads",
+        task=crawl.uploads,
+    )
+
     client = Minio(
         endpoint=os.environ["STORAGE_SERVICE_URL"],
         access_key=os.environ["STORAGE_SERVICE_USERNAME"],
@@ -158,8 +253,9 @@ def upload_html(crawl_process: CrawlProcess):
 
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
-
-    crawl_files_path = pathlib.Path(crawl_process.base_file_path)
+    crawl_files_path = pathlib.Path(
+        f"{os.environ['LOCAL_FILES_PATH']}/{crawl.id}"
+    )
     local_files_folder = os.environ["LOCAL_FILES_PATH"]
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
@@ -172,9 +268,21 @@ def upload_html(crawl_process: CrawlProcess):
         )
         os.remove(file)
     shutil.rmtree(crawl_files_path, ignore_errors=True)
-    crawl_process.status = ProcessStatus.SUCCESS
-    repositories.crawls.update_status(crawl_process)
+    crawl.uploads.update(status=ProcessStatus.SUCCESS)
+    repositories.crawls.update_task(
+        crawl_id=crawl.id,
+        task_name="uploads",
+        task=crawl.uploads,
+    )
+    repositories.crawls.update_status(
+        crawl_id=crawl.id,
+        status=ProcessStatus.SUCCESS
+    )
 
+    repositories.websites.store_last_crawl(
+        website_id=crawl.website_id,
+        crawl=repositories.crawls.get(crawl_id=crawl.id).model_dump()
+    )
 
 def assume_content_type(file_path: str) -> str:
     # sourcery skip: assign-if-exp, reintroduce-else
