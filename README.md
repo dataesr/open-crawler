@@ -1,6 +1,6 @@
 # open-crawler
 
-This is ScanR crawler application. It is a web crawler developed in python.
+This is ScanR crawler application. It is a web crawler developped in python.
 ## Prerequisites
 
 Make sure you have installed :
@@ -14,7 +14,6 @@ https://developers.google.com/webmaster-tools/search-console-api/v1/configure?hl
 Once you created the API KEY, you need to store its value in `GOOGLE_API_KEY` in the .env file.
 
 You also need to activate Google Search Console API: https://console.cloud.google.com/apis/dashboard
-
 ## Installation
 
 Git clone project
@@ -23,10 +22,7 @@ Git clone project
   git clone https://github.com/dataesr/open-crawler.git
   cd open-crawler
 ```
-    
-## Environment Variables
-
-To configure this project, you will need to change the following environment variables in your .env file
+    To configure this project, you will need to change the following environment variables in your .env file
 
 For volumes mount:
 
@@ -36,11 +32,27 @@ For volumes mount:
 
 `MONGODB_PATH`
 
+For database:
+
+`MONGO_URI`
+
+`MONGO_DBNAME`
+
+`MONGO_WEBSITES_COLLECTION`
+
+`MONGO_CRAWLS_COLLECTION`
+
 For storage service:
 
 `STORAGE_SERVICE_USERNAME`
 
 `STORAGE_SERVICE_PASSWORD`
+
+`STORAGE_SERVICE_URL`
+
+`STORAGE_SERVICE_REGION`
+
+`STORAGE_SERVICE_BUCKET_NAME`
 
 `HTML_FOLDER_NAME`
 
@@ -50,6 +62,9 @@ For Google API KEY:
 
 `GOOGLE_API_KEY`
 
+For default recrawl interval (in days):
+
+`DEFAUL_RECRAWL_INTERVAL`
 ## Deployment
 
 To deploy this project run
@@ -58,42 +73,49 @@ To deploy this project run
   docker-compose up
 ```
 
-
 ## API Reference
 
-#### Start a new crawl
+#### Create a new website and crawl it
+
+This endpoint allows you to create a new website configuration end execute a crawl afterwards. This will raise an error if the website url is already defined in the database 'website' collection.
 
 ```http
-  POST http://127.0.0.1:8080/crawl
+  POST http://127.0.0.1:8080/api/websites
 ```
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
 | `url` | `string` | **Required**. Starting url to crawl from |
 | `depth` | `integer` | Maximum depth to crawl (**Default**: 2) |
-| `limit` | `integer` | Maximum pages to crawl (**Default**: 50) |
-| `headers` | `dict[str, str]` | Headers that will be passed to all crawl requests |
-| `metadata` | `list[MetadataConfig]` | Metadata config overload |
+| `limit` | `integer` | Maximum pages to crawl (**Default**: 400) |
+| `headers` | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {})|
+| `accessibility` | `MetadataConfig` | Accessibility configuration (**Default**: {'enabled':True, 'depth' 0}) |
+| `good_practices` | `MetadataConfig` | Good Practices configuration (**Default**: {'enabled': False}) |
+| `technologies` | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False}) |
+| `responsiveness` | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False}) |
+| `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False}) |
+| `tags` | `list[str]` | List of tags to associate to this website (**Default**: [])|
+| `crawl_every` | `integer` | Time to wait between each crawl (In days, >= 0, **Default**: 30)|
 
 **MetadataConfig**
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `name` | `str` | Name of the metadata (accessibility, good_practices, technologies, responsiveness, carbon_footprint) |
 | `enabled` | `boolean` | Should the metadata be processed |
 | `depth` | `integer` | Maximum depth for which the metadata should be processed (sets enabled to true if not present)|
 
-
-
+***This is only what would be the main endpoint, the rest of the API reference can be found at http://127.0.0.1:8080/docs (by default)***
 ## Demo
 
 ![demo](./demo/demo.gif)
+
+*This gif might not reflect the last changes*
 
 
 ## Monitor crawl tasks in Celery
 
 The docker-compose file deploys a Flower service which allows us to monitor tasks as they are beeing processed.
-In order to consult it, we need to navigate to http://localhost:5555
+In order to consult it, we need to navigate to http://localhost:5555 (by default)
 
 ![flower](./demo/flower.png)
 
@@ -102,18 +124,15 @@ In order to consult it, we need to navigate to http://localhost:5555
 
 The docker-compose file deploys a MongoDB service in which we store the crawl configuration an the crawl process status during the execution.
 
-To access the two collections, use a MongoDB console (such as MongoDB Compass for example) and connect to http://localhost:27017
+To access the two collections, use a MongoDB console (such as MongoDB Compass for example) and connect to http://localhost:27017 (by default)
 
 **website_crawl** collection:
 ![mongodb_process](./demo/mongodb_crawl_progression.png)
 
 **website_crawl_parameters** collection:
-![mongodb_config](./demo/mongodb_crawl_configuration.png)
-
-
-## Acces simple storage service
+![mongodb_config](./demo/mongodb_crawl_configuration.png)## Acces simple storage service
 
 At the end of the crawl process, all crawled html pages and metadata files are uploaded to a simple storage service (s3).
-The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090.
+The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090. (by default)
 
 ![minio](./demo/minio.png)
