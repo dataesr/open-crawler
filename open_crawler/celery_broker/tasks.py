@@ -66,8 +66,12 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
 
 @celery_app.task(bind=True, name="crawl")
 def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
-    repositories.crawls.update_status(crawl_id=crawl.id, status=ProcessStatus.STARTED)
-    crawl.html_crawl.update(task_id=self.request.id, status=ProcessStatus.STARTED)
+    repositories.crawls.update_status(
+        crawl_id=crawl.id, status=ProcessStatus.STARTED
+    )
+    crawl.html_crawl.update(
+        task_id=self.request.id, status=ProcessStatus.STARTED
+    )
     repositories.crawls.update_task(
         crawl_id=crawl.id,
         task_name="html_crawl",
@@ -155,21 +159,23 @@ def metadata_task(
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,
             ):
-                task.update(status=ProcessStatus.PARTIAL_ERROR)
-                repositories.crawls.update_task(
-                    crawl_id=crawl_process.id,
-                    task_name=metadata_type,
-                    task=task,
-                )
+                if task.status != ProcessStatus.PARTIAL_ERROR:
+                    task.update(status=ProcessStatus.PARTIAL_ERROR)
+                    repositories.crawls.update_task(
+                        crawl_id=crawl_process.id,
+                        task_name=metadata_type,
+                        task=task,
+                    )
                 continue
             except Exception:
                 logger.error("Unknown error")
-                task.update(status=ProcessStatus.PARTIAL_ERROR)
-                repositories.crawls.update_task(
-                    crawl_id=crawl_process.id,
-                    task_name=metadata_type,
-                    task=task,
-                )
+                if task.status != ProcessStatus.PARTIAL_ERROR:
+                    task.update(status=ProcessStatus.PARTIAL_ERROR)
+                    repositories.crawls.update_task(
+                        crawl_id=crawl_process.id,
+                        task_name=metadata_type,
+                        task=task,
+                    )
                 continue
     return handle_metadata_result(task, crawl_process, result, metadata_type)
 
@@ -231,10 +237,7 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
 
 @celery_app.task(bind=True, name="upload_html")
 def upload_html(self, crawl: CrawlModel):
-    crawl.uploads.update(
-        task_id=self.request.id,
-        status=ProcessStatus.STARTED
-    )
+    crawl.uploads.update(task_id=self.request.id, status=ProcessStatus.STARTED)
     repositories.crawls.update_task(
         crawl_id=crawl.id,
         task_name="uploads",
@@ -275,14 +278,14 @@ def upload_html(self, crawl: CrawlModel):
         task=crawl.uploads,
     )
     repositories.crawls.update_status(
-        crawl_id=crawl.id,
-        status=ProcessStatus.SUCCESS
+        crawl_id=crawl.id, status=ProcessStatus.SUCCESS
     )
 
     repositories.websites.store_last_crawl(
         website_id=crawl.website_id,
-        crawl=repositories.crawls.get(crawl_id=crawl.id).model_dump()
+        crawl=repositories.crawls.get(crawl_id=crawl.id).model_dump(),
     )
+
 
 def assume_content_type(file_path: str) -> str:
     # sourcery skip: assign-if-exp, reintroduce-else
