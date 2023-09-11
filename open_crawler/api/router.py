@@ -130,7 +130,7 @@ def delete_website(website_id: str):
 
 @websites_router.post(
     "/{website_id}/crawls",
-    response_model=CrawlProcess,
+    response_model=CrawlModel,
     status_code=statuscode.HTTP_202_ACCEPTED,
     summary="Start a new crawl for a website",
     tags=["websites"],
@@ -144,7 +144,7 @@ def crawl_website(website_id: str):
 
 @websites_router.get(
     "/{website_id}/crawls",
-    response_model=list[CrawlProcess],
+    response_model=list[CrawlModel],
     status_code=statuscode.HTTP_200_OK,
     summary="Get all crawls for a website",
     tags=["websites"],
