@@ -5,7 +5,6 @@
 import logging
 import os
 from pathlib import Path
-from urllib.parse import urlparse
 
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
 from scrapy.exceptions import IgnoreRequest
@@ -28,8 +27,11 @@ class CustomHeadersMiddleware(DefaultHeadersMiddleware):
     @classmethod
     def from_crawler(cls, crawler):
         headers = without_none_values(
-            crawler.settings["DEFAULT_REQUEST_HEADERS"])
-        if custom_header := without_none_values(crawler.settings.get("CUSTOM_HEADERS")):
+            crawler.settings["DEFAULT_REQUEST_HEADERS"]
+        )
+        if custom_header := without_none_values(
+            crawler.settings.get("CUSTOM_HEADERS")
+        ):
             headers.update(custom_header)
         return cls(headers.items())
 
@@ -46,15 +48,15 @@ class HtmlStorageMiddleware:
 
     def _format_file_path(self, response, spider) -> Path:
         domain = spider.allowed_domains[0]
-        if not spider.crawl_process.base_file_path:
-            spider.crawl_process.base_file_path = (
-                f"{os.environ['LOCAL_FILES_PATH']}/{domain}/"
-                f"{spider.crawl_process.id}"
-            )
+        base_file_path = (
+            f"{os.environ['LOCAL_FILES_PATH']}/{spider.crawl_process.id}"
+        )
         file_name = response.url.split(f"{domain}")[-1] or "index.html"
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
-        return Path(f"{spider.crawl_process.base_file_path}/{os.environ['HTML_FOLDER_NAME']}/{file_name}")
+        return Path(
+            f"{base_file_path}/{os.environ['HTML_FOLDER_NAME']}/{file_name}"
+        )
 
     def _save_html_locally(self, response, spider):
         file_path = self._format_file_path(response, spider)
@@ -64,7 +66,8 @@ class HtmlStorageMiddleware:
     def process_response(self, request, response, spider):
         if self.page_limit != 0 and self.current_page_count >= self.page_limit:
             raise IgnoreRequest(
-                f"Page limit reached. Ignoring request {request}")
+                f"Page limit reached. Ignoring request {request}"
+            )
         if request.url.endswith("robots.txt"):
             return response
         if response.status == 200:
@@ -81,11 +84,13 @@ class MetadataMiddleware:
 
     def process_spider_output(self, response, result, spider):
         spider.crawl_process.save_url_for_metadata(
-            response.url, response.meta["depth"])
+            response.url, response.meta["depth"]
+        )
         return result
 
     async def process_spider_output_async(self, response, result, spider):
         spider.crawl_process.save_url_for_metadata(
-            response.url, response.meta["depth"])
+            response.url, response.meta["depth"]
+        )
         async for r in result or ():
             yield r
