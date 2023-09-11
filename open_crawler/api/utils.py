@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api import router, testing_router
+from api import router
 
 
 def create_api_app() -> FastAPI:
@@ -25,6 +25,4 @@ def create_api_app() -> FastAPI:
         )
 
     api_app.include_router(router.websites_router)
-    # TODO only useful for testing purposes, should be commented
-    api_app.include_router(testing_router.test_router)
     return api_app

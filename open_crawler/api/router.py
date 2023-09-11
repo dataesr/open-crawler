@@ -86,7 +86,7 @@ def list_websites(
 
 
 @websites_router.get(
-    "/{id}",
+    "/{website_id}",
     response_model=WebsiteModel,
     summary="Get a single website by its unique ID",
     tags=["websites"],
@@ -102,7 +102,7 @@ def get_website(website_id: str):
 
 
 @websites_router.patch(
-    "/{id}",
+    "/{website_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
     summary="Update a website by its unique ID",
     tags=["websites"],
@@ -118,7 +118,7 @@ def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
 
 
 @websites_router.delete(
-    "/{id}",
+    "/{website_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
     summary="Delete a website by its unique ID",
     tags=["websites"],
@@ -129,7 +129,7 @@ def delete_website(website_id: str):
 
 
 @websites_router.post(
-    "/{id}/crawls",
+    "/{website_id}/crawls",
     response_model=CrawlProcess,
     status_code=statuscode.HTTP_202_ACCEPTED,
     summary="Start a new crawl for a website",
@@ -143,7 +143,7 @@ def crawl_website(website_id: str):
 
 
 @websites_router.get(
-    "/{id}/crawls",
+    "/{website_id}/crawls",
     response_model=list[CrawlProcess],
     status_code=statuscode.HTTP_200_OK,
     summary="Get all crawls for a website",
