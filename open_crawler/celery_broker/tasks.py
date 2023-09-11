@@ -85,7 +85,7 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
             kwargs={"crawl_process": crawl_process, "results": shared_dict},
         )
         p.start()
-        p.join()
+        p.join()  # TODO define and add a timeout
         crawl_process.metadata.update(shared_dict["metadata"])
     crawl.html_crawl.update(status=ProcessStatus.SUCCESS)
     repositories.crawls.update_task(
