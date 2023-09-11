@@ -1,4 +1,5 @@
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,7 +9,8 @@ from api import router, testing_router
 def create_api_app() -> FastAPI:
     api_app = FastAPI(
         title="Asynchronous tasks processing with Celery and RabbitMQ",
-        description="Sample FastAPI Application to demonstrate Event " "driven architecture with Celery and RabbitMQ",
+        description="Sample FastAPI Application to demonstrate Event "
+        "driven architecture with Celery and RabbitMQ",
         version="1.0.0",
     )
 

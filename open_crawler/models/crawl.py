@@ -1,59 +1,41 @@
 from datetime import datetime
-from typing import Optional, Any, Self
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from models.enums import MetadataType, ProcessStatus
-from models.utils import get_uuid
-
-
-class MetadataConfig(BaseModel):
-    enabled: bool
-    depth: int
-
-    def update(
-        self, enabled: Optional[bool] = None, depth: Optional[int] = None
-    ):
-        if enabled is not None:
-            self.enabled = enabled
-        if depth is not None:
-            self.depth = depth
-            if enabled is None:
-                self.enabled = True
+from models.metadata import MetadataConfig, AccessibilityModel, MetadataTask
+from models.utils import get_uuid, BaseTaskModel
 
 
 class CrawlParameters(BaseModel):
-    depth: Optional[int]
-    limit: Optional[int]
+    depth: int
+    limit: int
 
 
 class CrawlConfig(BaseModel):
     url: str
     parameters: CrawlParameters
     metadata_config: dict[MetadataType, MetadataConfig]
-    headers: Optional[dict[str, Any]]
+    headers: dict[str, Any]
     tags: list[str]
 
 
-class MetadataProcess(BaseModel):
-    urls: list[str] = []
-    status: ProcessStatus = ProcessStatus.PENDING
-    to_save: bool = True
-
-    def set_status(self, status: ProcessStatus):
-        if self.status != status:
-            self.status = status
-            self.to_save = True
-
-
-class CrawlProcess(BaseModel):
+class CrawlModel(BaseModel):
     id: str = Field(default_factory=get_uuid)
     website_id: str
-    config: CrawlConfig = None
+    config: CrawlConfig
     created_at: datetime = Field(default_factory=datetime.now)
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
     status: ProcessStatus = ProcessStatus.PENDING
-    metadata: dict[MetadataType, MetadataProcess] = {}
-    base_file_path: str = ""
+    html_crawl: BaseTaskModel = Field(default_factory=BaseTaskModel)
+    accessibility: AccessibilityModel | None = None
+    technologies_and_trackers: MetadataTask | None = None
+    responsiveness: MetadataTask | None = None
+    good_practices: MetadataTask | None = None
+    carbon_footprint: MetadataTask | None = None
+    uploads: BaseTaskModel = Field(default_factory=BaseTaskModel)
 
     @property
     def enabled_metadata(self) -> list[MetadataType]:
@@ -63,21 +45,29 @@ class CrawlProcess(BaseModel):
             if meta_config.enabled
         ]
 
-    def save_url_for_metadata(self, url: str, depth: int):
-        for meta in self.enabled_metadata:
-            if depth <= self.config.metadata_config[meta].depth:
-                self.metadata.setdefault(meta, MetadataProcess()).urls.append(
-                    url
-                )
+    def init_tasks(self) -> None:
+        if MetadataType.ACCESSIBILITY in self.enabled_metadata:
+            self.accessibility = AccessibilityModel()
+        if MetadataType.TECHNOLOGIES in self.enabled_metadata:
+            self.technologies_and_trackers = MetadataTask()
+        if MetadataType.RESPONSIVENESS in self.enabled_metadata:
+            self.responsiveness = MetadataTask()
+        if MetadataType.GOOD_PRACTICES in self.enabled_metadata:
+            self.good_practices = MetadataTask()
+        if MetadataType.CARBON_FOOTPRINT in self.enabled_metadata:
+            self.carbon_footprint = MetadataTask()
 
-    def set_from(self, other: Self):
-        self.config = other.config
-        self.status = other.status
-        self.id = other.id
-        self.metadata = other.metadata
+    def update_task(
+        self,
+        task: str,
+        status: ProcessStatus | None = None,
+        task_id: str | None = None,
+    ):
+        getattr(self, task).update(status, task_id)
 
-    def set_metadata_status(self, meta: MetadataType, status: ProcessStatus):
-        self.metadata.get(meta).set_status(status)
-
-    def metadata_needs_save(self, meta: MetadataType):
-        return self.metadata.get(meta).to_save
+    def update_status(self, status: ProcessStatus):
+        if status == ProcessStatus.STARTED:
+            self.started_at = datetime.now()
+        if status == ProcessStatus.SUCCESS:
+            self.finished_at = datetime.now()
+        self.status = status
