@@ -1,10 +1,8 @@
 import logging
-from datetime import datetime
 from urllib.parse import urlparse
 
-import scrapy
-from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
 
 from models.process import CrawlProcess
 

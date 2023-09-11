@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from models.crawl import CrawlConfig, CrawlModel
 from models.enums import ProcessStatus, MetadataType
-from models.utils import get_uuid
 
 
 class MetadataProcess(BaseModel):

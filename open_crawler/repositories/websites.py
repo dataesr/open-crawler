@@ -2,10 +2,10 @@ import os
 from typing import Any
 
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
-from models.website import WebsiteModel
-from models.request import UpdateWebsiteRequest
-from models.enums import ProcessStatus
 
+from models.enums import ProcessStatus
+from models.request import UpdateWebsiteRequest
+from models.website import WebsiteModel
 from mongo import db
 
 
@@ -54,8 +54,7 @@ class WebsitesRepository:
 
     def store_last_crawl(self, website_id: str, crawl: dict[str, Any]):
         result: UpdateResult = self.collection.update_one(
-            filter={"id": website_id},
-            update={"$set": {"last_crawl": crawl}}
+            filter={"id": website_id}, update={"$set": {"last_crawl": crawl}}
         )
         assert result.acknowledged
 

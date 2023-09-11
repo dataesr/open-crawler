@@ -4,7 +4,6 @@ import logging
 import os
 import pathlib
 import shutil
-from datetime import datetime
 from multiprocessing import Process, Manager
 
 # Third-party imports

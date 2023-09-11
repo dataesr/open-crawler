@@ -3,8 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from models.website import WebsiteModel
 from models.metadata import MetadataConfig
+from models.website import WebsiteModel
 
 
 class UpdateWebsiteRequest(BaseModel):
