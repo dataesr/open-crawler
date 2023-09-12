@@ -28,8 +28,7 @@ class WebsitesRepository:
         if tags:
             filters["tags"] = {"$elemMatch": {"$in": tags.split(",")}}
         if status:
-            filters["last_crawl.status"] = {
-                "$elemMatch": {"$in": status.split(",")}}
+            filters["last_crawl.status"] = {"$in": status.split(",")}
         if (sort[0] == '-'):
             sorter = [(sort[1:], -1)]
         else:
