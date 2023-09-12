@@ -45,3 +45,9 @@ class WebsiteModel(BaseModel):
             tags=self.tags,
         )
 
+
+class ListWebsiteResponse(BaseModel):
+    count: int
+    data: list[WebsiteModel]
+    tags: list[str]
+    status: list[str]

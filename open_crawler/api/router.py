@@ -17,7 +17,7 @@ from celery_broker.tasks import (
 from models.crawl import CrawlModel
 from models.process import CrawlProcess
 from models.request import UpdateWebsiteRequest, CreateWebsiteRequest
-from models.website import WebsiteModel
+from models.website import WebsiteModel, ListWebsiteResponse
 
 websites_router = APIRouter(
     prefix="/api/websites",
@@ -69,19 +69,20 @@ def create_website(data: CreateWebsiteRequest):
 
 @websites_router.get(
     "",
-    response_model=list[WebsiteModel],
+    response_model=ListWebsiteResponse,
     summary="List all websites",
     tags=["websites"],
 )
 def list_websites(
-    query: str = None,
+    query: str = '',
     skip: int = 0,
     limit: int = 10,
-    tags: list[str] = None,
-    status: list[str] = None,
+    tags: str = '',
+    status: str = '',
+    sort: str = 'created_at'
 ):
     return repositories.websites.list(
-        query=query, tags=tags, status=status, skip=skip, limit=limit
+        query=query, tags=tags, status=status, skip=skip, limit=limit, sort=sort
     )
 
 

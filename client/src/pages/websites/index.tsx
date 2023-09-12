@@ -1,12 +1,66 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Title, Link, Badge, Breadcrumb, Text, Row, Button, Input } from '../../_dsfr';
+import {
+  Container,
+  Title,
+  Link,
+  Badge,
+  Breadcrumb,
+  Text,
+  Row,
+  Button,
+  Input,
+  InputChangeEvent,
+  AnchorPagination,
+} from '../../_dsfr';
 import { Website } from '../../_types/websites';
 import { getWebsites } from '../../_api/websites';
+import { useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+
+const PER_PAGE: number = 10
+
+function getSkipAndLimitFromPage(page: number): [number, number] {
+  return [(page - 1) * PER_PAGE, PER_PAGE];
+}
 
 export default function WebsiteList() {
-  const { data: websites, isLoading, error } = useQuery({ queryKey: ['websites'], queryFn: getWebsites });
-  if (isLoading || !websites) return <p>Loading...</p>;
+  const [query, setQuery] = useState<string>('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [skip, limit] = getSkipAndLimitFromPage(parseInt(searchParams.get('page') || "1", 10));
+
+  const handleSearchParamChange = useCallback((key: string, value: string) => {
+    if (value) searchParams.set(key, value); else searchParams.delete(key)
+    setSearchParams(searchParams);
+  }, [searchParams, setSearchParams])
+
+  const clearFilters = useCallback(() => {
+    setQuery('');
+    setSearchParams({ query: '', tags: '', status: '', page: '1' });
+  }, [setSearchParams])
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      handleSearchParamChange('query', query)
+    }, 1000)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [handleSearchParamChange, query])
+
+  const getQueryURL = () => {
+    const queryURL = new URLSearchParams(searchParams);
+    queryURL.set('skip', skip.toString());
+    queryURL.set('limit', limit.toString());
+    return queryURL.toString();
+  }
+
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['websites', getQueryURL()],
+    queryFn: () => getWebsites(`?${getQueryURL()}`)
+  });
+  if (isLoading || !data) return <p>Loading...</p>;
   if (error) return <p>error</p>;
+  const { data: websites, count, tags, status } = data;
   return (
     <Container fluid>
       <Breadcrumb>
@@ -16,51 +70,76 @@ export default function WebsiteList() {
       <Row className="fr-mt-3w fr-mb-1w">
         <Title look="h3">Sites web</Title>
       </Row>
-      <Row>
-        <Text className="fr-error-text fr-text--xs fr-mb-2w">
-          Recherche, filtres et tri et pagination non fonctionnels actuellement
-        </Text>
-      </Row>
       <Row className="list-manager">
         <div className="grow">
-          <Input disabled placeholder="Rechercher un site web" />
+          <Input
+            value={query}
+            onChange={(e: InputChangeEvent) => setQuery(e.target.value)}
+            disableAutoValidation
+            defaultValue={searchParams.get('query') || ""}
+            placeholder="Rechercher un site web"
+          />
         </div>
         <div >
           <div className="fr-select-group">
-            <select disabled className="fr-select" id="tag" name="tag">
-              <option value="" selected disabled hidden>Tag</option>
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
-              <option value="4">Option 4</option>
+            <select
+              defaultValue={searchParams.get('tags') || ""}
+              onChange={(e) => handleSearchParamChange('tags', e.target.value)}
+              disabled={tags.length === 0}
+              className="fr-select"
+              id="tag"
+              name="tag"
+            >
+              <option value="" hidden>Tag</option>
+              {tags.map((tag: string) => <option value={tag}>{tag}</option>)}
             </select>
           </div>
         </div>
         <div >
           <div className="fr-select-group">
-            <select disabled className="fr-select" id="status" name="status">
-              <option value="" selected disabled hidden>Status</option>
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
-              <option value="4">Option 4</option>
+            <select
+              defaultValue={searchParams.get('status') || ""}
+              onChange={(e) => handleSearchParamChange('status', e.target.value)}
+              disabled={status.length === 0}
+              className="fr-select"
+              id="status"
+              name="status"
+            >
+              <option value="" disabled hidden>Status</option>
+              {status.map((status: string) => <option value={status}>{status}</option>)}
             </select>
           </div>
         </div>
         <div >
           <div className="fr-select-group">
-            <select disabled className="fr-select" id="sort" name="sort">
-              <option value="" selected disabled hidden>Tri</option>
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
-              <option value="4">Option 4</option>
+            <select
+              defaultValue={searchParams.get('sort') || "-updated_at"}
+              onChange={(e) => handleSearchParamChange('sort', e.target.value)}
+              className="fr-select"
+              id="sort"
+              name="sort"
+            >
+              <option value="url">Ordre alphabetique</option>
+              <option value="-updated_at">Date de modification</option>
             </select>
           </div>
         </div>
         <div>
-          <Button iconPosition="left" icon="add-line" color="success" href="/websites/create">Nouveau</Button>
+          <Button iconPosition="left" icon="add-line" color="success" href="/websites/create">
+            Nouveau
+          </Button>
         </div>
+      </Row>
+      <Row verticalAlign='middle' className="fr-pl-1w fr-my-2w">
+        <Text className="grow fr-text--sm fr-mb-0">
+          <strong>{(count > 0) ? count : 'Aucun'}</strong> site{count > 1 && 's'} web
+          {searchParams.get('query') && <span> pour la recherche <strong>{searchParams.get('query')}</strong></span>}
+          {searchParams.get('tags') && <span> avec le tag <strong>{searchParams.get('tags')}</strong></span>}
+          {searchParams.get('status') && <span> avec le status <strong>{searchParams.get('status')}</strong></span>}
+          {searchParams.get('sort') && <span> triés par <strong>{searchParams.get('sort')}</strong></span>}
+        </Text>
+        {(searchParams.get('query') || searchParams.get('tags') || searchParams.get('status'))
+          && <Button size="sm" iconPosition="left" icon="delete-line" variant="text" onClick={clearFilters}>Effacer les filtres</Button>}
       </Row>
       <ul style={{ paddingInlineStart: 'unset', border: '1px solid var(--border-default-grey)', borderRadius: "8px" }} className='fr-my-3w'>
         {websites.map((website: Website) => (
@@ -73,17 +152,31 @@ export default function WebsiteList() {
             </Row>
             <Row>
               <Text className="fr-card__detail fr-my-0">
-                Ajouté le {new Date(website.created_at).toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                Ajouté le {new Date(website.created_at)
+                  .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
             </Row>
             <Row>
               <Text className="fr-card__detail fr-my-0">
-                Prochain crawl le {new Date(website.next_crawl_at).toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                Prochain crawl le
+                {new Date(website.next_crawl_at)
+                  .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
             </Row>
           </li>
         ))}
       </ul>
+      <Row horizontalAlign='center'>
+        <AnchorPagination
+          currentPage={parseInt(searchParams.get('page') || "1", 10)}
+          pageCount={(count > 0) ? ((count % limit) > 0) ? Math.floor(count / limit) + 1 : Math.floor(count / limit) : 1}
+          buildURL={(page) => {
+            const params = new URLSearchParams(searchParams)
+            params.set('page', page.toString());
+            return `/websites?${params.toString()}`;
+          }}
+        />
+      </Row>
     </Container >
   )
 }
