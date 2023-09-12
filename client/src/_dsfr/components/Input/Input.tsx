@@ -1,8 +1,10 @@
-import { useState, useRef, forwardRef, useId } from 'react';
+import { useState, useRef, forwardRef, useId, ChangeEvent } from 'react';
 import cn, { Argument } from 'classnames';
 import { forwardProps } from '../../utils/props';
 import mergeRefs from '../../utils/refs';
 import { useDSFRConfig } from '../../hooks/useDSFRConfig';
+
+export type InputChangeEvent = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 
 interface InputCss {
   'fr-label'?: Argument;

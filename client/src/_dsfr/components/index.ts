@@ -14,3 +14,4 @@ export * from './Typography';
 export * from './Breadcrumb';
 export * from './Navigation';
 export * from './Toggle';
+export * from './Pagination';

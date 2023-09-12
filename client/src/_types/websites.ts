@@ -25,3 +25,11 @@ export type Website = {
   next_crawl_at: string;
   last_crawl: string;
 } & WebsiteFormBody
+
+
+export type WebsiteList = {
+  data: Website[];
+  status: string[];
+  tags: string[];
+  count: number;
+}
