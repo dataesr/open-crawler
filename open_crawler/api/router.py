@@ -14,8 +14,7 @@ from celery_broker.tasks import (
     upload_html,
     METADATA_TASK_REGISTRY,
 )
-from models.crawl import CrawlModel
-from models.process import CrawlProcess
+from models.crawl import CrawlModel, ListCrawlResponse
 from models.request import UpdateWebsiteRequest, CreateWebsiteRequest
 from models.website import WebsiteModel, ListWebsiteResponse
 
@@ -70,16 +69,17 @@ def create_website(data: CreateWebsiteRequest):
 @websites_router.get(
     "",
     response_model=ListWebsiteResponse,
+    status_code=statuscode.HTTP_200_OK,
     summary="List all websites",
     tags=["websites"],
 )
 def list_websites(
-    query: str = '',
+    query: str | None = None,
     skip: int = 0,
     limit: int = 10,
-    tags: str = '',
-    status: str = '',
-    sort: str = 'created_at'
+    tags: str | None = None,
+    status: str | None = None,
+    sort: str = "created_at",
 ):
     return repositories.websites.list(
         query=query, tags=tags, status=status, skip=skip, limit=limit, sort=sort
@@ -89,6 +89,7 @@ def list_websites(
 @websites_router.get(
     "/{website_id}",
     response_model=WebsiteModel,
+    status_code=statuscode.HTTP_200_OK,
     summary="Get a single website by its unique ID",
     tags=["websites"],
 )
@@ -126,32 +127,42 @@ def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
 )
 def delete_website(website_id: str):
     repositories.websites.delete(website_id)
-    return {}
 
 
 @websites_router.post(
     "/{website_id}/crawls",
     response_model=CrawlModel,
     status_code=statuscode.HTTP_202_ACCEPTED,
-    summary="Start a new crawl for a website",
+    summary="Start a new crawl for an existing website, using stored configuration.",
     tags=["websites"],
 )
 def crawl_website(website_id: str):
-    website = repositories.websites.get(website_id)
-    crawl = create_crawl(website)
-    start_crawl(crawl)
-    return crawl
+    if website := repositories.websites.get(website_id):
+        crawl = create_crawl(website)
+        start_crawl(crawl)
+        return crawl
+    else:
+        raise HTTPException(
+            status_code=statuscode.HTTP_404_NOT_FOUND,
+            detail="Website not found",
+        )
 
 
 @websites_router.get(
     "/{website_id}/crawls",
-    response_model=list[CrawlModel],
+    response_model=ListCrawlResponse,
     status_code=statuscode.HTTP_200_OK,
     summary="Get all crawls for a website",
     tags=["websites"],
 )
-def list_crawls(website_id: str):
-    crawls = repositories.crawls.list(website_id=website_id)
+def list_crawls(
+    website_id: str,
+    skip: int = 0,
+    limit: int = 10,
+):
+    crawls = repositories.crawls.list(
+        website_id=website_id, skip=skip, limit=limit
+    )
     return crawls
 
 
@@ -175,7 +186,7 @@ def get_crawl_files(website_id: str, crawl_id: str) -> StreamingResponse:
     zip_io = io.BytesIO()
     crawl = repositories.crawls.get(website_id, crawl_id)
     url = crawl.config.url.replace("https://", "").replace("http://", "")
-    prefix = f"{url}/{crawl_id}"
+    prefix = f"{url}{crawl_id}"
     objects = client.list_objects(bucket, prefix=prefix, recursive=True)
     with ZipFile(zip_io, "a", ZIP_DEFLATED, False) as zipper:
         for obj in objects:

@@ -2,6 +2,8 @@ import os
 from typing import Any
 
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
+
+from models.enums import ProcessStatus
 from models.website import WebsiteModel, ListWebsiteResponse
 from models.request import UpdateWebsiteRequest
 from mongo import db
@@ -15,12 +17,12 @@ class WebsitesRepository:
 
     def list(
         self,
-        query: str,
-        tags: str,
-        status: str,
+        query: str | None,
+        tags: str | None,
+        status: str | None,
         skip: int = 0,
         limit: int = 20,
-        sort: str = 'created_at',
+        sort: str = "created_at",
     ) -> ListWebsiteResponse:
         filters = {}
         if query:
@@ -29,17 +31,23 @@ class WebsitesRepository:
             filters["tags"] = {"$elemMatch": {"$in": tags.split(",")}}
         if status:
             filters["last_crawl.status"] = {"$in": status.split(",")}
-        if (sort[0] == '-'):
+        if sort[0] == "-":
             sorter = [(sort[1:], -1)]
         else:
             sorter = [(sort, 1)]
-        cursor = self.collection.find(filters).skip(
-            skip).limit(limit).sort(sorter)
-        data = [website for website in cursor]
+        cursor = (
+            self.collection.find(filters).skip(skip).limit(limit).sort(sorter)
+        )
+        data = [WebsiteModel(**website) for website in cursor]
         count = self.collection.count_documents(filters)
         tags = self.collection.distinct("tags")
-        status = self.collection.distinct("last_crawl.status")
-        return {"data": data, "count": count, "tags": tags, "status": status}
+        statuses = self.collection.distinct("last_crawl.status")
+        return ListWebsiteResponse(
+            data=data,
+            count=count,
+            tags=tags,
+            status=[ProcessStatus(status) for status in statuses],
+        )
 
     def create(self, data: WebsiteModel) -> str:
         result: InsertOneResult = self.collection.insert_one(data.model_dump())
@@ -54,17 +62,16 @@ class WebsitesRepository:
         result: UpdateResult = self.collection.update_one(
             {"id": website_id}, {"$set": data.model_dump(exclude_unset=True)}
         )
-        assert result.acknowledged
+        assert result.matched_count == 1
 
     def delete(self, website_id: str) -> None:
-        result: DeleteResult = self.collection.delete_one({"id": website_id})
-        assert result.acknowledged
+        self.collection.delete_one({"id": website_id})
 
     def store_last_crawl(self, website_id: str, crawl: dict[str, Any]):
         result: UpdateResult = self.collection.update_one(
             filter={"id": website_id}, update={"$set": {"last_crawl": crawl}}
         )
-        assert result.acknowledged
+        assert result.modified_count == 1
 
 
 websites = WebsitesRepository()
