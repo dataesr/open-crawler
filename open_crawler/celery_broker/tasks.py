@@ -260,11 +260,13 @@ def upload_html(self, crawl: CrawlModel):
     )
     local_files_folder = os.environ["LOCAL_FILES_PATH"]
 
+    prefix = crawl.config.url.replace('https://', '').replace('http://', '')
+
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
         client.fput_object(
             bucket_name=bucket_name,
-            object_name=file_path.removeprefix(local_files_folder),
+            object_name=f"{prefix}{file_path.removeprefix(local_files_folder)}",
             file_path=file_path,
             content_type=assume_content_type(file_path),
         )

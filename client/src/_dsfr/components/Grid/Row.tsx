@@ -5,15 +5,15 @@ interface RowProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className
   className?: Argument;
   gutters?: boolean;
   verticalAlign?: 'top' | 'bottom' | 'middle';
-  horitontalAlign?: 'left' | 'center' | 'right';
+  horizontalAlign?: 'left' | 'center' | 'right';
   __TYPE?: 'Row'
 }
 export const Row: React.FC<RowProps> = ({
-  gutters, horitontalAlign, verticalAlign, children, className,
+  gutters, horizontalAlign, verticalAlign, children, className,
 }) => {
   const _cn = cn('fr-grid-row', {
     'fr-grid-row--gutters': gutters,
-    [`fr-grid-row--${horitontalAlign}`]: horitontalAlign,
+    [`fr-grid-row--${horizontalAlign}`]: horizontalAlign,
     [`fr-grid-row--${verticalAlign}`]: verticalAlign,
   }, className);
   return <div className={_cn}>{children}</div>;

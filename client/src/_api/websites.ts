@@ -1,12 +1,12 @@
 import { Crawl } from "../_types/crawls";
-import { Website, WebsiteFormBody } from "../_types/websites";
+import { Website, WebsiteFormBody, WebsiteList } from "../_types/websites";
 
 export const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/websites` : '/api/websites';
 
-export async function getWebsites(): Promise<Website[]> {
-  return fetch(API_URL).then((response) => {
+export async function getWebsites(search: string): Promise<WebsiteList> {
+  return fetch(`${API_URL}${search}`).then((response) => {
     if (response.ok) return response.json();
-    return [];
+    return { data: [], status: [], tags: [], count: 0};
   });
 }
 
