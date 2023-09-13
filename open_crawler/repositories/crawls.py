@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pymongo.results import InsertOneResult
 
-from models.crawl import CrawlModel
+from models.crawl import CrawlModel, ListCrawlResponse
 from models.enums import ProcessStatus
 from models.metadata import MetadataTask
 from mongo import db
@@ -22,12 +22,19 @@ class CrawlsRepository:
 
     def list(
         self, website_id: str | None = None, skip: int = 0, limit: int = 20
-    ) -> list[CrawlModel]:
+    ) -> ListCrawlResponse:
         filters = {}
         if website_id:
             filters["website_id"] = website_id
-        cursor = self.collection.find(filters).skip(skip).limit(limit)
-        return [CrawlModel(**crawl) for crawl in cursor]
+        cursor = (
+            self.collection.find(filters)
+            .skip(skip)
+            .limit(limit)
+            .sort([("created_at", 1)])
+        )
+        data = [CrawlModel(**crawl) for crawl in cursor]
+        count = self.collection.count_documents(filters)
+        return ListCrawlResponse(count=count, data=data)
 
     def get(
         self, website_id: str | None = None, crawl_id: str | None = None
@@ -43,7 +50,11 @@ class CrawlsRepository:
     def update(self, data: CrawlModel):
         self.collection.update_one(
             filter={"id": data.id},
-            update={"$set": data.model_dump(exclude_unset=True, exclude_defaults=True)},
+            update={
+                "$set": data.model_dump(
+                    exclude_unset=True, exclude_defaults=True
+                )
+            },
         )
 
     def update_status(self, crawl_id: str, status: ProcessStatus):

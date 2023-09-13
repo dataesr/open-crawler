@@ -71,3 +71,8 @@ class CrawlModel(BaseModel):
         if status == ProcessStatus.SUCCESS:
             self.finished_at = datetime.now()
         self.status = status
+
+
+class ListCrawlResponse(BaseModel):
+    count: int
+    data: list[CrawlModel]
