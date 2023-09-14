@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Any
 
 from pydantic import BaseModel, Field
@@ -44,6 +44,9 @@ class WebsiteModel(BaseModel):
             headers=self.headers,
             tags=self.tags,
         )
+
+    def refresh_next_crawl_date(self):
+        self.next_crawl_at = datetime.now() + timedelta(days=self.crawl_every)
 
 
 class ListWebsiteResponse(BaseModel):
