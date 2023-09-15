@@ -18,6 +18,7 @@ class UpdateWebsiteRequest(BaseModel):
     headers: dict[str, Any] | None = None
     tags: list[str] | None = None
     crawl_every: int | None = Field(ge=0, default=None)
+    next_crawl_at: datetime | None = None
 
 
 class CreateWebsiteRequest(BaseModel):

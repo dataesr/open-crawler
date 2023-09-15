@@ -140,6 +140,7 @@ def crawl_website(website_id: str):
     if website := repositories.websites.get(website_id):
         crawl = create_crawl(website)
         start_crawl(crawl)
+        repositories.websites.refresh_next_crawl(crawl.website_id)
         return crawl
     else:
         raise HTTPException(

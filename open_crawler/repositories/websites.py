@@ -73,5 +73,13 @@ class WebsitesRepository:
         )
         assert result.modified_count == 1
 
+    def refresh_next_crawl(self, website_id: str):
+        website = self.get(website_id=website_id)
+        website.refresh_next_crawl_date()
+        self.update(
+            website_id=website_id,
+            data=UpdateWebsiteRequest(next_crawl_at=website.next_crawl_at),
+        )
+
 
 websites = WebsitesRepository()
