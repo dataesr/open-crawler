@@ -1,4 +1,4 @@
-import { Crawl } from "../_types/crawls";
+import { CrawlList } from "../_types/crawls";
 import { Website, WebsiteFormBody, WebsiteList } from "../_types/websites";
 
 export const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/websites` : '/api/websites';
@@ -17,7 +17,7 @@ export async function getWebsiteInfo(id: string): Promise<Website | null> {
   });
 }
 
-export async function getCrawls(id: string): Promise<Crawl[]> {
+export async function getCrawls(id: string): Promise<CrawlList> {
   const crawls = await fetch(`${API_URL}/${id}/crawls`)
     .then(res => res.json())
     .catch(() => []);

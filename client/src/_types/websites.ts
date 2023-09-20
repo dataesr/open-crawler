@@ -26,7 +26,6 @@ export type Website = {
   last_crawl: string;
 } & WebsiteFormBody
 
-
 export type WebsiteList = {
   data: Website[];
   status: string[];

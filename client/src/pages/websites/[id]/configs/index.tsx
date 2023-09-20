@@ -25,6 +25,8 @@ export default function WebsiteConfigs() {
   if (isLoading || !website) return <p>Loading...</p>;
   if (error) return <p>error</p>;
   const initialFormValues = website as WebsiteFormBody;
+  console.log('initialFormValues', initialFormValues);
+
   return (
     <Container fluid className="fr-my-6w">
       <Title look="h5">Modifier la configuration de crawl</Title>

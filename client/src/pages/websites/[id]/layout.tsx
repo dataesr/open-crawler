@@ -17,15 +17,20 @@ export default function WebsiteLayout() {
   return (
     <Container fluid>
       <Breadcrumb>
-        <Link href="/">Accueil</Link>
-        <Link href="/websites">Sites web</Link>
+        <Link href="/websites">Accueil</Link>
         <Link>{website.url}</Link>
       </Breadcrumb>
       <Title className="fr-mt-3w fr-mb-1w" look="h4">{website.url}</Title>
-      <Text className="fr-card__detail fr-mt-0 fr-mb-1w">
+      <Text className="fr-card__detail fr-my-0">
         Ajouté le {new Date(website.created_at).toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
       </Text>
-      {(website.tags.length > 0)
+      <Text className="fr-card__detail fr-my-0 fr-mb-3w">
+        Prochain crawl le
+        {' '}
+        {new Date(website.next_crawl_at)
+          .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      </Text>
+      {(website?.tags?.length > 0)
         ? (
           <>
             <Text className="fr-card__detail fr-mt-0 fr-mb-1w">
@@ -37,7 +42,6 @@ export default function WebsiteLayout() {
           </>)
         : null}
       <Nav>
-        <Link current={pathname.endsWith('summary')} href={`${currentPath}/summary`}>Résumé</Link>
         <Link current={pathname.endsWith('crawls')} href={`${currentPath}/crawls`}>Historique des crawls</Link>
         <Link current={pathname.endsWith('configs')} href={`${currentPath}/configs`}>Configuration</Link>
       </Nav>

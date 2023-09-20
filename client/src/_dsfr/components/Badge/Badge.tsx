@@ -13,7 +13,7 @@ interface BadgeProps extends Omit<React.HTMLAttributes<HTMLParagraphElement | HT
   __TYPE?: string;
 }
 
-type BadgeType =
+export type BadgeType =
   | "new"
   | 'error'
   | 'info'

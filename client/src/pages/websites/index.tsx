@@ -4,7 +4,6 @@ import {
   Title,
   Link,
   Badge,
-  Breadcrumb,
   Text,
   Row,
   Button,
@@ -63,10 +62,6 @@ export default function WebsiteList() {
   const { data: websites, count, tags, status } = data;
   return (
     <Container fluid>
-      <Breadcrumb>
-        <Link href="/">Accueil</Link>
-        <Link>Sites web</Link>
-      </Breadcrumb>
       <Row className="fr-mt-3w fr-mb-1w">
         <Title look="h3">Sites web</Title>
       </Row>
@@ -152,13 +147,16 @@ export default function WebsiteList() {
             </Row>
             <Row>
               <Text className="fr-card__detail fr-my-0">
-                Ajouté le {new Date(website.created_at)
+                Ajouté le
+                {' '}
+                {new Date(website.created_at)
                   .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
             </Row>
             <Row>
               <Text className="fr-card__detail fr-my-0">
                 Prochain crawl le
+                {' '}
                 {new Date(website.next_crawl_at)
                   .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
