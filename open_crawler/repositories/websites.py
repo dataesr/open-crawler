@@ -1,11 +1,11 @@
 import os
 from typing import Any
 
-from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
+from pymongo.results import InsertOneResult, UpdateResult
 
 from models.enums import ProcessStatus
-from models.website import WebsiteModel, ListWebsiteResponse
 from models.request import UpdateWebsiteRequest
+from models.website import WebsiteModel, ListWebsiteResponse
 from mongo import db
 
 
