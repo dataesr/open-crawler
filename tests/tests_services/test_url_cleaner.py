@@ -4,7 +4,6 @@ from services.url_cleaner import clean_url
 
 
 class TestCleanUrl(unittest.TestCase):
-
     def test_clean_url_no_changes_needed(self):
         self.assertEqual(clean_url("http://example.com"), "http://example.com")
 
@@ -20,7 +19,10 @@ class TestCleanUrl(unittest.TestCase):
         self.assertEqual(clean_url("http://example.com"), "http://example.com")
 
     def test_clean_url_combined(self):
-        self.assertEqual(clean_url("http://exa mple.com/ "), "http://example.com")
+        self.assertEqual(
+            clean_url("http://exa mple.com/ "), "http://example.com"
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

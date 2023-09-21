@@ -7,7 +7,6 @@ from models.process import MetadataProcess, CrawlProcess
 
 
 class TestMetadataProcess(unittest.TestCase):
-
     def test_default_values(self):
         meta = MetadataProcess()
         self.assertEqual(meta.urls, [])
@@ -20,8 +19,8 @@ class TestMetadataProcess(unittest.TestCase):
         self.assertEqual(meta.status, ProcessStatus.SUCCESS)
         self.assertTrue(meta.to_save)
 
-class TestCrawlProcess(unittest.TestCase):
 
+class TestCrawlProcess(unittest.TestCase):
     def test_from_model_classmethod(self):
         model = CrawlModel(
             id="crawl_123",
@@ -31,8 +30,8 @@ class TestCrawlProcess(unittest.TestCase):
                 parameters=CrawlParameters(depth=2, limit=400),
                 metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
                 headers={},
-                tags=[]
-            )
+                tags=[],
+            ),
         )
         process = CrawlProcess.from_model(model)
         self.assertEqual(process.id, "crawl_123")
@@ -47,12 +46,15 @@ class TestCrawlProcess(unittest.TestCase):
                 MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False),
             },
             headers={},
-            tags=[]
+            tags=[],
         )
-        process = CrawlProcess(id="crawl_123", website_id="website_123", config=config)
+        process = CrawlProcess(
+            id="crawl_123", website_id="website_123", config=config
+        )
         self.assertEqual(process.enabled_metadata, [MetadataType.ACCESSIBILITY])
 
     # Write more test methods for `save_url_for_metadata`, `set_from`, `set_metadata_status`, and `metadata_needs_save`.
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
