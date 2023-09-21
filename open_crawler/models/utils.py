@@ -19,7 +19,9 @@ class BaseTaskModel(BaseModel):
     finished_at: datetime | None = None
     status: ProcessStatus = ProcessStatus.PENDING
 
-    def update(self, status: ProcessStatus | None = None, task_id: str | None = None):
+    def update(
+        self, status: ProcessStatus | None = None, task_id: str | None = None
+    ):
         if task_id is not None:
             self.task_id = task_id
         if status is None:

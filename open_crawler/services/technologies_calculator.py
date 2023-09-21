@@ -28,5 +28,7 @@ class TechnologiesCalculator:
             raise TechnologiesError from e
         return result
 
-    def _be_agnostic(self, result: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _be_agnostic(
+        self, result: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         return [res for res in result if res["confidence"] == 100]

@@ -28,23 +28,69 @@ class BaseConfig:
         # default queue
         Queue("celery"),
         # Custom queues
-        Queue(CRAWL_QUEUE_NAME, Exchange(CRAWL_QUEUE_NAME), routing_key=CRAWL_QUEUE_NAME),
-        Queue(ACCESSIBILITY_QUEUE_NAME, Exchange(ACCESSIBILITY_QUEUE_NAME), routing_key=ACCESSIBILITY_QUEUE_NAME),
-        Queue(TECHNOLOGIES_QUEUE_NAME, Exchange(TECHNOLOGIES_QUEUE_NAME), routing_key=TECHNOLOGIES_QUEUE_NAME),
-        Queue(GOOD_PRACTICES_QUEUE_NAME, Exchange(GOOD_PRACTICES_QUEUE_NAME), routing_key=GOOD_PRACTICES_QUEUE_NAME),
-        Queue(RESPONSIVENESS_QUEUE_NAME, Exchange(RESPONSIVENESS_QUEUE_NAME), routing_key=RESPONSIVENESS_QUEUE_NAME),
-        Queue(CARBON_QUEUE_NAME, Exchange(CARBON_QUEUE_NAME), routing_key=CARBON_QUEUE_NAME),
-        Queue(UPLOAD_QUEUE_NAME, Exchange(UPLOAD_QUEUE_NAME), routing_key=UPLOAD_QUEUE_NAME),
+        Queue(
+            CRAWL_QUEUE_NAME,
+            Exchange(CRAWL_QUEUE_NAME),
+            routing_key=CRAWL_QUEUE_NAME,
+        ),
+        Queue(
+            ACCESSIBILITY_QUEUE_NAME,
+            Exchange(ACCESSIBILITY_QUEUE_NAME),
+            routing_key=ACCESSIBILITY_QUEUE_NAME,
+        ),
+        Queue(
+            TECHNOLOGIES_QUEUE_NAME,
+            Exchange(TECHNOLOGIES_QUEUE_NAME),
+            routing_key=TECHNOLOGIES_QUEUE_NAME,
+        ),
+        Queue(
+            GOOD_PRACTICES_QUEUE_NAME,
+            Exchange(GOOD_PRACTICES_QUEUE_NAME),
+            routing_key=GOOD_PRACTICES_QUEUE_NAME,
+        ),
+        Queue(
+            RESPONSIVENESS_QUEUE_NAME,
+            Exchange(RESPONSIVENESS_QUEUE_NAME),
+            routing_key=RESPONSIVENESS_QUEUE_NAME,
+        ),
+        Queue(
+            CARBON_QUEUE_NAME,
+            Exchange(CARBON_QUEUE_NAME),
+            routing_key=CARBON_QUEUE_NAME,
+        ),
+        Queue(
+            UPLOAD_QUEUE_NAME,
+            Exchange(UPLOAD_QUEUE_NAME),
+            routing_key=UPLOAD_QUEUE_NAME,
+        ),
     )
 
     task_routes = {
         "crawl": {"queue": CRAWL_QUEUE_NAME, "routing_key": CRAWL_QUEUE_NAME},
-        "get_accessibility": {"queue": ACCESSIBILITY_QUEUE_NAME, "routing_key": ACCESSIBILITY_QUEUE_NAME},
-        "get_technologies": {"queue": TECHNOLOGIES_QUEUE_NAME, "routing_key": TECHNOLOGIES_QUEUE_NAME},
-        "get_good_practices": {"queue": GOOD_PRACTICES_QUEUE_NAME, "routing_key": GOOD_PRACTICES_QUEUE_NAME},
-        "get_responsiveness": {"queue": RESPONSIVENESS_QUEUE_NAME, "routing_key": RESPONSIVENESS_QUEUE_NAME},
-        "get_carbon_footprint": {"queue": CARBON_QUEUE_NAME, "routing_key": CARBON_QUEUE_NAME},
-        "upload_html": {"queue": UPLOAD_QUEUE_NAME, "routing_key": UPLOAD_QUEUE_NAME},
+        "get_accessibility": {
+            "queue": ACCESSIBILITY_QUEUE_NAME,
+            "routing_key": ACCESSIBILITY_QUEUE_NAME,
+        },
+        "get_technologies": {
+            "queue": TECHNOLOGIES_QUEUE_NAME,
+            "routing_key": TECHNOLOGIES_QUEUE_NAME,
+        },
+        "get_good_practices": {
+            "queue": GOOD_PRACTICES_QUEUE_NAME,
+            "routing_key": GOOD_PRACTICES_QUEUE_NAME,
+        },
+        "get_responsiveness": {
+            "queue": RESPONSIVENESS_QUEUE_NAME,
+            "routing_key": RESPONSIVENESS_QUEUE_NAME,
+        },
+        "get_carbon_footprint": {
+            "queue": CARBON_QUEUE_NAME,
+            "routing_key": CARBON_QUEUE_NAME,
+        },
+        "upload_html": {
+            "queue": UPLOAD_QUEUE_NAME,
+            "routing_key": UPLOAD_QUEUE_NAME,
+        },
     }
 
     def get(self, attribute_name: str):
