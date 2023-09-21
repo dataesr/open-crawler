@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -25,8 +24,6 @@ websites_router = APIRouter(
     tags=["websites"],
     responses={404: {"description": "Not found"}},
 )
-
-logger = logging.getLogger(__name__)
 
 
 def create_crawl(website: WebsiteModel) -> CrawlModel:
