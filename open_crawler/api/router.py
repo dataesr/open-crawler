@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -18,14 +17,14 @@ from celery_broker.tasks import (
 from models.crawl import CrawlModel, ListCrawlResponse
 from models.request import UpdateWebsiteRequest, CreateWebsiteRequest
 from models.website import WebsiteModel, ListWebsiteResponse
+from services import crawler_logger
+from services.crawler_logger import logger
 
 websites_router = APIRouter(
     prefix="/api/websites",
     tags=["websites"],
     responses={404: {"description": "Not found"}},
 )
-
-logger = logging.getLogger(__name__)
 
 
 def create_crawl(website: WebsiteModel) -> CrawlModel:
@@ -39,6 +38,10 @@ def create_crawl(website: WebsiteModel) -> CrawlModel:
 
 
 def start_crawl(crawl: CrawlModel) -> None:
+    crawler_logger.set_file(crawl.id)
+    logger.info(
+        f"New crawl process ({crawl.id}) for website {crawl.config.url}"
+    )
     metadata_tasks = group(
         METADATA_TASK_REGISTRY.get(metadata).s()
         for metadata in crawl.enabled_metadata

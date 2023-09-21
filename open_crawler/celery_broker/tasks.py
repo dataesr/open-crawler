@@ -1,6 +1,5 @@
 # Standard library imports
 import json
-import logging
 import os
 import pathlib
 import shutil
@@ -26,6 +25,7 @@ from services.accessibility_best_practices_calculator import (
     BestPracticesError,
 )
 from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
+from services.crawler_logger import logger, set_file
 from services.responsiveness_calculator import (
     ResponsivenessCalculator,
     ResponsivenessCalculatorError,
@@ -34,8 +34,6 @@ from services.technologies_calculator import (
     TechnologiesCalculator,
     TechnologiesError,
 )
-
-logger = logging.getLogger(__name__)
 
 
 def update_crawl_status(crawl: CrawlModel, status: ProcessStatus):
@@ -68,6 +66,8 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
     repositories.crawls.update_status(
         crawl_id=crawl.id, status=ProcessStatus.STARTED
     )
+    set_file(crawl.id)
+    logger.debug("Html crawl started!")
     crawl.html_crawl.update(
         task_id=self.request.id, status=ProcessStatus.STARTED
     )
@@ -92,6 +92,7 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         task_name="html_crawl",
         task=crawl.html_crawl,
     )
+    logger.debug("Html crawl ended!")
     return crawl_process
 
 
@@ -108,6 +109,8 @@ def handle_metadata_result(
             task_name=metadata_type,
             task=task,
         )
+        set_file(crawl_process.id)
+        logger.error(f"{metadata_type} failed.")
         return
     store_metadata_result(crawl_process, result, metadata_type)
     if task.status == ProcessStatus.STARTED:
@@ -117,6 +120,7 @@ def handle_metadata_result(
             task_name=metadata_type,
             task=task,
         )
+        logger.debug(f"{metadata_type} ended!")
     return result
 
 
@@ -141,6 +145,8 @@ def metadata_task(
     calc_method = getattr(calculator, method_name)
     result = {}
     task.update(status=ProcessStatus.STARTED)
+    set_file(crawl_process.id)
+    logger.debug(f"{metadata_type} started!")
     repositories.crawls.update_task(
         crawl_id=crawl_process.id,
         task_name=metadata_type,
@@ -157,7 +163,10 @@ def metadata_task(
                 TechnologiesError,
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,
-            ):
+            ) as e:
+                logger.warning(
+                    f"An error occured for url {url} during {metadata_type} process. {e}"
+                )
                 if task.status != ProcessStatus.PARTIAL_ERROR:
                     task.update(status=ProcessStatus.PARTIAL_ERROR)
                     repositories.crawls.update_task(
@@ -166,8 +175,10 @@ def metadata_task(
                         task=task,
                     )
                 continue
-            except Exception:
-                logger.error("Unknown error")
+            except Exception as e:
+                logger.error(
+                    f"An unknown error occured for url {url} during {metadata_type} process. {e}"
+                )
                 if task.status != ProcessStatus.PARTIAL_ERROR:
                     task.update(status=ProcessStatus.PARTIAL_ERROR)
                     repositories.crawls.update_task(
@@ -237,6 +248,8 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
 @celery_app.task(bind=True, name="upload_html")
 def upload_html(self, crawl: CrawlModel):
     crawl.uploads.update(task_id=self.request.id, status=ProcessStatus.STARTED)
+    set_file(crawl.id)
+    logger.debug("Files upload started!")
     repositories.crawls.update_task(
         crawl_id=crawl.id,
         task_name="uploads",
@@ -260,7 +273,7 @@ def upload_html(self, crawl: CrawlModel):
     )
     local_files_folder = os.environ["LOCAL_FILES_PATH"]
 
-    prefix = crawl.config.url.replace('https://', '').replace('http://', '')
+    prefix = crawl.config.url.replace("https://", "").replace("http://", "")
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
@@ -278,8 +291,12 @@ def upload_html(self, crawl: CrawlModel):
         task_name="uploads",
         task=crawl.uploads,
     )
+    logger.debug("Files upload ended!")
     repositories.crawls.update_status(
         crawl_id=crawl.id, status=ProcessStatus.SUCCESS
+    )
+    logger.info(
+        f"Crawl process ({crawl.id}) for website {crawl.config.url} ended"
     )
 
     repositories.websites.store_last_crawl(

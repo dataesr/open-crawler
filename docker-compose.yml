@@ -12,6 +12,7 @@ services:
       - redis
     volumes:
       - ./open_crawler:/app
+      - logs:/logs
     deploy:
       restart_policy:
         condition: on-failure
@@ -35,6 +36,7 @@ services:
     volumes:
       - ./open_crawler:/app
       - local_files:${LOCAL_FILES_PATH}
+      - logs:/logs
     depends_on:
       - redis
       - web_api
@@ -135,3 +137,4 @@ volumes:
   minio:
   local_files:
   mongodb:
+  logs:
