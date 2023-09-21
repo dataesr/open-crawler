@@ -7,6 +7,7 @@ from celery import chain, group
 from fastapi import APIRouter, HTTPException, status as statuscode
 from fastapi.responses import StreamingResponse
 from minio import Minio
+from pymongo.errors import DuplicateKeyError
 
 import repositories
 from celery_broker.tasks import (
@@ -59,7 +60,13 @@ def start_crawl(crawl: CrawlModel) -> None:
 )
 def create_website(data: CreateWebsiteRequest):
     website = data.to_website_model()
-    repositories.websites.create(website)
+    try:
+        repositories.websites.create(website)
+    except DuplicateKeyError as e:
+        raise HTTPException(
+            status_code=statuscode.HTTP_409_CONFLICT,
+            detail="Website already exists.",
+        ) from e
 
     crawl = create_crawl(website)
     start_crawl(crawl)
