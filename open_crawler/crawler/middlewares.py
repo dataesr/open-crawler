@@ -1,8 +1,7 @@
-# Define here the models for your spider middleware
+# Define here the tests_models for your spider middleware
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import logging
 import os
 from pathlib import Path
 
@@ -11,9 +10,8 @@ from scrapy.exceptions import IgnoreRequest
 from scrapy.extensions.closespider import CloseSpider
 from scrapy.utils.python import without_none_values
 
-# useful for handling different item types with a single interface
 
-logger = logging.getLogger(__name__)
+# useful for handling different item types with a single interface
 
 
 class CustomCloseSpider(CloseSpider):

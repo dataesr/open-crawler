@@ -17,6 +17,8 @@ from celery_broker.tasks import (
 from models.crawl import CrawlModel, ListCrawlResponse
 from models.request import UpdateWebsiteRequest, CreateWebsiteRequest
 from models.website import WebsiteModel, ListWebsiteResponse
+from services import crawler_logger
+from services.crawler_logger import logger
 
 websites_router = APIRouter(
     prefix="/api/websites",
@@ -38,6 +40,10 @@ def create_crawl(website: WebsiteModel) -> CrawlModel:
 
 
 def start_crawl(crawl: CrawlModel) -> None:
+    crawler_logger.set_file(crawl.id)
+    logger.info(
+        f"New crawl process ({crawl.id}) for website {crawl.config.url}"
+    )
     metadata_tasks = group(
         METADATA_TASK_REGISTRY.get(metadata).s()
         for metadata in crawl.enabled_metadata
