@@ -1,3 +1,17 @@
+[data-fr-scheme="light"] {
+  --jobs-success-color: #32e477;
+  --jobs-pending-color: #a4b9f7;
+  --jobs-started-color: #edb82f;
+  --jobs-error-color: #f7aaaa;
+}
+
+[data-fr-scheme="dark"] {
+  --jobs-success-color: #32e477;
+  --jobs-pending-color: #a4b9f7;
+  --jobs-started-color: #edb82f;
+  --jobs-error-color: #f7aaaa;
+}
+
 html,
 body {
   max-width: 100vw;
@@ -31,4 +45,30 @@ ul {
   >*:not(:last-child) {
     margin-right: 1rem;
   }
+}
+
+.with-go-back {
+  .fr-nav__list:first-child {
+    flex-grow: 1 !important;
+  }
+
+  .fr-nav__list:child() {
+    margin-left: 0 !important;
+  }
+}
+
+.icon--status.fr-icon-success-line {
+  color: var(--jobs-success-color) !important;
+}
+
+.icon--status.fr-icon-error-line {
+  color: var(--jobs-error-color) !important;
+}
+
+.icon--status.fr-icon-lock-line {
+  color: var(--jobs-pending-color) !important;
+}
+
+.icon--status.fr-icon-refresh-line {
+  color: var(--jobs-started-color) !important;
 }

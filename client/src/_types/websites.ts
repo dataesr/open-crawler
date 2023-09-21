@@ -1,3 +1,5 @@
+import { Crawl } from "./crawls";
+
 type Metadata = {
   depth: number;
   enabled: boolean;
@@ -23,7 +25,7 @@ export type Website = {
   created_at: string;
   updated_at: string;
   next_crawl_at: string;
-  last_crawl: string;
+  last_crawl: Crawl | null;
 } & WebsiteFormBody
 
 export type WebsiteList = {

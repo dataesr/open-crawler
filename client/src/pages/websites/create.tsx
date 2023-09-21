@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Breadcrumb, Container, Notice, Link, Row, Title } from "../../_dsfr";
 import WebsiteForm from "../../components/WebsiteForm";
@@ -6,7 +6,9 @@ import { WebsiteFormBody } from "../../_types/websites";
 import { useState } from "react";
 import { API_URL } from "../../_api/websites";
 
+// Get QueryClient from the context
 export default function CreateWebsite() {
+  const queryClient = useQueryClient()
   const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate()
   const { isLoading: isMutating, mutate } = useMutation({
@@ -14,6 +16,7 @@ export default function CreateWebsite() {
       fetch(API_URL, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } })
         .then((res) => res.json()),
     onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['websites'] });
       navigate(`/websites/${res.id}`);
     },
     onError: () => setServerError('Une erreur est survenue lors de la création du site web.'),

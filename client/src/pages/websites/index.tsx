@@ -15,6 +15,7 @@ import { Website } from '../../_types/websites';
 import { getWebsites } from '../../_api/websites';
 import { useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
+import classNames from 'classnames';
 
 const PER_PAGE: number = 10
 
@@ -55,7 +56,10 @@ export default function WebsiteList() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['websites', getQueryURL()],
-    queryFn: () => getWebsites(`?${getQueryURL()}`)
+    queryFn: () => getWebsites(`?${getQueryURL()}`),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60,
   });
   if (isLoading || !data) return <p>Loading...</p>;
   if (error) return <p>error</p>;
@@ -136,31 +140,30 @@ export default function WebsiteList() {
         {(searchParams.get('query') || searchParams.get('tags') || searchParams.get('status'))
           && <Button size="sm" iconPosition="left" icon="delete-line" variant="text" onClick={clearFilters}>Effacer les filtres</Button>}
       </Row>
-      <ul style={{ paddingInlineStart: 'unset', border: '1px solid var(--border-default-grey)', borderRadius: "8px" }} className='fr-my-3w'>
+      <ul style={{ paddingInlineStart: 'unset' }} className='fr-my-3w'>
         {websites.map((website: Website) => (
           <li className="fr-enlarge-link fr-p-3w" style={{ borderBottom: '1px solid var(--border-default-grey)' }}>
             <Row verticalAlign="middle">
-              <Link isSimple className="fr-mr-1w fr-text--heavy" size='lg' href={`/websites/${website.id}`}>{website.url}</Link>
+              <Link isSimple className="fr-mr-1w fr-text--heavy" size='md' href={`/websites/${website.id}`}>{website.url}</Link>
               {(website?.tags?.length || 0 > 0)
                 ? website?.tags?.map((tag) => <Badge className="fr-ml-1w" isSmall noIcon variant="new" key={tag}>{tag}</Badge>)
                 : null}
             </Row>
-            <Row>
+            {website.last_crawl && (<Row>
               <Text className="fr-card__detail fr-my-0">
-                Ajouté le
+                Dernier crawl le
                 {' '}
-                {new Date(website.created_at)
+                {website.last_crawl?.created_at && new Date(website.last_crawl?.created_at)
                   .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                <span className={classNames(
+                  "icon--status fr-pl-1w fr-icon--sm", {
+                  "fr-icon-success-line": website.last_crawl?.status === 'success',
+                  "fr-icon-error-line": ['error', 'partial_error'].includes(website.last_crawl?.status || ''),
+                  "fr-icon-lock-line": website.last_crawl?.status === 'pending',
+                  "fr-icon-refresh-line": website.last_crawl?.status === 'started',
+                })} />
               </Text>
-            </Row>
-            <Row>
-              <Text className="fr-card__detail fr-my-0">
-                Prochain crawl le
-                {' '}
-                {new Date(website.next_crawl_at)
-                  .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </Text>
-            </Row>
+            </Row>)}
           </li>
         ))}
       </ul>

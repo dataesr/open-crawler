@@ -10,5 +10,8 @@ export default function useForm(initialState: Record<string, any>, validator: (f
     return newForm;
   }, initialState);
 
-  return { form, updateForm, errors };
+  const touched = JSON.stringify(initialState) !== JSON.stringify(form);
+
+
+  return { form, updateForm, errors, touched };
 }

@@ -8,9 +8,14 @@ export default function WebsiteLayout() {
   const { id = "" } = useParams();
   const { pathname } = useLocation()
   const currentPath = `/websites/${id}`;
-  const { data: website, isLoading, error } = useQuery({ queryKey: ['websites', id], queryFn: () => getWebsiteInfo(id) });
-  console.log('TAGS', website?.tags?.length);
-
+  const { data: website, isLoading, error } = useQuery({
+    queryKey: ['websites', id],
+    queryFn: () => getWebsiteInfo(id),
+    staleTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    cacheTime: Infinity,
+  });
   if (isLoading || !website) return <p>Loading...</p>;
   if (error) return <p>error</p>;
 
@@ -41,7 +46,11 @@ export default function WebsiteLayout() {
             </BadgeGroup>
           </>)
         : null}
-      <Nav>
+      <Nav className="with-go-back">
+        <Link isSimple href={"/websites"}>
+          <span className="fr-icon-arrow-left-s-line fr-icon--sm fr-mr-1w" />
+          Retour aux sites web
+        </Link>
         <Link current={pathname.endsWith('crawls')} href={`${currentPath}/crawls`}>Historique des crawls</Link>
         <Link current={pathname.endsWith('configs')} href={`${currentPath}/configs`}>Configuration</Link>
       </Nav>

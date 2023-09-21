@@ -13,10 +13,11 @@ export function timeBetween(startDate: Date, endDate: Date) {
 
 function time(date: Date) {
   if (!date) return 'date invalide';
-  const seconds = Math.abs(Math.floor((new Date().valueOf() - date.valueOf()) / 1000));
+  const seconds = (new Date().valueOf() - date.valueOf()) / 1000;  
   let interval = seconds / 31536000;
   if (interval > 1) {
-    return `${Math.floor(interval)} ans`;
+    const years = Math.floor(interval)
+    return `${years} an${years > 1 ? 's' : ''}`;
   }
   interval = seconds / 2592000;
   if (interval > 1) {
@@ -24,11 +25,13 @@ function time(date: Date) {
   }
   interval = seconds / 86400;
   if (interval > 1) {
-    return `${Math.floor(interval)} jours`;
+    const days = Math.round(interval)    
+    return `${days} jour${days > 1 ? 's' : ''}`;
   }
   interval = seconds / 3600;
   if (interval > 1) {
-    return `${Math.floor(interval)} heures`;
+    const hours = Math.floor(interval)
+    return `${hours} heure${hours > 1 ? 's' : ''}`;
   }
   interval = seconds / 60;
   if (interval > 1) {

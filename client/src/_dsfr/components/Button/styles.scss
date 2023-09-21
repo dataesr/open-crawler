@@ -23,10 +23,10 @@ $color-families: green-tilleul-verveine,
 
 @each $color in $color-families {
   .react-dsfr-btn--#{$color} {
-    --hover: var(--background-action-high-#{$color}-hover) !important;
-    --active: var(--background-action-high-#{$color}-active) !important;
-    background-color: var(--background-action-high-#{$color}) !important;
-    color: var(--text-inverted-#{$color}) !important;
+    --hover: var(--background-action-high-#{$color}-hover);
+    --active: var(--background-action-high-#{$color}-active);
+    background-color: var(--background-action-high-#{$color});
+    color: var(--text-inverted-#{$color});
   }
 
   .react-dsfr-btn--#{$color}.fr-btn--secondary {

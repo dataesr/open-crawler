@@ -1,5 +1,5 @@
-import { ChangeEvent } from 'react';
-import { Button, ButtonGroup, Col, Container, Input, Row, Text, Toggle, ToggleGroup } from '../_dsfr';
+import React, { ChangeEvent } from 'react';
+import { Button, Col, Container, Input, Row, Text, Toggle, ToggleGroup } from '../_dsfr';
 import useForm from '../hooks/useForm';
 import { WebsiteFormBody } from '../_types/websites';
 import TagInput from './TagInput';
@@ -18,6 +18,14 @@ const DEFAULT_INITIAL_FORM = {
   technologies_and_trackers: { enabled: true, depth: 0 },
 } as WebsiteFormBody;
 
+type WebsiteFormProps = {
+  onSubmit: (form: WebsiteFormBody) => void,
+  initialForm?: WebsiteFormBody,
+  create?: boolean,
+  isLoading?: boolean,
+  notice?: null | React.ReactNode
+}
+
 function sanitize(form: Record<string, any>): WebsiteFormBody {
   const fields = [
     'url', 'crawl_every', 'depth', 'limit', 'tags', 'headers',
@@ -34,8 +42,9 @@ export default function WebsiteForm({
   initialForm = DEFAULT_INITIAL_FORM,
   create = true,
   isLoading = false,
-}: { onSubmit: (form: WebsiteFormBody) => void, initialForm?: WebsiteFormBody, create?: boolean, isLoading?: boolean }) {
-  const { form, updateForm } = useForm(initialForm);
+  notice = null,
+}: WebsiteFormProps) {
+  const { form, updateForm, touched } = useForm(initialForm);
 
   return (
     <Container fluid>
@@ -83,7 +92,7 @@ export default function WebsiteForm({
               type="number"
               hint="Par exemple, si vous souhaitez recrawler tous les trente jours entrez '30'"
               value={form.crawl_every}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ crawl_every: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ crawl_every: parseInt(e.target.value, 10) })}
             />
           </Col>
         </Row>
@@ -105,7 +114,7 @@ export default function WebsiteForm({
               </>}
               type="number"
               value={form.depth}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ depth: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ depth: parseInt(e.target.value, 10) })}
             />
           </Col>
         </Row>
@@ -121,7 +130,7 @@ export default function WebsiteForm({
               hint="Par exemple, si vous souhaitez crawler 400 pages maximum, entrez '400'"
               type="number"
               value={form.limit}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ limit: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateForm({ limit: parseInt(e.target.value, 10) })}
             />
           </Col>
         </Row>
@@ -169,11 +178,15 @@ export default function WebsiteForm({
           </Col>
         </Row>
         <hr />
-        <ButtonGroup size="lg" isInlineFrom='md'>
-          <Button disabled={isLoading} type="submit">
-            {create ? "Ajouter le site" : "Enregistrer les changements"}
-          </Button>
-        </ButtonGroup>
+        <div style={{ display: 'flex' }}>
+          <div>
+
+            <Button disabled={isLoading || !touched} className={notice ? "fr-mr-2w" : ""} size="lg" type="submit">
+              {create ? "Ajouter le site" : "Enregistrer les changements"}
+            </Button>
+          </div>
+          {!touched && notice}
+        </div>
 
       </form>
     </Container>

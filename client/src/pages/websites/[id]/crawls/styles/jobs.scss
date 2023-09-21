@@ -1,35 +1,3 @@
-[data-fr-scheme="light"] {
-  --jobs-success-color: #32e477;
-  --jobs-pending-color: #a4b9f7;
-  --jobs-started-color: #edb82f;
-  --jobs-error-color: #f7aaaa;
-
-  .selected {
-    margin-right: -2rem;
-    filter: brightness(97%);
-  }
-
-  .selected-div {
-    filter: brightness(97%);
-  }
-}
-
-[data-fr-scheme="dark"] {
-  --jobs-success-color: #32e477;
-  --jobs-pending-color: #a4b9f7;
-  --jobs-started-color: #edb82f;
-  --jobs-error-color: #f7aaaa;
-
-  .selected {
-    margin-right: -2rem;
-    filter: brightness(130%);
-  }
-
-  .selected-div {
-    filter: brightness(130%);
-  }
-}
-
 .error-border {
   border-left: .25rem solid var(--jobs-error-color) !important;
   border-radius: .25rem;
@@ -76,6 +44,18 @@
 
 .job {
   padding: 0.5rem;
+
+  // :first-child {
+  //   background-color: var(--hover);
+  // }
+}
+
+.selected-job {
+  padding: 0.5rem;
+
+  :first-child {
+    background-color: inherit;
+  }
 }
 
 .job-code {
@@ -90,6 +70,12 @@
   color: inherit !important;
 }
 
-.card-fit-content {
-  height: fit-content !important;
+.metadata {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  :not(last-child) {
+    margin-bottom: .25rem;
+  }
 }

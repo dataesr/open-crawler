@@ -1,5 +1,5 @@
 import cn, { Argument } from "classnames";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ColorType } from "../../types";
 import { forwardProps } from "../../utils/props";
 
@@ -11,7 +11,8 @@ interface NoticeCss {
 }
 
 export interface NoticeProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
-  closeMode?: "disallow" | "uncontrolled" | "controlled";
+  closeMode?: "disallow" | "uncontrolled" | "controlled" | "autoDismiss";
+  autoDismissAfter?: number;
   onClose?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children?: string | React.ReactNode[] | React.ReactNode;
   className?: Argument;
@@ -22,6 +23,7 @@ export interface NoticeProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 
 export const Notice: React.FC<NoticeProps> = ({
   children,
   closeMode = "disallow",
+  autoDismissAfter = 5000,
   type = 'info',
   className,
   css = {},
@@ -35,6 +37,15 @@ export const Notice: React.FC<NoticeProps> = ({
     ref.current?.remove();
     if (onClose) onClose(e);
   }
+
+  useEffect(() => {
+    if (closeMode === "autoDismiss") {
+      const timeout = setTimeout(() => {
+        ref.current?.remove();
+      }, autoDismissAfter);
+      return () => clearTimeout(timeout);
+    }
+  }, [closeMode, autoDismissAfter, onClose])
   const _cn = cn('fr-notice', {
     "fr-notice--info": type === 'info',
     [`react-dsfr-notice--${type}`]: type !== 'info',
@@ -44,12 +55,12 @@ export const Notice: React.FC<NoticeProps> = ({
       <div className={cn("fr-container", css["fr-container"])}>
         <div className={cn("fr-notice__body", css["fr-notice__body"])}>
           <p className={cn("fr-notice__title", css["fr-notice__title"])}>{children}</p>
-          <button
+          {(closeMode !== "disallow") && (<button
             onClick={(closeMode === "uncontrolled") ? handleClose : onClose}
             className={cn("fr-btn--close", "fr-btn", css["fr-btn--close"])}
           >
             Masquer le message
-          </button>
+          </button>)}
         </div>
       </div>
     </div>
