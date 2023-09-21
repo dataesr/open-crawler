@@ -1,10 +1,14 @@
-import os
 from typing import Any
+import os
 
 import requests
 
 
 class ResponsivenessCalculatorError(Exception):
+    pass
+
+
+class InvalidAPIKeyError(Exception):
     pass
 
 
@@ -14,9 +18,21 @@ class ResponsivenessCalculator:
         self._api_key = os.environ["GOOGLE_API_KEY"]
 
     def get_responsiveness(self, url: str) -> dict[str, Any]:
+        response = None
         try:
-            response = requests.post(self.base_url, data={"url": url}, params={"key": self._api_key, "alt": "json"})
-            response_json = response.json()
+            response = requests.post(
+                self.base_url,
+                data={"url": url},
+                params={"key": self._api_key, "alt": "json"},
+            )
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            error_msg = None
+            if response:
+                error_msg = response.json().get("error", {}).get("message", "")
+            raise ResponsivenessCalculatorError(
+                error_msg or "Unknown error"
+            ) from e
         except Exception as e:
             raise ResponsivenessCalculatorError from e
-        return response_json
+        return response.json()
