@@ -8,10 +8,6 @@ class ResponsivenessCalculatorError(Exception):
     pass
 
 
-class InvalidAPIKeyError(Exception):
-    pass
-
-
 class ResponsivenessCalculator:
     def __init__(self):
         self.base_url = "https://content-searchconsole.googleapis.com/v1/urlTestingTools/mobileFriendlyTest:run"
