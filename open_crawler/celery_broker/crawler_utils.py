@@ -3,7 +3,7 @@ from scrapy.utils.project import get_project_settings
 from scrapy.utils.python import without_none_values
 
 import repositories
-from crawler.spiders.menesr import MenesrSpider
+from crawler.spider import MenesrSpider
 from models.crawl import CrawlModel
 from models.enums import ProcessStatus
 from models.process import CrawlProcess

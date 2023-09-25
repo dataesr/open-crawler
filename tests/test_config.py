@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from config.config import get_settings, DevelopmentConfig, BaseConfig
+from celery_broker.config import get_settings, DevelopmentConfig, BaseConfig
 
 
 class TestSettings(unittest.TestCase):
