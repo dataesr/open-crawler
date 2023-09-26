@@ -1,4 +1,4 @@
-from api.utils import create_api_app
+from api.factory import create_api_app
 
 api_app = create_api_app()
 

@@ -1,4 +1,4 @@
-from celery_broker.utils import create_celery_app
+from celery_broker.factory import create_celery_app
 
 celery_app = create_celery_app()
 

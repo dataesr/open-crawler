@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from scrapy.spiders import Rule
 
-from crawler.spiders.menesr import MenesrSpider
+from crawler.spider import MenesrSpider
 
 
 class TestMenesrSpider(unittest.TestCase):
