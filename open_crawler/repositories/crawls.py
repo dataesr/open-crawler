@@ -1,8 +1,8 @@
 import os
-from datetime import datetime
 
 from pymongo.results import InsertOneResult
 
+from celery_broker.utils import french_datetime
 from models.crawl import CrawlModel, ListCrawlResponse
 from models.enums import ProcessStatus
 from models.metadata import MetadataTask
@@ -60,9 +60,9 @@ class CrawlsRepository:
     def update_status(self, crawl_id: str, status: ProcessStatus):
         update_dict = {"status": status}
         if status == ProcessStatus.STARTED:
-            update_dict["started_at"] = datetime.now()
+            update_dict["started_at"] = french_datetime()
         if status == ProcessStatus.SUCCESS:
-            update_dict["finished_at"] = datetime.now()
+            update_dict["finished_at"] = french_datetime()
         self.collection.update_one(
             filter={"id": crawl_id},
             update={"$set": update_dict},

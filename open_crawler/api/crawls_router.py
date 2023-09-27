@@ -22,7 +22,6 @@ crawls_router = APIRouter(
     response_model=CrawlModel,
     status_code=statuscode.HTTP_202_ACCEPTED,
     summary="Start a new crawl for an existing website, using stored configuration.",
-    tags=["websites"],
 )
 def crawl_website(website_id: str):
     if website := repositories.websites.get(website_id):
@@ -42,7 +41,6 @@ def crawl_website(website_id: str):
     response_model=ListCrawlResponse,
     status_code=statuscode.HTTP_200_OK,
     summary="Get all crawls for a website",
-    tags=["websites"],
 )
 def list_crawls(
     website_id: str,
@@ -59,7 +57,6 @@ def list_crawls(
     "/{website_id}/crawls/{crawl_id}/files",
     status_code=statuscode.HTTP_200_OK,
     summary="Get a zip of all files from a crawl",
-    tags=["websites"],
 )
 def get_crawl_files(website_id: str, crawl_id: str) -> StreamingResponse:
     """Zip the files from the storage service"""
@@ -73,7 +70,11 @@ def get_crawl_files(website_id: str, crawl_id: str) -> StreamingResponse:
 
     bucket = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
     zip_io = io.BytesIO()
-    crawl = repositories.crawls.get(website_id, crawl_id)
+    if not (crawl := repositories.crawls.get(website_id, crawl_id)):
+        raise HTTPException(
+            status_code=statuscode.HTTP_404_NOT_FOUND,
+            detail="Crawl not found",
+        )
     url = crawl.config.url.replace("https://", "").replace("http://", "")
     prefix = f"{url}{crawl_id}"
     objects = client.list_objects(bucket, prefix=prefix, recursive=True)

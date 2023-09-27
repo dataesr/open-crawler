@@ -19,7 +19,6 @@ websites_router = APIRouter(
     status_code=statuscode.HTTP_201_CREATED,
     summary="Add a new website",
     description="Create a website, start a crawl and return the website read object",
-    tags=["websites"],
 )
 def create_website(data: CreateWebsiteRequest):
     website = data.to_website_model()
@@ -41,7 +40,6 @@ def create_website(data: CreateWebsiteRequest):
     response_model=ListWebsiteResponse,
     status_code=statuscode.HTTP_200_OK,
     summary="List all websites",
-    tags=["websites"],
 )
 def list_websites(
     query: str | None = None,
@@ -61,7 +59,6 @@ def list_websites(
     response_model=WebsiteModel,
     status_code=statuscode.HTTP_200_OK,
     summary="Get a single website by its unique ID",
-    tags=["websites"],
 )
 def get_website(website_id: str):
     if data := repositories.websites.get(website_id):
@@ -77,7 +74,6 @@ def get_website(website_id: str):
     "/{website_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
     summary="Update a website by its unique ID",
-    tags=["websites"],
 )
 def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
     try:
@@ -93,7 +89,19 @@ def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
     "/{website_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
     summary="Delete a website by its unique ID",
-    tags=["websites"],
 )
 def delete_website(website_id: str):
     repositories.websites.delete(website_id)
+
+
+@websites_router.post(
+    "/auto_recrawl",
+    status_code=statuscode.HTTP_204_NO_CONTENT,
+    summary="Recrawl websites with next_crawl_at date passed",
+)
+def recrawl_cron():
+    for website in repositories.websites.list_to_recrawl().data:
+        crawl = create_crawl(website)
+        start_crawl(crawl)
+        repositories.websites.refresh_next_crawl(crawl.website_id)
+        return crawl

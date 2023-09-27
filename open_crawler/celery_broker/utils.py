@@ -1,3 +1,5 @@
+from datetime import datetime, timezone, timedelta
+
 CONTENT_TYPE_MAP: dict[str, str] = {
     "html": "text/html",
     "json": "application/json",
@@ -16,5 +18,9 @@ def assume_content_type(input_string: str) -> str:
     - str: The associated content type. If no match is found, it defaults to
            'application/octet-stream' as a generic binary format.
     """
-    suffix = input_string.rsplit('.', 1)[-1].lower()
+    suffix = input_string.rsplit(".", 1)[-1].lower()
     return CONTENT_TYPE_MAP.get(suffix, "application/octet-stream")
+
+
+def french_datetime() -> datetime:
+    return datetime.now(timezone(timedelta(hours=2)))

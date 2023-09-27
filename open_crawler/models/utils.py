@@ -5,6 +5,7 @@ __all__ = "get_uuid"
 
 from pydantic import BaseModel
 
+from celery_broker.utils import french_datetime
 from models.enums import ProcessStatus
 
 
@@ -27,7 +28,7 @@ class BaseTaskModel(BaseModel):
         if status is None:
             return
         if status == ProcessStatus.STARTED:
-            self.started_at = datetime.now()
+            self.started_at = french_datetime()
         if status == ProcessStatus.SUCCESS:
-            self.finished_at = datetime.now()
+            self.finished_at = french_datetime()
         self.status = status

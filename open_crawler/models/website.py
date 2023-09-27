@@ -4,6 +4,7 @@ from typing import Optional, Any
 
 from pydantic import BaseModel, Field
 
+from celery_broker.utils import french_datetime
 from models.crawl import CrawlConfig, CrawlParameters
 from models.enums import MetadataType
 from .metadata import MetadataConfig
@@ -23,8 +24,8 @@ class WebsiteModel(BaseModel):
     good_practices: MetadataConfig
     carbon_footprint: MetadataConfig
     headers: dict[str, Any]
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=french_datetime)
+    updated_at: datetime = Field(default_factory=french_datetime)
     tags: list[str]
     crawl_every: int
     next_crawl_at: Optional[datetime] = None
@@ -46,7 +47,9 @@ class WebsiteModel(BaseModel):
         )
 
     def refresh_next_crawl_date(self):
-        self.next_crawl_at = datetime.now() + timedelta(days=self.crawl_every)
+        self.next_crawl_at = french_datetime() + timedelta(
+            days=self.crawl_every
+        )
 
 
 class ListWebsiteResponse(BaseModel):
