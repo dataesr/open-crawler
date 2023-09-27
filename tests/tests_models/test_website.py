@@ -1,6 +1,7 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
+from celery_broker.utils import french_datetime
 from models.crawl import CrawlConfig
 from models.metadata import MetadataConfig
 from models.website import WebsiteModel, ListWebsiteResponse
@@ -65,7 +66,7 @@ class TestWebsiteModel(unittest.TestCase):
         )
         website.refresh_next_crawl_date()
         self.assertIsNotNone(website.next_crawl_at)
-        self.assertTrue(website.next_crawl_at > datetime.now())
+        self.assertTrue(website.next_crawl_at > french_datetime())
 
 
 class TestListWebsiteResponse(unittest.TestCase):

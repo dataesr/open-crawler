@@ -12,9 +12,8 @@ def create_api_app() -> FastAPI:
     Create and configure the FastAPI application.
     """
     api_app = FastAPI(
-        title="Asynchronous tasks processing with Celery and RabbitMQ",
-        description="Sample FastAPI Application to demonstrate Event "
-        "driven architecture with Celery and RabbitMQ",
+        title="Module de crawl pour le projet Scanr",
+        description="Application permettant de crawler des sites web et d'en extraire certaines métadonnées.",
         version="1.0.0",
     )
 

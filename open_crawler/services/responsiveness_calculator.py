@@ -23,12 +23,10 @@ class ResponsivenessCalculator:
             )
             response.raise_for_status()
         except requests.HTTPError as e:
-            error_msg = None
-            if response:
-                error_msg = response.json().get("error", {}).get("message", "")
-            raise ResponsivenessCalculatorError(
-                error_msg or "Unknown error"
-            ) from e
+            error_msg = (
+                response.json().get("error", {}).get("message", e.response)
+            )
+            raise ResponsivenessCalculatorError(error_msg) from e
         except Exception as e:
             raise ResponsivenessCalculatorError from e
         return response.json()
