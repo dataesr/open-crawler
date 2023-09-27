@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from pydantic import ValidationError
 
+from celery_broker.utils import french_datetime
 from models.metadata import MetadataConfig
 from models.request import CreateWebsiteRequest, UpdateWebsiteRequest
 from models.website import WebsiteModel
@@ -47,8 +48,9 @@ class TestCreateWebsiteRequest(unittest.TestCase):
         self.assertEqual(website.depth, 2)
         self.assertTrue(
             (
-                french_datetime()
-                + timedelta(days=30)
+                (french_datetime() + timedelta(days=30)).replace(
+                    hour=0, minute=0, second=0
+                )
                 - website.next_crawl_at
             ).seconds
             < 1

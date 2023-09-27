@@ -47,9 +47,9 @@ class WebsiteModel(BaseModel):
         )
 
     def refresh_next_crawl_date(self):
-        self.next_crawl_at = french_datetime() + timedelta(
-            days=self.crawl_every
-        )
+        self.next_crawl_at = (
+            french_datetime() + timedelta(days=self.crawl_every)
+        ).replace(hour=0, minute=0, second=0)
 
 
 class ListWebsiteResponse(BaseModel):
