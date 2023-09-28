@@ -115,7 +115,7 @@ This endpoint allows you to create a new website configuration end execute a cra
 ## Monitor crawl tasks in Celery
 
 The docker-compose file deploys a Flower service which allows us to monitor tasks as they are beeing processed.
-In order to consult it, we need to navigate to http://localhost:5555 (by default)
+In order to consult it, we need to navigate to http://localhost:5555/flower (by default)
 
 ![flower](./demo/flower.png)
 
