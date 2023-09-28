@@ -142,17 +142,21 @@ def upload_html(self, crawl: CrawlModel):
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
     crawl_files_path = pathlib.Path(
-        f"{os.environ['LOCAL_FILES_PATH']}/{crawl.id}"
+        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl.id}"
     )
-    local_files_folder = os.environ["LOCAL_FILES_PATH"]
+    local_files_folder = f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}"
 
     prefix = crawl.config.url.replace("https://", "").replace("http://", "")
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
+        print(
+            f"{prefix.rstrip('/')}/{file_path.removeprefix(local_files_folder).lstrip('/')}",
+            flush=True,
+        )
         client.fput_object(
             bucket_name=bucket_name,
-            object_name=f"{prefix}{file_path.removeprefix(local_files_folder)}",
+            object_name=f"{prefix.rstrip('/')}/{file_path.removeprefix(local_files_folder).lstrip('/')}",
             file_path=file_path,
             content_type=assume_content_type(file_path),
         )

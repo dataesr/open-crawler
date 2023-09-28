@@ -76,10 +76,13 @@ def get_crawl_files(website_id: str, crawl_id: str) -> StreamingResponse:
             detail="Crawl not found",
         )
     url = crawl.config.url.replace("https://", "").replace("http://", "")
-    prefix = f"{url}{crawl_id}"
+    print(url)
+    prefix = f"{url}/{crawl_id}"
+    print(prefix, flush=True)
     objects = client.list_objects(bucket, prefix=prefix, recursive=True)
     with ZipFile(zip_io, "a", ZIP_DEFLATED, False) as zipper:
         for obj in objects:
+            print(obj.object_name)
             file = client.get_object(bucket, obj.object_name).read()
             zipper.writestr(obj.object_name, file)
     return StreamingResponse(
