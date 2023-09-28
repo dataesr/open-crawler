@@ -23,7 +23,6 @@ def create_crawl(website: WebsiteModel) -> CrawlModel:
 
 
 def start_crawl(crawl: CrawlModel) -> None:
-    crawler_logger.set_file(crawl.id)
     logger.info(
         f"New crawl process ({crawl.id}) for website {crawl.config.url}"
     )

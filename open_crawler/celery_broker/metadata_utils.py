@@ -11,7 +11,7 @@ from services.accessibility_best_practices_calculator import (
     BestPracticesError,
 )
 from services.carbon_calculator import CarbonCalculatorError
-from services.crawler_logger import set_file, logger
+from services.crawler_logger import logger
 from services.responsiveness_calculator import ResponsivenessCalculatorError
 from services.technologies_calculator import TechnologiesError
 
@@ -29,7 +29,6 @@ def handle_metadata_result(
             task_name=metadata_type,
             task=task,
         )
-        set_file(crawl_process.id)
         logger.error(f"{metadata_type} failed.")
         return
     store_metadata_result(crawl_process, result, metadata_type)
@@ -65,7 +64,6 @@ def metadata_task(
     calc_method = getattr(calculator, method_name)
     result = {}
     task.update(status=ProcessStatus.STARTED)
-    set_file(crawl_process.id)
     logger.debug(f"{metadata_type} started!")
     repositories.crawls.update_task(
         crawl_id=crawl_process.id,

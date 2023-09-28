@@ -21,7 +21,7 @@ from services.accessibility_best_practices_calculator import (
     LighthouseWrapper,
 )
 from services.carbon_calculator import CarbonCalculator
-from services.crawler_logger import logger, set_file
+from services.crawler_logger import logger
 from services.responsiveness_calculator import (
     ResponsivenessCalculator,
 )
@@ -35,7 +35,6 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
     repositories.crawls.update_status(
         crawl_id=crawl.id, status=ProcessStatus.STARTED
     )
-    set_file(crawl.id)
     logger.debug("Html crawl started!")
     crawl.html_crawl.update(
         task_id=self.request.id, status=ProcessStatus.STARTED
@@ -123,7 +122,6 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
 @celery_app.task(bind=True, name="upload_html")
 def upload_html(self, crawl: CrawlModel):
     crawl.uploads.update(task_id=self.request.id, status=ProcessStatus.STARTED)
-    set_file(crawl.id)
     logger.debug("Files upload started!")
     repositories.crawls.update_task(
         crawl_id=crawl.id,
