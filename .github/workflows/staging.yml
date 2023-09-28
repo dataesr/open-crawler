@@ -14,6 +14,16 @@ env:
   MM_NOTIFICATION_CHANNEL: 'bots'
 
 jobs:
+  unit-test:
+    name: run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: test
+        run: python -m unittest
+
+
   publish-ghcr:
     name: Publish docker images to ghcr.io
     runs-on: ubuntu-latest
