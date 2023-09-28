@@ -46,9 +46,11 @@ def handle_metadata_result(
 def store_metadata_result(
     crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType
 ):
-    base_file_path = f"{os.environ['LOCAL_FILES_PATH']}/{crawl_process.id}"
+    base_file_path = (
+        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl_process.id}"
+    )
     file_path = pathlib.Path(
-        f"{base_file_path}/{os.environ['METADATA_FOLDER_NAME']}/{metadata_type}.json"
+        f"{base_file_path}/{os.environ['METADATA_FOLDER_NAME'].strip('/')}/{metadata_type}.json"
     )
     file_path.parent.mkdir(exist_ok=True, parents=True)
     file_path.write_text(json.dumps(result, indent=4))

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from celery_broker.utils import french_datetime
 from models.metadata import MetadataConfig
 from models.website import WebsiteModel
+from services.url_cleaner import clean_url
 
 
 class UpdateWebsiteRequest(BaseModel):
@@ -44,6 +45,7 @@ class CreateWebsiteRequest(BaseModel):
     crawl_every: int = Field(ge=0, default=30)
 
     def to_website_model(self) -> WebsiteModel:
+        self.url = clean_url(self.url)
         website = WebsiteModel(**self.model_dump())
         website.refresh_next_crawl_date()
 
