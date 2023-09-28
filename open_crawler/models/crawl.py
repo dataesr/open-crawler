@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from celery_broker.utils import french_datetime
 from models.enums import MetadataType, ProcessStatus
 from models.metadata import MetadataConfig, AccessibilityModel, MetadataTask
 from models.utils import get_uuid, BaseTaskModel
@@ -25,7 +26,7 @@ class CrawlModel(BaseModel):
     id: str = Field(default_factory=get_uuid)
     website_id: str
     config: CrawlConfig
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=french_datetime)
     started_at: datetime | None = None
     finished_at: datetime | None = None
     status: ProcessStatus = ProcessStatus.PENDING
@@ -67,9 +68,9 @@ class CrawlModel(BaseModel):
 
     def update_status(self, status: ProcessStatus):
         if status == ProcessStatus.STARTED:
-            self.started_at = datetime.now()
+            self.started_at = french_datetime()
         if status == ProcessStatus.SUCCESS:
-            self.finished_at = datetime.now()
+            self.finished_at = french_datetime()
         self.status = status
 
 

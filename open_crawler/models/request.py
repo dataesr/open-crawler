@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from celery_broker.utils import french_datetime
 from models.metadata import MetadataConfig
 from models.website import WebsiteModel
 
@@ -44,8 +45,6 @@ class CreateWebsiteRequest(BaseModel):
 
     def to_website_model(self) -> WebsiteModel:
         website = WebsiteModel(**self.model_dump())
-        website.next_crawl_at = datetime.now() + timedelta(
-            days=self.crawl_every
-        )
+        website.refresh_next_crawl_date()
 
         return website

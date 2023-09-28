@@ -1,8 +1,7 @@
-# Define here the models for your spider middleware
+# Define here the tests_models for your spider middleware
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import logging
 import os
 from pathlib import Path
 
@@ -11,9 +10,8 @@ from scrapy.exceptions import IgnoreRequest
 from scrapy.extensions.closespider import CloseSpider
 from scrapy.utils.python import without_none_values
 
-# useful for handling different item types with a single interface
 
-logger = logging.getLogger(__name__)
+# useful for handling different item types with a single interface
 
 
 class CustomCloseSpider(CloseSpider):
@@ -51,9 +49,11 @@ class HtmlStorageMiddleware:
         base_file_path = (
             f"{os.environ['LOCAL_FILES_PATH']}/{spider.crawl_process.id}"
         )
-        file_name = response.url.split(f"{domain}")[-1] or "index.html"
+        file_name = response.url.split(f"{domain}")[-1]
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
+        if file_name == ".html":
+            file_name = "index.html"
         return Path(
             f"{base_file_path}/{os.environ['HTML_FOLDER_NAME']}/{file_name}"
         )

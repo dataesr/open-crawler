@@ -1,28 +1,38 @@
-import os
+from celery import group, chain
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import repositories
+from celery_broker.tasks import (
+    METADATA_TASK_REGISTRY,
+    start_crawl_process,
+    upload_html,
+)
+from models.crawl import CrawlModel
+from models.website import WebsiteModel
+from services import crawler_logger
+from services.crawler_logger import logger
 
-from api import router
 
-
-def create_api_app() -> FastAPI:
-    api_app = FastAPI(
-        title="Asynchronous tasks processing with Celery and RabbitMQ",
-        description="Sample FastAPI Application to demonstrate Event "
-        "driven architecture with Celery and RabbitMQ",
-        version="1.0.0",
+def create_crawl(website: WebsiteModel) -> CrawlModel:
+    crawl: CrawlModel = CrawlModel(
+        website_id=website.id,
+        config=website.to_config(),
     )
+    crawl.init_tasks()
+    repositories.crawls.create(crawl)
+    return crawl
 
-    mode = os.environ.get("MODE", "production")
-    if mode != "production":
-        api_app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
 
-    api_app.include_router(router.websites_router)
-    return api_app
+def start_crawl(crawl: CrawlModel) -> None:
+    crawler_logger.set_file(crawl.id)
+    logger.info(
+        f"New crawl process ({crawl.id}) for website {crawl.config.url}"
+    )
+    metadata_tasks = group(
+        METADATA_TASK_REGISTRY.get(metadata).s()
+        for metadata in crawl.enabled_metadata
+    )
+    chain(
+        start_crawl_process.s(crawl),
+        metadata_tasks,
+        upload_html.si(crawl),
+    ).apply_async(task_id=crawl.id)

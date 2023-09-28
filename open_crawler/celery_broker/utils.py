@@ -1,26 +1,26 @@
-import os
+from datetime import datetime, timezone, timedelta
 
-from celery import Celery
+CONTENT_TYPE_MAP: dict[str, str] = {
+    "html": "text/html",
+    "json": "application/json",
+    # ... you can extend this mapping as needed
+}
 
-from config.config import settings
+
+def assume_content_type(input_string: str) -> str:
+    """
+    Determines the content type based on the suffix of the given input string.
+
+    Args:
+    - input_string (str): The string to determine content type for.
+
+    Returns:
+    - str: The associated content type. If no match is found, it defaults to
+           'application/octet-stream' as a generic binary format.
+    """
+    suffix = input_string.rsplit(".", 1)[-1].lower()
+    return CONTENT_TYPE_MAP.get(suffix, "application/octet-stream")
 
 
-def create_celery_app() -> Celery:
-    celery_app = Celery(
-        "scanr",
-        broker=os.environ.get("CELERY_BROKER_URL"),
-        backend=os.environ.get("CELERY_RESULT_BACKEND"),
-        broker_connection_retry_on_startup=True,
-        include=[
-            "celery_broker.tasks",
-        ],
-    )
-    celery_app.config_from_object(settings, namespace="CELERY")
-    celery_app.conf.update(task_track_started=True)
-    celery_app.conf.update(task_serializer="pickle")
-    celery_app.conf.update(result_serializer="pickle")
-    celery_app.conf.update(accept_content=["pickle", "json"])
-    celery_app.conf.update(result_persistent=True)
-    celery_app.conf.update(worker_send_task_events=True)
-    celery_app.conf.update(worker_prefetch_multiplier=1)
-    return celery_app
+def french_datetime() -> datetime:
+    return datetime.now(timezone(timedelta(hours=2)))

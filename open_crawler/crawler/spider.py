@@ -1,12 +1,9 @@
-import logging
 from urllib.parse import urlparse
 
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
 from models.process import CrawlProcess
-
-logger = logging.getLogger(__name__)
 
 
 class MenesrSpider(CrawlSpider):
@@ -15,7 +12,6 @@ class MenesrSpider(CrawlSpider):
 
     def __init__(self, crawl_process: CrawlProcess, *a, **kw):
         parsed_url = urlparse(crawl_process.config.url)
-        logger.info(parsed_url.path)
         if parsed_url.path:
             self.rules = (Rule(LinkExtractor(allow=parsed_url.path)),)
         self.allowed_domains = [parsed_url.netloc]

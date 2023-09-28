@@ -8,13 +8,26 @@ class CarbonCalculatorError(Exception):
 
 
 class CarbonCalculator:
-    def __init__(self):
-        self.base_url = "https://api.websitecarbon.com/site"
+    BASE_URL = "https://api.websitecarbon.com/site"
+    TIMEOUT = 300  # 5 minutes timeout for the API request
 
     def get_carbon_footprint(self, url: str) -> dict[str, Any]:
+        if not url:
+            raise ValueError("URL cannot be empty.")
+
         try:
-            response = requests.get(self.base_url, params={"url": url})
+            response = requests.get(
+                self.BASE_URL, params={"url": url}, timeout=self.TIMEOUT
+            )
+            response.raise_for_status()
             response_json = response.json()
-        except Exception as e:
-            raise CarbonCalculatorError from e
+        except requests.RequestException as e:
+            raise CarbonCalculatorError(
+                f"Request to Carbon Calculator API failed: {str(e)}"
+            ) from e
+        except ValueError as e:
+            # This will catch JSON decoding errors
+            raise CarbonCalculatorError(
+                f"Failed to decode API response: {str(e)}"
+            ) from e
         return response_json

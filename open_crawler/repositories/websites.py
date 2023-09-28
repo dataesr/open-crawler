@@ -1,11 +1,12 @@
 import os
 from typing import Any
 
-from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
+from pymongo.results import InsertOneResult, UpdateResult
 
+from celery_broker.utils import french_datetime
 from models.enums import ProcessStatus
-from models.website import WebsiteModel, ListWebsiteResponse
 from models.request import UpdateWebsiteRequest
+from models.website import WebsiteModel, ListWebsiteResponse
 from mongo import db
 
 
@@ -79,6 +80,21 @@ class WebsitesRepository:
         self.update(
             website_id=website_id,
             data=UpdateWebsiteRequest(next_crawl_at=website.next_crawl_at),
+        )
+
+    def list_to_recrawl(self) -> ListWebsiteResponse:
+        filters = {"next_crawl_at": {"$lte": french_datetime()}}
+
+        cursor = self.collection.find(filters)
+        data = [WebsiteModel(**website) for website in cursor]
+        count = self.collection.count_documents(filters)
+        tags = self.collection.distinct("tags")
+        statuses = self.collection.distinct("last_crawl.status")
+        return ListWebsiteResponse(
+            data=data,
+            count=count,
+            tags=tags,
+            status=[ProcessStatus(status) for status in statuses],
         )
 
 
