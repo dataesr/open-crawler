@@ -3,6 +3,7 @@ FROM node
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONPATH=/open-crawler
 
 # Install the Wappalyzer CLI tool globally
 SHELL ["/bin/bash", "-c"]
@@ -21,9 +22,9 @@ RUN curl -sSL https://dl.google.com/linux/direct/google-chrome-stable_current_am
     apt-get install -y ./chrome.deb && \
     rm ./chrome.deb
 
-WORKDIR /app
+WORKDIR /open-crawler
 
-COPY ./requirements.txt /app
+COPY ./requirements.txt /open-crawler
 
 ENV PYTHON_VENV=/opt/venv
 RUN python3 -m venv $PYTHON_VENV
@@ -31,7 +32,7 @@ ENV PATH="$PYTHON_VENV/bin:$PATH"
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-COPY ./open_crawler/ /app
+COPY ./app/ /open-crawler/app
 
 ## Set CHROME_PATH environment variable
 ENV CHROME_PATH=/usr/bin/google-chrome
@@ -47,7 +48,7 @@ WORKDIR /wappalyzer
 # Install dependencies using yarn and link it
 RUN yarn install && yarn run link
 
-WORKDIR /app
+WORKDIR /open-crawler/app
 
 # Specify the command to run on container start (for this example, it's just a shell)
 CMD [ "bash" ]

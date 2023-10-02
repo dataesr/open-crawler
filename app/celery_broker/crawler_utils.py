@@ -2,11 +2,11 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.python import without_none_values
 
-import repositories
-from crawler.spider import MenesrSpider
-from models.crawl import CrawlModel
-from models.enums import ProcessStatus
-from models.process import CrawlProcess
+import app.repositories as repositories
+from app.crawler.spider import MenesrSpider
+from app.models.crawl import CrawlModel
+from app.models.enums import ProcessStatus
+from app.models.process import CrawlProcess
 
 
 def update_crawl_status(crawl: CrawlModel, status: ProcessStatus):

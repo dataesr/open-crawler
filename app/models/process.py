@@ -2,8 +2,8 @@ from typing import Self
 
 from pydantic import BaseModel
 
-from models.crawl import CrawlConfig, CrawlModel
-from models.enums import ProcessStatus, MetadataType
+from app.models.crawl import CrawlConfig, CrawlModel
+from app.models.enums import ProcessStatus, MetadataType
 
 
 class MetadataProcess(BaseModel):

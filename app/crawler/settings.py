@@ -45,7 +45,7 @@ COOKIES_ENABLED = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-    "crawler.middlewares.MetadataMiddleware": 1000,
+    "app.crawler.middlewares.MetadataMiddleware": 1000,
     # WARNING: Middlewares order is highly important !! Must be > 900
 }
 
@@ -57,9 +57,9 @@ CLOSESPIDER_PAGECOUNT = 50
 DOWNLOADER_MIDDLEWARES = {
     "scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware": None,
     # Disabled because replaced by the custom one
-    "crawler.middlewares.CustomHeadersMiddleware": 400,
+    "app.crawler.middlewares.CustomHeadersMiddleware": 400,
     # Replaces the DefaultHeadersMiddleware position
-    "crawler.middlewares.HtmlStorageMiddleware": 99,
+    "app.crawler.middlewares.HtmlStorageMiddleware": 99,
     # Just after the last middleware (because only needed when the response passed all checks from all middlewares)
 }
 
@@ -68,7 +68,7 @@ DOWNLOADER_MIDDLEWARES = {
 EXTENSIONS = {
     "scrapy.extensions.closespider.CloseSpider": None,
     # Disabled because replaced by the custom one
-    "crawler.middlewares.CustomCloseSpider": 0,
+    "app.crawler.middlewares.CustomCloseSpider": 0,
     # It doesn't depend on any other extension, therefore we can set it at the same level as the others
 }
 

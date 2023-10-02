@@ -8,24 +8,24 @@ from multiprocessing import Process, Manager
 from minio import Minio
 
 # Local imports
-import repositories
-from celery_broker.crawler_utils import start_crawler_process
-from celery_broker.main import celery_app
-from celery_broker.metadata_utils import metadata_task
-from celery_broker.utils import assume_content_type
-from models.crawl import CrawlModel
-from models.enums import MetadataType, ProcessStatus
-from models.metadata import MetadataTask
-from models.process import CrawlProcess
-from services.accessibility_best_practices_calculator import (
+import app.repositories as repositories
+from app.celery_broker.crawler_utils import start_crawler_process
+from app.celery_broker.main import celery_app
+from app.celery_broker.metadata_utils import metadata_task
+from app.celery_broker.utils import assume_content_type
+from app.models.crawl import CrawlModel
+from app.models.enums import MetadataType, ProcessStatus
+from app.models.metadata import MetadataTask
+from app.models.process import CrawlProcess
+from app.services.accessibility_best_practices_calculator import (
     LighthouseWrapper,
 )
-from services.carbon_calculator import CarbonCalculator
-from services.crawler_logger import logger
-from services.responsiveness_calculator import (
+from app.services.carbon_calculator import CarbonCalculator
+from app.services.crawler_logger import logger
+from app.services.responsiveness_calculator import (
     ResponsivenessCalculator,
 )
-from services.technologies_calculator import (
+from app.services.technologies_calculator import (
     TechnologiesCalculator,
 )
 
@@ -44,6 +44,7 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         task_name="html_crawl",
         task=crawl.html_crawl,
     )
+
     crawl_process = CrawlProcess.from_model(crawl)
     with Manager() as manager:
         shared_dict = manager.dict()
@@ -54,6 +55,7 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         p.start()
         p.join()  # TODO define and add a timeout
         crawl_process.metadata.update(shared_dict["metadata"])
+
     crawl.html_crawl.update(status=ProcessStatus.SUCCESS)
     repositories.crawls.update_task(
         crawl_id=crawl.id,
@@ -150,10 +152,6 @@ def upload_html(self, crawl: CrawlModel):
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
-        print(
-            f"{prefix.rstrip('/')}/{file_path.removeprefix(local_files_folder).lstrip('/')}",
-            flush=True,
-        )
         client.fput_object(
             bucket_name=bucket_name,
             object_name=f"{prefix.rstrip('/')}/{file_path.removeprefix(local_files_folder).lstrip('/')}",

@@ -4,11 +4,11 @@ from typing import Optional, Any
 
 from pydantic import BaseModel, Field
 
-from celery_broker.utils import french_datetime
-from models.crawl import CrawlConfig, CrawlParameters
-from models.enums import MetadataType
-from .metadata import MetadataConfig
-from .utils import get_uuid
+from app.celery_broker.utils import french_datetime
+from app.models.crawl import CrawlConfig, CrawlParameters
+from app.models.enums import MetadataType
+from app.models.metadata import MetadataConfig
+from app.models.utils import get_uuid
 
 DEFAULT_RECRAWL_INTERVAL = os.environ.get("DEFAULT_RECRAWL_INTERVAL", 30)
 

@@ -23,10 +23,11 @@ RUN npm install -g lighthouse
 
 # Set CHROME_PATH environment variable
 ENV CHROME_PATH=/usr/bin/google-chrome
+ENV PYTHONPATH=/open-crawler
 
-WORKDIR /app
+WORKDIR /open-crawler
 
-COPY ./requirements.txt /app
+COPY ./requirements.txt /open-crawler
 
 ENV PYTHON_VENV=/opt/venv
 RUN python3 -m venv $PYTHON_VENV
@@ -34,6 +35,8 @@ ENV PATH="$PYTHON_VENV/bin:$PATH"
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-COPY ./open_crawler/ /app
+COPY ./app/ /open-crawler/app
+
+WORKDIR /open-crawler/app
 
 CMD ["uvicorn", "api.main:api_app", "--host", "0.0.0.0", "--port", "80"]

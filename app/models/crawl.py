@@ -3,10 +3,10 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from celery_broker.utils import french_datetime
-from models.enums import MetadataType, ProcessStatus
-from models.metadata import MetadataConfig, AccessibilityModel, MetadataTask
-from models.utils import get_uuid, BaseTaskModel
+from app.celery_broker.utils import french_datetime
+from app.models.enums import MetadataType, ProcessStatus
+from app.models.metadata import MetadataConfig, AccessibilityModel, MetadataTask
+from app.models.utils import get_uuid, BaseTaskModel
 
 
 class CrawlParameters(BaseModel):

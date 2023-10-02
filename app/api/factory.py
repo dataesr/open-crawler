@@ -3,8 +3,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.crawls_router import crawls_router
-from api.websites_router import websites_router
+from app.api.crawls_router import crawls_router
+from app.api.websites_router import websites_router
 
 
 def create_api_app() -> FastAPI:

@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 
 import requests
 
-from services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
+from app.services.carbon_calculator import CarbonCalculator, CarbonCalculatorError
 
 
 class TestCarbonCalculator(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestCarbonCalculator(unittest.TestCase):
         with self.assertRaises(ValueError, msg="URL cannot be empty."):
             self.calculator.get_carbon_footprint("")
 
-    @patch('services.carbon_calculator.requests.get')
+    @patch('app.services.carbon_calculator.requests.get')
     def test_valid_request_returns_json(self, mock_get):
         mock_response = Mock()
         mock_response.json.return_value = {"result": "success"}
@@ -26,14 +26,14 @@ class TestCarbonCalculator(unittest.TestCase):
         result = self.calculator.get_carbon_footprint(url)
         self.assertEqual(result, {"result": "success"})
 
-    @patch('services.carbon_calculator.requests.get')
+    @patch('app.services.carbon_calculator.requests.get')
     def test_request_exception_raises_carbon_calculator_error(self, mock_get):
         mock_get.side_effect = requests.RequestException("Request error")
 
         with self.assertRaisesRegex(CarbonCalculatorError, "Request to Carbon Calculator API failed: Request error"):
             self.calculator.get_carbon_footprint("https://example.com")
 
-    @patch('services.carbon_calculator.requests.get')
+    @patch('app.services.carbon_calculator.requests.get')
     def test_invalid_json_raises_carbon_calculator_error(self, mock_get):
         mock_response = Mock()
         mock_response.json.side_effect = ValueError("Invalid JSON")
@@ -43,7 +43,7 @@ class TestCarbonCalculator(unittest.TestCase):
         with self.assertRaisesRegex(CarbonCalculatorError, "Failed to decode API response: Invalid JSON"):
             self.calculator.get_carbon_footprint("https://example.com")
 
-    @patch('services.carbon_calculator.requests.get')
+    @patch('app.services.carbon_calculator.requests.get')
     def test_http_error_raises_carbon_calculator_error(self, mock_get):
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
@@ -52,7 +52,7 @@ class TestCarbonCalculator(unittest.TestCase):
         with self.assertRaisesRegex(CarbonCalculatorError, "Request to Carbon Calculator API failed: 404 Not Found"):
             self.calculator.get_carbon_footprint("https://example.com")
 
-    @patch('services.carbon_calculator.requests.get')
+    @patch('app.services.carbon_calculator.requests.get')
     def test_timeout_error_raises_carbon_calculator_error(self, mock_get):
         mock_get.side_effect = requests.Timeout("Request timed out")
 

@@ -5,8 +5,8 @@ __all__ = "get_uuid"
 
 from pydantic import BaseModel
 
-from celery_broker.utils import french_datetime
-from models.enums import ProcessStatus
+from app.celery_broker.utils import french_datetime
+from app.models.enums import ProcessStatus
 
 
 def get_uuid() -> str:

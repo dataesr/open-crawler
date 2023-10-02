@@ -3,11 +3,11 @@ from typing import Any
 
 from pymongo.results import InsertOneResult, UpdateResult
 
-from celery_broker.utils import french_datetime
-from models.enums import ProcessStatus
-from models.request import UpdateWebsiteRequest
-from models.website import WebsiteModel, ListWebsiteResponse
-from mongo import db
+from app.celery_broker.utils import french_datetime
+from app.models.enums import ProcessStatus
+from app.models.request import UpdateWebsiteRequest
+from app.models.website import WebsiteModel, ListWebsiteResponse
+from app.mongo import db
 
 
 class WebsitesRepository:

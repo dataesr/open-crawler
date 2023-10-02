@@ -11,7 +11,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - ./open_crawler:/app
+      - ./app:/open-crawler/app
       - logs:/logs
     deploy:
       restart_policy:
@@ -34,7 +34,7 @@ services:
     env_file: .env
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue'
     volumes:
-      - ./open_crawler:/app
+      - ./app:/open-crawler/app
       - local_files:${LOCAL_FILES_PATH}
       - logs:/logs
     depends_on:

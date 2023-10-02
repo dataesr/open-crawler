@@ -20,3 +20,35 @@ __pycache__/
 .settings
 .idea
 .env
+.vscode/
+
+
+# Package files
+*.egg
+*.eggs/
+.installed.cfg
+*.egg-info
+
+# Unittest and coverage
+htmlcov/
+.coverage
+.tox
+junit.xml
+coverage.xml
+.pytest_cache
+
+# Build and docs folder/files
+build/
+dist/
+sdist/
+docs/api/
+docs/_build/
+cover/
+MANIFEST
+
+# Trial temp
+**/_trial_temp**
+
+
+# OSX
+.DS_Store

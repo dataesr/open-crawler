@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from services.accessibility_best_practices_calculator import (
+from app.services.accessibility_best_practices_calculator import (
     LighthouseWrapper,
     LighthouseError,
     AccessibilityError,

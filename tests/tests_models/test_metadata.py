@@ -2,8 +2,8 @@ import unittest
 
 from pydantic import ValidationError
 
-from models.enums import ProcessStatus
-from models.metadata import MetadataConfig, MetadataTask, AccessibilityModel
+from app.models.enums import ProcessStatus
+from app.models.metadata import MetadataConfig, MetadataTask, AccessibilityModel
 
 
 class TestMetadataConfig(unittest.TestCase):

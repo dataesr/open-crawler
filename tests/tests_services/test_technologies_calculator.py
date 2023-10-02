@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from services.technologies_calculator import (
+from app.services.technologies_calculator import (
     TechnologiesCalculator,
     TechnologiesError,
 )

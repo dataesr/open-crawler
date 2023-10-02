@@ -1,9 +1,9 @@
 import unittest
 
-from models.crawl import CrawlModel, CrawlConfig, CrawlParameters
-from models.enums import ProcessStatus, MetadataType
-from models.metadata import MetadataConfig
-from models.process import MetadataProcess, CrawlProcess
+from app.models.crawl import CrawlModel, CrawlConfig, CrawlParameters
+from app.models.enums import ProcessStatus, MetadataType
+from app.models.metadata import MetadataConfig
+from app.models.process import MetadataProcess, CrawlProcess
 
 
 class TestMetadataProcess(unittest.TestCase):

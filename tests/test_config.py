@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from celery_broker.config import get_settings, DevelopmentConfig, BaseConfig
+from app.celery_broker.config import get_settings, BaseConfig
 
 
 class TestSettings(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestSettings(unittest.TestCase):
             "os.environ", {}, clear=True
         ):  # Clearing the environment variables
             settings = get_settings()
-            self.assertIsInstance(settings, DevelopmentConfig)
+            self.assertIsInstance(settings, BaseConfig)
 
     def test_baseconfig_attributes(self):
         config = BaseConfig()

@@ -1,8 +1,8 @@
 import unittest
 from uuid import UUID
 
-from models.enums import ProcessStatus
-from models.utils import get_uuid, BaseTaskModel
+from app.models.enums import ProcessStatus
+from app.models.utils import get_uuid, BaseTaskModel
 
 
 class TestGetUUIDFunction(unittest.TestCase):

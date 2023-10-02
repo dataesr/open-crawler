@@ -2,11 +2,11 @@ import os
 
 from pymongo.results import InsertOneResult
 
-from celery_broker.utils import french_datetime
-from models.crawl import CrawlModel, ListCrawlResponse
-from models.enums import ProcessStatus
-from models.metadata import MetadataTask
-from mongo import db
+from app.celery_broker.utils import french_datetime
+from app.models.crawl import CrawlModel, ListCrawlResponse
+from app.models.enums import ProcessStatus
+from app.models.metadata import MetadataTask
+from app.mongo import db
 
 
 class CrawlsRepository:

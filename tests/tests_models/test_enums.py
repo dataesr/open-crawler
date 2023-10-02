@@ -1,6 +1,6 @@
 import unittest
 
-from models.enums import MetadataType, ProcessStatus
+from app.models.enums import MetadataType, ProcessStatus
 
 
 class TestMetadataType(unittest.TestCase):
