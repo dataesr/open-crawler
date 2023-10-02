@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 
 import requests.models
 
-from services.responsiveness_calculator import (
+from app.services.responsiveness_calculator import (
     ResponsivenessCalculator,
     ResponsivenessCalculatorError,
 )

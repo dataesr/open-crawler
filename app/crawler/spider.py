@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
-from models.process import CrawlProcess
+from app.models.process import CrawlProcess
 
 
 class MenesrSpider(CrawlSpider):

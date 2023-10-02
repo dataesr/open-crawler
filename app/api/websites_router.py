@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status as statuscode
 from pymongo.errors import DuplicateKeyError
 
-import repositories
-from api.utils import create_crawl, start_crawl
-from models.request import UpdateWebsiteRequest, CreateWebsiteRequest
-from models.website import WebsiteModel, ListWebsiteResponse
+import app.repositories as repositories
+from app.api.utils import create_crawl, start_crawl
+from app.models.request import UpdateWebsiteRequest, CreateWebsiteRequest
+from app.models.website import WebsiteModel, ListWebsiteResponse
 
 websites_router = APIRouter(
     prefix="/api/websites",

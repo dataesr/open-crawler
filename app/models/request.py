@@ -3,10 +3,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from celery_broker.utils import french_datetime
-from models.metadata import MetadataConfig
-from models.website import WebsiteModel
-from services.url_cleaner import clean_url
+from app.models.metadata import MetadataConfig
+from app.models.website import WebsiteModel
+from app.services.url_cleaner import clean_url
 
 
 class UpdateWebsiteRequest(BaseModel):

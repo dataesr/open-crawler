@@ -1,10 +1,9 @@
 import unittest
-from datetime import datetime, timezone, timedelta
 
-from celery_broker.utils import french_datetime
-from models.crawl import CrawlConfig
-from models.metadata import MetadataConfig
-from models.website import WebsiteModel, ListWebsiteResponse
+from app.celery_broker.utils import french_datetime
+from app.models.crawl import CrawlConfig
+from app.models.metadata import MetadataConfig
+from app.models.website import WebsiteModel, ListWebsiteResponse
 
 
 class TestWebsiteModel(unittest.TestCase):

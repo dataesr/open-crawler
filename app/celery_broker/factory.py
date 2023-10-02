@@ -2,7 +2,7 @@ import os
 
 from celery import Celery
 
-from celery_broker.config import settings
+from app.celery_broker.config import settings
 
 
 def create_celery_app() -> Celery:
@@ -11,7 +11,7 @@ def create_celery_app() -> Celery:
         broker=os.environ.get("CELERY_BROKER_URL"),
         backend=os.environ.get("CELERY_RESULT_BACKEND"),
         broker_connection_retry_on_startup=True,
-        include=["celery_broker.tasks"],
+        include=["app.celery_broker.tasks"],
     )
     celery_app.config_from_object(settings, namespace="CELERY")
 

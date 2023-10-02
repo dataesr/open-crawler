@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from models.utils import BaseTaskModel
+from app.models.utils import BaseTaskModel
 
 
 class MetadataConfig(BaseModel):

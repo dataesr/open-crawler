@@ -13,11 +13,6 @@ class BaseConfig:
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
     UPLOAD_QUEUE_NAME = "upload_queue"
 
-    # MONGODB_HOST = "localhost"
-    # MONGODB_PORT = 27017
-    # MONGODB_DATABASE = "scanr_db"
-    # MONGODB_COLLECTION = "scanr_html"
-
     result_backend: str = "redis://redis:6379"
 
     # The following two lines make celery execute tasks locally
@@ -105,8 +100,9 @@ class DevelopmentConfig(BaseConfig):
 def get_settings():
     config_cls_dict = {
         "development": DevelopmentConfig,
+        "default": BaseConfig
     }
-    config_name = os.environ.get("CELERY_CONFIG", "development")
+    config_name = os.environ.get("CELERY_CONFIG", "default")
     config_cls = config_cls_dict[config_name]
     return config_cls()
 

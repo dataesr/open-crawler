@@ -2,18 +2,18 @@ import json
 import os
 import pathlib
 
-import repositories
-from models.enums import MetadataType, ProcessStatus
-from models.metadata import MetadataTask
-from models.process import CrawlProcess
-from services.accessibility_best_practices_calculator import (
+import app.repositories as repositories
+from app.models.enums import MetadataType, ProcessStatus
+from app.models.metadata import MetadataTask
+from app.models.process import CrawlProcess
+from app.services.accessibility_best_practices_calculator import (
     AccessibilityError,
     BestPracticesError,
 )
-from services.carbon_calculator import CarbonCalculatorError
-from services.crawler_logger import logger
-from services.responsiveness_calculator import ResponsivenessCalculatorError
-from services.technologies_calculator import TechnologiesError
+from app.services.carbon_calculator import CarbonCalculatorError
+from app.services.crawler_logger import logger
+from app.services.responsiveness_calculator import ResponsivenessCalculatorError
+from app.services.technologies_calculator import TechnologiesError
 
 
 def handle_metadata_result(

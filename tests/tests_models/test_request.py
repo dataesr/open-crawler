@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 
 from pydantic import ValidationError
 
-from celery_broker.utils import french_datetime
-from models.metadata import MetadataConfig
-from models.request import CreateWebsiteRequest, UpdateWebsiteRequest
-from models.website import WebsiteModel
+from app.celery_broker.utils import french_datetime
+from app.models.metadata import MetadataConfig
+from app.models.request import CreateWebsiteRequest, UpdateWebsiteRequest
+from app.models.website import WebsiteModel
 
 
 class TestCreateWebsiteRequest(unittest.TestCase):

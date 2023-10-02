@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from crawler.middlewares import (
+from app.crawler.middlewares import (
     CustomCloseSpider,
     CustomHeadersMiddleware,
     HtmlStorageMiddleware,
@@ -37,7 +37,7 @@ class BaseTest(unittest.TestCase):
 
 
 class TestCustomCloseSpider(BaseTest):
-    @patch("crawler.middlewares.CloseSpider.page_count")
+    @patch("app.crawler.middlewares.CloseSpider.page_count")
     def test_page_count_with_robots_txt(self, mocked_page_count):
         middleware = CustomCloseSpider(MagicMock())
         middleware.page_count(
@@ -47,7 +47,7 @@ class TestCustomCloseSpider(BaseTest):
         )
         mocked_page_count.assert_not_called()
 
-    @patch("crawler.middlewares.CloseSpider.page_count")
+    @patch("app.crawler.middlewares.CloseSpider.page_count")
     def test_page_count_without_robots_txt(self, mocked_page_count):
         middleware = CustomCloseSpider(MagicMock())
         middleware.page_count(
@@ -80,8 +80,8 @@ class TestHtmlStorageMiddleware(BaseTest):
     def setUp(self):
         self.middleware = HtmlStorageMiddleware(5)
 
-    @patch("crawler.middlewares.Path.write_text")
-    @patch("crawler.middlewares.Path.mkdir")
+    @patch("app.crawler.middlewares.Path.write_text")
+    @patch("app.crawler.middlewares.Path.mkdir")
     @patch.dict(
         "os.environ", {"LOCAL_FILES_PATH": "/tmp", "HTML_FOLDER_NAME": "html"}
     )
@@ -94,8 +94,8 @@ class TestHtmlStorageMiddleware(BaseTest):
         mock_write_text.assert_called_once_with(self.mock_response().text)
         self.assertEqual(result, mock_response)
 
-    @patch("crawler.middlewares.Path.write_text")
-    @patch("crawler.middlewares.Path.mkdir")
+    @patch("app.crawler.middlewares.Path.write_text")
+    @patch("app.crawler.middlewares.Path.mkdir")
     @patch.dict(
         "os.environ", {"LOCAL_FILES_PATH": "/tmp", "HTML_FOLDER_NAME": "html"}
     )

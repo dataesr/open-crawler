@@ -1,13 +1,13 @@
 import unittest
 
-from models.crawl import (
+from app.models.crawl import (
     CrawlParameters,
     CrawlConfig,
     CrawlModel,
     ListCrawlResponse,
 )
-from models.enums import MetadataType
-from models.metadata import MetadataConfig, AccessibilityModel
+from app.models.enums import MetadataType
+from app.models.metadata import MetadataConfig, AccessibilityModel
 
 
 class TestCrawlParametersConfig(unittest.TestCase):

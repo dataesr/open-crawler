@@ -1,15 +1,14 @@
 from celery import group, chain
 
-import repositories
-from celery_broker.tasks import (
+import app.repositories as repositories
+from app.celery_broker.tasks import (
     METADATA_TASK_REGISTRY,
     start_crawl_process,
     upload_html,
 )
-from models.crawl import CrawlModel
-from models.website import WebsiteModel
-from services import crawler_logger
-from services.crawler_logger import logger
+from app.models.crawl import CrawlModel
+from app.models.website import WebsiteModel
+from app.services.crawler_logger import logger
 
 
 def create_crawl(website: WebsiteModel) -> CrawlModel:

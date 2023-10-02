@@ -1,6 +1,6 @@
 import unittest
 
-from services.url_cleaner import clean_url
+from app.services.url_cleaner import clean_url
 
 
 class TestCleanUrl(unittest.TestCase):
