@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from services.lighthouse_calculator import (
+from app.services.lighthouse_calculator import (
     LighthouseCalculator,
     LighthouseError,
 )
