@@ -10,5 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name : Install Packages 
+        run : pip install -r requirements.txt
+
       - name: test
         run: python -m unittest

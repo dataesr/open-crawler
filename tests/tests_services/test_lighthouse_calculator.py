@@ -18,7 +18,8 @@ class TestLighthouseCalculator(unittest.TestCase):
         )
         wrapper = LighthouseCalculator()
         result = wrapper.get_lighthouse(url="http://example.com")
-        self.assertEqual(result, {"score": 100})
+        self.assertEqual(
+            result, {"categories": {"accessibility": {"score": 100}}})
 
     @patch("subprocess.run")
     def test_get_lighthouse_error(self, mock_run):
