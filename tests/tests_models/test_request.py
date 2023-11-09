@@ -21,10 +21,9 @@ class TestCreateWebsiteRequest(unittest.TestCase):
         self.assertEqual(request.crawl_every, 30)
 
         # Assuming MetadataConfig has a property called "enabled"
-        self.assertTrue(request.accessibility.enabled)
+        self.assertTrue(request.lighthouse.enabled)
         self.assertFalse(request.technologies_and_trackers.enabled)
         self.assertFalse(request.responsiveness.enabled)
-        self.assertFalse(request.good_practices.enabled)
         self.assertFalse(request.carbon_footprint.enabled)
 
     def test_depth_field_constraints(self):
@@ -69,10 +68,9 @@ class TestUpdateWebsiteRequest(unittest.TestCase):
         self.assertIsNone(request.next_crawl_at)
 
         # For MetadataConfig properties
-        self.assertIsNone(request.accessibility)
+        self.assertIsNone(request.lighthouse)
         self.assertIsNone(request.technologies_and_trackers)
         self.assertIsNone(request.responsiveness)
-        self.assertIsNone(request.good_practices)
         self.assertIsNone(request.carbon_footprint)
 
     def test_crawl_every_field_constraints(self):
@@ -88,7 +86,7 @@ class TestUpdateWebsiteRequest(unittest.TestCase):
             tags=["example", "test"],
             crawl_every=20,
             next_crawl_at=now,
-            accessibility=MetadataConfig(enabled=True),
+            lighthouse=MetadataConfig(enabled=True),
         )
 
         self.assertEqual(request.depth, 3)
@@ -97,7 +95,7 @@ class TestUpdateWebsiteRequest(unittest.TestCase):
         self.assertEqual(request.tags, ["example", "test"])
         self.assertEqual(request.crawl_every, 20)
         self.assertEqual(request.next_crawl_at, now)
-        self.assertTrue(request.accessibility.enabled)
+        self.assertTrue(request.lighthouse.enabled)
 
 
 if __name__ == "__main__":

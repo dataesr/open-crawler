@@ -6,10 +6,7 @@ import app.repositories as repositories
 from app.models.enums import MetadataType, ProcessStatus
 from app.models.metadata import MetadataTask
 from app.models.process import CrawlProcess
-from app.services.accessibility_best_practices_calculator import (
-    AccessibilityError,
-    BestPracticesError,
-)
+from app.services.lighthouse_calculator import LighthouseError
 from app.services.carbon_calculator import CarbonCalculatorError
 from app.services.crawler_logger import logger
 from app.services.responsiveness_calculator import ResponsivenessCalculatorError
@@ -78,8 +75,7 @@ def metadata_task(
                 data = calc_method(url)
                 result[url] = data
             except (
-                AccessibilityError,
-                BestPracticesError,
+                LighthouseError,
                 TechnologiesError,
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,

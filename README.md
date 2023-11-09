@@ -89,8 +89,7 @@ This endpoint allows you to create a new website configuration end execute a cra
 | `depth` | `integer` | Maximum depth to crawl (**Default**: 2) |
 | `limit` | `integer` | Maximum pages to crawl (**Default**: 400) |
 | `headers` | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {})|
-| `accessibility` | `MetadataConfig` | Accessibility configuration (**Default**: {'enabled':True, 'depth' 0}) |
-| `good_practices` | `MetadataConfig` | Good Practices configuration (**Default**: {'enabled': False}) |
+| `lighthouse` | `MetadataConfig` | Lighthouse configuration (**Default**: {'enabled':True, 'depth' 0}) |
 | `technologies` | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False}) |
 | `responsiveness` | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False}) |
 | `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False}) |

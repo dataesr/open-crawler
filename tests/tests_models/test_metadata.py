@@ -3,7 +3,7 @@ import unittest
 from pydantic import ValidationError
 
 from app.models.enums import ProcessStatus
-from app.models.metadata import MetadataConfig, MetadataTask, AccessibilityModel
+from app.models.metadata import MetadataConfig, MetadataTask, LighthouseModel
 
 
 class TestMetadataConfig(unittest.TestCase):
@@ -28,9 +28,9 @@ class TestMetadataTask(unittest.TestCase):
         self.assertEqual(task.status, ProcessStatus.PENDING)
 
 
-class TestAccessibilityModel(unittest.TestCase):
+class TestLighthouseModel(unittest.TestCase):
     def test_default_values(self):
-        model = AccessibilityModel()
+        model = LighthouseModel()
 
         self.assertIsNone(model.score)
         self.assertIsNone(model.task_id)

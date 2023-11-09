@@ -7,7 +7,7 @@ from app.models.crawl import (
     ListCrawlResponse,
 )
 from app.models.enums import MetadataType
-from app.models.metadata import MetadataConfig, AccessibilityModel
+from app.models.metadata import MetadataConfig, LighthouseModel
 
 
 class TestCrawlParametersConfig(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestCrawlParametersConfig(unittest.TestCase):
         config = CrawlConfig(
             url="http://example.com",
             parameters=params,
-            metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
+            metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
         )
@@ -30,7 +30,7 @@ class TestCrawlModel(unittest.TestCase):
         config = CrawlConfig(
             url="http://example.com",
             parameters=CrawlParameters(depth=2, limit=400),
-            metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
+            metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
         )
@@ -38,33 +38,33 @@ class TestCrawlModel(unittest.TestCase):
 
         self.assertIsNotNone(crawl.id)
         self.assertIsNotNone(crawl.created_at)
-        self.assertIsNone(crawl.accessibility)
+        self.assertIsNone(crawl.lighthouse)
 
     def test_enabled_metadata_property(self):
         config = CrawlConfig(
             url="http://example.com",
             parameters=CrawlParameters(depth=2, limit=400),
             metadata_config={
-                MetadataType.ACCESSIBILITY: MetadataConfig(),
+                MetadataType.LIGHTHOUSE: MetadataConfig(),
                 MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False),
             },
             headers={},
             tags=[],
         )
         crawl = CrawlModel(website_id="website_123", config=config)
-        self.assertEqual(crawl.enabled_metadata, [MetadataType.ACCESSIBILITY])
+        self.assertEqual(crawl.enabled_metadata, [MetadataType.LIGHTHOUSE])
 
     def test_init_tasks_method(self):
         config = CrawlConfig(
             url="http://example.com",
             parameters=CrawlParameters(depth=2, limit=400),
-            metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
+            metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
         )
         crawl = CrawlModel(website_id="website_123", config=config)
         crawl.init_tasks()
-        self.assertIsInstance(crawl.accessibility, AccessibilityModel)
+        self.assertIsInstance(crawl.lighthouse, LighthouseModel)
 
     # Add more methods to test `update_task` and `update_status`
 
@@ -74,7 +74,7 @@ class TestListCrawlResponse(unittest.TestCase):
         config = CrawlConfig(
             url="http://example.com",
             parameters=CrawlParameters(depth=2, limit=400),
-            metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
+            metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
         )

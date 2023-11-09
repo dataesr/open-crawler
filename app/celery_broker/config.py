@@ -6,9 +6,8 @@ from kombu import Queue, Exchange
 
 class BaseConfig:
     CRAWL_QUEUE_NAME = "crawl_queue"
-    ACCESSIBILITY_QUEUE_NAME = "accessibility_queue"
+    LIGHTHOUSE_QUEUE_NAME = "lighthouse_queue"
     TECHNOLOGIES_QUEUE_NAME = "technologies_queue"
-    GOOD_PRACTICES_QUEUE_NAME = "good_practices_queue"
     RESPONSIVENESS_QUEUE_NAME = "responsiveness_queue"
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
     UPLOAD_QUEUE_NAME = "upload_queue"
@@ -29,19 +28,14 @@ class BaseConfig:
             routing_key=CRAWL_QUEUE_NAME,
         ),
         Queue(
-            ACCESSIBILITY_QUEUE_NAME,
-            Exchange(ACCESSIBILITY_QUEUE_NAME),
-            routing_key=ACCESSIBILITY_QUEUE_NAME,
+            LIGHTHOUSE_QUEUE_NAME,
+            Exchange(LIGHTHOUSE_QUEUE_NAME),
+            routing_key=LIGHTHOUSE_QUEUE_NAME,
         ),
         Queue(
             TECHNOLOGIES_QUEUE_NAME,
             Exchange(TECHNOLOGIES_QUEUE_NAME),
             routing_key=TECHNOLOGIES_QUEUE_NAME,
-        ),
-        Queue(
-            GOOD_PRACTICES_QUEUE_NAME,
-            Exchange(GOOD_PRACTICES_QUEUE_NAME),
-            routing_key=GOOD_PRACTICES_QUEUE_NAME,
         ),
         Queue(
             RESPONSIVENESS_QUEUE_NAME,
@@ -62,17 +56,13 @@ class BaseConfig:
 
     task_routes = {
         "crawl": {"queue": CRAWL_QUEUE_NAME, "routing_key": CRAWL_QUEUE_NAME},
-        "get_accessibility": {
-            "queue": ACCESSIBILITY_QUEUE_NAME,
-            "routing_key": ACCESSIBILITY_QUEUE_NAME,
+        "get_lighthouse": {
+            "queue": LIGHTHOUSE_QUEUE_NAME,
+            "routing_key": LIGHTHOUSE_QUEUE_NAME,
         },
         "get_technologies": {
             "queue": TECHNOLOGIES_QUEUE_NAME,
             "routing_key": TECHNOLOGIES_QUEUE_NAME,
-        },
-        "get_good_practices": {
-            "queue": GOOD_PRACTICES_QUEUE_NAME,
-            "routing_key": GOOD_PRACTICES_QUEUE_NAME,
         },
         "get_responsiveness": {
             "queue": RESPONSIVENESS_QUEUE_NAME,
