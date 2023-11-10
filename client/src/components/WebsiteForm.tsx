@@ -8,7 +8,7 @@ const DEFAULT_INITIAL_FORM = {
   url: '',
   crawl_every: 30,
   depth: 2,
-  limit: 400,
+  limit: 5,
   tags: [],
   headers: {},
   accessibility: { enabled: true, depth: 0 },

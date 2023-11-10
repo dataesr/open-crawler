@@ -1,5 +1,4 @@
 import os
-
 from pymongo.results import InsertOneResult
 
 from app.celery_broker.utils import french_datetime

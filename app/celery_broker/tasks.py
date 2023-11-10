@@ -55,13 +55,24 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         p.start()
         p.join()  # TODO define and add a timeout
         crawl_process.metadata.update(shared_dict["metadata"])
-
+    try:
+        upload_html(crawl)
+    except Exception as e:
+        logger.error(f"Error while uploading html files: {e}")
+        crawl.html_crawl.update(status=ProcessStatus.ERROR)
+        repositories.crawls.update_task(
+            crawl_id=crawl.id,
+            task_name="html_crawl",
+            task=crawl.html_crawl,
+        )
+        return crawl_process
     crawl.html_crawl.update(status=ProcessStatus.SUCCESS)
     repositories.crawls.update_task(
         crawl_id=crawl.id,
         task_name="html_crawl",
         task=crawl.html_crawl,
     )
+
     logger.debug("Html crawl ended!")
     return crawl_process
 
@@ -121,65 +132,6 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
     )
 
 
-@celery_app.task(bind=True, name="upload_html")
-def upload_html(self, crawl: CrawlModel):
-    crawl.uploads.update(task_id=self.request.id, status=ProcessStatus.STARTED)
-    logger.debug("Files upload started!")
-    repositories.crawls.update_task(
-        crawl_id=crawl.id,
-        task_name="uploads",
-        task=crawl.uploads,
-    )
-
-    client = Minio(
-        endpoint=os.environ["STORAGE_SERVICE_URL"],
-        access_key=os.environ["STORAGE_SERVICE_USERNAME"],
-        secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
-        secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
-        region=os.environ.get("STORAGE_SERVICE_REGION", None),
-    )
-
-    bucket_name = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
-
-    if not client.bucket_exists(bucket_name):
-        client.make_bucket(bucket_name)
-    crawl_files_path = pathlib.Path(
-        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl.id}"
-    )
-    local_files_folder = f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}"
-
-    prefix = crawl.config.url.replace("https://", "").replace("http://", "")
-
-    for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
-        file_path = str(file)
-        client.fput_object(
-            bucket_name=bucket_name,
-            object_name=f"{file_path.removeprefix(local_files_folder).lstrip('/')}",
-            file_path=file_path,
-            content_type=assume_content_type(file_path),
-        )
-        os.remove(file)
-    shutil.rmtree(crawl_files_path, ignore_errors=True)
-    crawl.uploads.update(status=ProcessStatus.SUCCESS)
-    repositories.crawls.update_task(
-        crawl_id=crawl.id,
-        task_name="uploads",
-        task=crawl.uploads,
-    )
-    logger.debug("Files upload ended!")
-    repositories.crawls.update_status(
-        crawl_id=crawl.id, status=ProcessStatus.SUCCESS
-    )
-    logger.info(
-        f"Crawl process ({crawl.id}) for website {crawl.config.url} ended"
-    )
-
-    repositories.websites.store_last_crawl(
-        website_id=crawl.website_id,
-        crawl=repositories.crawls.get(crawl_id=crawl.id).model_dump(),
-    )
-
-
 METADATA_TASK_REGISTRY = {
     MetadataType.ACCESSIBILITY: get_accessibility,
     MetadataType.TECHNOLOGIES: get_technologies,
@@ -187,3 +139,20 @@ METADATA_TASK_REGISTRY = {
     MetadataType.RESPONSIVENESS: get_responsiveness,
     MetadataType.CARBON_FOOTPRINT: get_carbon_footprint,
 }
+
+
+def upload_html(crawl: CrawlModel):
+    crawl_files_path = pathlib.Path(
+        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl.id}"
+    )
+    local_files_folder = f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}"
+
+    for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
+        file_path = str(file)
+        repositories.files.store_html_file(
+            object_name=f"{file_path.removeprefix(local_files_folder).lstrip('/')}",
+            file_path=file_path,
+            content_type=assume_content_type(file_path),
+        )
+        os.remove(file)
+    shutil.rmtree(crawl_files_path, ignore_errors=True)

@@ -4,7 +4,6 @@ import app.repositories as repositories
 from app.celery_broker.tasks import (
     METADATA_TASK_REGISTRY,
     start_crawl_process,
-    upload_html,
 )
 from app.models.crawl import CrawlModel
 from app.models.website import WebsiteModel
@@ -32,5 +31,4 @@ def start_crawl(crawl: CrawlModel) -> None:
     chain(
         start_crawl_process.s(crawl),
         metadata_tasks,
-        upload_html.si(crawl),
     ).apply_async(task_id=crawl.id)
