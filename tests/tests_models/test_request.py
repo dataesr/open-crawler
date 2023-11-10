@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from pydantic import ValidationError
 

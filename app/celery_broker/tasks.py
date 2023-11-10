@@ -154,7 +154,7 @@ def upload_html(self, crawl: CrawlModel):
         file_path = str(file)
         client.fput_object(
             bucket_name=bucket_name,
-            object_name=f"{prefix.rstrip('/')}/{file_path.removeprefix(local_files_folder).lstrip('/')}",
+            object_name=f"{file_path.removeprefix(local_files_folder).lstrip('/')}",
             file_path=file_path,
             content_type=assume_content_type(file_path),
         )
