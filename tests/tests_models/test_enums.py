@@ -14,7 +14,7 @@ class TestMetadataType(unittest.TestCase):
 
     def test_enum_member_count(self):
         # Check if the enum has only the expected members
-        self.assertEqual(len(MetadataType), 5)
+        self.assertEqual(len(MetadataType), 4)
 
 
 class TestProcessStatus(unittest.TestCase):
