@@ -149,8 +149,9 @@ def upload_html(crawl: CrawlModel):
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
+        file_name = file_path.removeprefix(local_files_folder).lstrip('/')
         repositories.files.store_html_file(
-            object_name=f"{file_path.removeprefix(local_files_folder).lstrip('/')}",
+            object_name=file_name,
             file_path=file_path,
             content_type=assume_content_type(file_path),
         )

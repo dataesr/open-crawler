@@ -49,6 +49,7 @@ def store_metadata_result(
     return repositories.files.store_metadata_file(
         crawl_id=crawl_process.id,
         object_name=f"{metadata_type}.json",
+        content_type='application/json',
         data=json.dumps(result, indent=2, default=str)
     )
 

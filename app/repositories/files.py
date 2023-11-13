@@ -23,10 +23,14 @@ class FileRepository:
 
     @staticmethod
     @with_s3
-    def store_metadata_file(s3, bucket, crawl_id, object_name, *args, **kwargs):
+    def store_metadata_file(s3, bucket, crawl_id, object_name, content_type, data):
         """Store a crawl file in the storage service"""
         object_path = f"{crawl_id}/metadata/{object_name}"
-        return s3.put_object(bucket, object_name=object_path, *args, **kwargs)
+        # Convert the string to bytes
+        data_bytes = data.encode('utf-8')
+        # Create a BytesIO object to make the bytes readable
+        data_stream = io.BytesIO(data_bytes)
+        return s3.put_object(bucket, object_name=object_path, length=len(data_bytes), content_type=content_type, data=data_stream)
 
     @staticmethod
     @with_s3
