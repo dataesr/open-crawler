@@ -10,10 +10,9 @@ export type WebsiteFormBody = {
   depth: number;
   limit: number;
   tags: string[];
-  accessibility: Metadata;
+  lighthouse: Metadata;
   technologies_and_trackers: Metadata;
   responsiveness: Metadata;
-  good_practices: Metadata;
   carbon_footprint: Metadata;
   headers: Record<string, string>;
 }

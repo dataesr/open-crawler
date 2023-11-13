@@ -17,8 +17,8 @@ from app.models.crawl import CrawlModel
 from app.models.enums import MetadataType, ProcessStatus
 from app.models.metadata import MetadataTask
 from app.models.process import CrawlProcess
-from app.services.accessibility_best_practices_calculator import (
-    LighthouseWrapper,
+from app.services.lighthouse_calculator import (
+    LighthouseCalculator,
 )
 from app.services.carbon_calculator import CarbonCalculator
 from app.services.crawler_logger import logger
@@ -77,14 +77,14 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
     return crawl_process
 
 
-@celery_app.task(bind=True, name="get_accessibility")
-def get_accessibility(self, crawl_process: CrawlProcess):
+@celery_app.task(bind=True, name="get_lighthouse")
+def get_lighthouse(self, crawl_process: CrawlProcess):
     return metadata_task(
         task=MetadataTask(task_id=self.request.id),
         crawl_process=crawl_process,
-        metadata_type=MetadataType.ACCESSIBILITY,
-        calculator=LighthouseWrapper(),
-        method_name="get_accessibility",
+        metadata_type=MetadataType.LIGHTHOUSE,
+        calculator=LighthouseCalculator(),
+        method_name="get_lighthouse",
     )
 
 
@@ -96,17 +96,6 @@ def get_technologies(self, crawl_process: CrawlProcess):
         metadata_type=MetadataType.TECHNOLOGIES,
         calculator=TechnologiesCalculator(),
         method_name="get_technologies",
-    )
-
-
-@celery_app.task(bind=True, name="get_good_practices")
-def get_good_practices(self, crawl_process: CrawlProcess):
-    return metadata_task(
-        task=MetadataTask(task_id=self.request.id),
-        crawl_process=crawl_process,
-        metadata_type=MetadataType.GOOD_PRACTICES,
-        calculator=LighthouseWrapper(),
-        method_name="get_best_practices",
     )
 
 
@@ -133,9 +122,8 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
 
 
 METADATA_TASK_REGISTRY = {
-    MetadataType.ACCESSIBILITY: get_accessibility,
+    MetadataType.LIGHTHOUSE: get_lighthouse,
     MetadataType.TECHNOLOGIES: get_technologies,
-    MetadataType.GOOD_PRACTICES: get_good_practices,
     MetadataType.RESPONSIVENESS: get_responsiveness,
     MetadataType.CARBON_FOOTPRINT: get_carbon_footprint,
 }

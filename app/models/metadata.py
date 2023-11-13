@@ -14,5 +14,5 @@ class MetadataTask(BaseTaskModel):
     pass
 
 
-class AccessibilityModel(MetadataTask):
+class LighthouseModel(MetadataTask):
     score: float | None = None

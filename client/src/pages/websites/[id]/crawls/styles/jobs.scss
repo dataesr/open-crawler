@@ -1,74 +1,18 @@
-.error-border {
-  border-left: .25rem solid var(--jobs-error-color) !important;
-  border-radius: .25rem;
-}
+$statuses: error, success, started, pending;
 
-.success-border {
-  border-left: .25rem solid var(--jobs-success-color) !important;
-  border-radius: .25rem;
-}
+@each $status in $statuses {
+  .#{$status}-border {
+    --primaryColor: var(--jobs-#{$status}-color);
+    border-left: .25rem solid var(--primaryColor) !important;
+  }
 
-.started-border {
-  border-left: .25rem solid var(--jobs-started-color) !important;
-  border-radius: .25rem;
-}
-
-.pending-border {
-  border-left: .25rem solid var(--jobs-pending-color) !important;
-  border-radius: .25rem;
-}
-
-.error-border-right {
-  border-right: .25rem solid var(--jobs-error-color) !important;
-  border-radius: .25rem;
-}
-
-.success-border-right {
-  border-right: .25rem solid var(--jobs-success-color) !important;
-  border-radius: .25rem;
-}
-
-.started-border-right {
-  border-right: .25rem solid var(--jobs-started-color) !important;
-  border-radius: .25rem;
-}
-
-.pending-border-right {
-  border-right: .25rem solid var(--jobs-pending-color) !important;
-  border-radius: .25rem;
-}
-
-.job-list {
-  margin: -.5rem;
-}
-
-.job {
-  padding: 0.5rem;
-
-  // :first-child {
-  //   background-color: var(--hover);
-  // }
-}
-
-.selected-job {
-  padding: 0.5rem;
-
-  :first-child {
-    background-color: inherit;
+  .#{$status}-border-right {
+    --primaryColor: var(--jobs-#{$status}-color);
+    border-right: .25rem solid var(--primaryColor) !important;
   }
 }
 
-.job-code {
-  white-space: pre-wrap;
-  word-break: break-word;
-  // max-height: 200px;
-  // overflow-y: scroll;
-}
 
-.card-button {
-  cursor: pointer !important;
-  color: inherit !important;
-}
 
 .metadata {
   display: flex;

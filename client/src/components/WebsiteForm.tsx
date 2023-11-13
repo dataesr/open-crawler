@@ -11,8 +11,7 @@ const DEFAULT_INITIAL_FORM = {
   limit: 5,
   tags: [],
   headers: {},
-  accessibility: { enabled: true, depth: 0 },
-  good_practices: { enabled: true, depth: 0 },
+  lighthouse: { enabled: true, depth: 0 },
   carbon_footprint: { enabled: true, depth: 0 },
   responsiveness: { enabled: true, depth: 0 },
   technologies_and_trackers: { enabled: true, depth: 0 },
@@ -29,7 +28,7 @@ type WebsiteFormProps = {
 function sanitize(form: Record<string, any>): WebsiteFormBody {
   const fields = [
     'url', 'crawl_every', 'depth', 'limit', 'tags', 'headers',
-    'accessibility', 'good_practices', 'carbon_footprint', 'responsiveness',
+    'lighthouse', 'carbon_footprint', 'responsiveness',
     'technologies_and_trackers'
   ];
   const body: Record<string, any> = {};
@@ -74,7 +73,7 @@ export default function WebsiteForm({
             <TagInput
               label="Ajouter des tags au site web"
               tags={form.tags}
-              onTagsChange={(tags) => updateForm({ tags })}
+              onTagsChange={(tags) => updateForm({ tags: tags.map((tag) => tag.toUpperCase()) })}
             />
           </Col>
         </Row>
@@ -140,11 +139,11 @@ export default function WebsiteForm({
           <Col xs="12" sm="8" md="6">
             <ToggleGroup>
               <Toggle
-                defaultChecked={form.accessibility.enabled}
+                defaultChecked={form.lighthouse.enabled}
                 hasLabelLeft
-                label="Accessibilité"
-                hint="Désactivez cette option si vous ne souhaitez pas crawler les informations d'accessibilité."
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ accessibility: { enabled: e.target.checked, depth: 0 } })}
+                label="Lighthouse"
+                hint="Désactivez cette option si vous ne souhaitez pas crawler les informations de lighthouse."
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ lighthouse: { enabled: e.target.checked, depth: 0 } })}
               />
               <Toggle
                 defaultChecked={form.technologies_and_trackers.enabled}
@@ -159,13 +158,6 @@ export default function WebsiteForm({
                 label="Responsive"
                 hint="Désactivez cette option si vous ne souhaitez pas crawler les informations de responsive."
                 onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ responsiveness: { enabled: e.target.checked, depth: 0 } })}
-              />
-              <Toggle
-                defaultChecked={form.good_practices.enabled}
-                hasLabelLeft
-                label="Bonnes pratiques"
-                hint="Désactivez cette option si vous ne souhaitez pas crawler les informations de bonnes pratiques."
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ good_practices: { enabled: e.target.checked, depth: 0 } })}
               />
               <Toggle
                 defaultChecked={form.carbon_footprint.enabled}

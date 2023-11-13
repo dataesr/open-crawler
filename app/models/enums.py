@@ -2,10 +2,9 @@ from enum import StrEnum
 
 
 class MetadataType(StrEnum):
-    ACCESSIBILITY = "accessibility"
+    LIGHTHOUSE = "lighthouse"
     TECHNOLOGIES = "technologies_and_trackers"
     RESPONSIVENESS = "responsiveness"
-    GOOD_PRACTICES = "good_practices"
     CARBON_FOOTPRINT = "carbon_footprint"
 
 

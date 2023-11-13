@@ -18,7 +18,7 @@ export async function getWebsiteInfo(id: string): Promise<Website | null> {
 }
 
 export async function getCrawls(id: string): Promise<CrawlList> {
-  const crawls = await fetch(`${API_URL}/${id}/crawls`)
+  const crawls = await fetch(`${API_URL}/${id}/crawls?limit=50`)
     .then(res => res.json())
     .catch(() => ({ data: [], count: 0 }));
   return crawls;
