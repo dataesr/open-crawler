@@ -12,8 +12,6 @@ class BaseConfig:
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
     UPLOAD_QUEUE_NAME = "upload_queue"
 
-    result_backend: str = "redis://redis:6379"
-
     # The following two lines make celery execute tasks locally
     # task_always_eager = True
     # task_eager_propagates = True
