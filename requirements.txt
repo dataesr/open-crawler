@@ -53,6 +53,8 @@ service-identity==23.1.0
 six==1.16.0
 sniffio==1.3.0
 starlette==0.27.0
+# StrEnum for python < 3.11
+StrEnum==0.4.15
 tldextract==3.6.0
 Twisted==22.10.0
 typing_extensions==4.8.0
