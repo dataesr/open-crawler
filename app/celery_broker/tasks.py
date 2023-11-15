@@ -4,12 +4,9 @@ import pathlib
 import shutil
 from multiprocessing import Process, Manager
 
-# Third-party imports
-from minio import Minio
-
 # Local imports
 import app.repositories as repositories
-from app.celery_broker.crawler_utils import start_crawler_process
+from app.celery_broker.crawler_utils import start_crawler_process, set_html_crawl_status
 from app.celery_broker.main import celery_app
 from app.celery_broker.metadata_utils import metadata_task
 from app.celery_broker.utils import assume_content_type
@@ -36,42 +33,36 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         crawl_id=crawl.id, status=ProcessStatus.STARTED
     )
     logger.debug("Html crawl started!")
-    crawl.html_crawl.update(
-        task_id=self.request.id, status=ProcessStatus.STARTED
-    )
-    repositories.crawls.update_task(
-        crawl_id=crawl.id,
-        task_name="html_crawl",
-        task=crawl.html_crawl,
-    )
+    set_html_crawl_status(crawl, self.request.id, ProcessStatus.STARTED)
 
     crawl_process = CrawlProcess.from_model(crawl)
-    with Manager() as manager:
-        shared_dict = manager.dict()
-        p = Process(
-            target=start_crawler_process,
-            kwargs={"crawl_process": crawl_process, "results": shared_dict},
-        )
-        p.start()
-        p.join()  # TODO define and add a timeout
-        crawl_process.metadata.update(shared_dict["metadata"])
+
     try:
+        with Manager() as manager:
+            shared_dict = manager.dict()
+            p = Process(
+                target=start_crawler_process,
+                kwargs={"crawl_process": crawl_process, "results": shared_dict},
+            )
+            p.start()
+            p.join()  # TODO define and add a timeout
+            crawl_process.metadata.update(shared_dict["metadata"])
+    except Exception as e:
+        logger.error(f"Error while crawling html files: {e}")
+        set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
+        self.update_state(state='FAILURE')
+        return crawl_process
+    try:
+        # Attempt to upload HTML files associated with the crawl
         upload_html(crawl)
     except Exception as e:
         logger.error(f"Error while uploading html files: {e}")
-        crawl.html_crawl.update(status=ProcessStatus.ERROR)
-        repositories.crawls.update_task(
-            crawl_id=crawl.id,
-            task_name="html_crawl",
-            task=crawl.html_crawl,
-        )
+        # Html crawl will be considered failed if we can't upload the html files
+        set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
+        self.update_state(state='FAILURE')
         return crawl_process
-    crawl.html_crawl.update(status=ProcessStatus.SUCCESS)
-    repositories.crawls.update_task(
-        crawl_id=crawl.id,
-        task_name="html_crawl",
-        task=crawl.html_crawl,
-    )
+
+    set_html_crawl_status(crawl, self.request.id, ProcessStatus.SUCCESS)
 
     logger.debug("Html crawl ended!")
     return crawl_process

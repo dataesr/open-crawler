@@ -8,6 +8,7 @@ from app.celery_broker.tasks import (
     start_crawl_process,
 )
 from app.models.crawl import CrawlModel
+from app.models.enums import ProcessStatus
 from app.models.website import WebsiteModel
 from app.services.crawler_logger import logger
 
@@ -19,7 +20,7 @@ def create_crawl(website: WebsiteModel) -> CrawlModel:
     if not is_domain(website.url):
         website.depth = 0
         website.limit = 1
-        logger.warning("The website to crawl is not a domain. Only the single webpage will be crawled")
+        logger.warning("The url to crawl is not a domain. Only one page will be crawled")
 
     crawl: CrawlModel = CrawlModel(
         website_id=website.id,
@@ -43,7 +44,8 @@ def start_crawl(crawl: CrawlModel) -> None:
         metadata_tasks,
     ).apply_async(task_id=crawl.id)
 
-def is_domain(url:str) -> bool:
+
+def is_domain(url: str) -> bool:
     parsed_url = urlparse(url)
     return parsed_url.path == '' or parsed_url.path == '/'
 
