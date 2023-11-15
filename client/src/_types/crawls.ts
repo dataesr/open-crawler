@@ -23,7 +23,6 @@ export type Crawl = {
   responsiveness: MetadataResult;
   carbon_footprint: MetadataResult;
   html_crawl: MetadataResult;
-  uploads: MetadataResult;
 }
 
 export type CrawlCount = {

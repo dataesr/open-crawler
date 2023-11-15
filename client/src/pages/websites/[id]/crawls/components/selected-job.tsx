@@ -4,8 +4,8 @@ import { Crawl, MetadataResult } from '../../../../../_types/crawls'
 import { timeBetween } from '../utils/dates';
 import { getJobStatus } from '../utils/status';
 
-type Metadata = 'html_crawl' | 'lighthouse' | 'responsiveness' | 'technologies_and_trackers' | 'carbon_footprint' | 'uploads';
-const metadatas: Metadata[] = ['html_crawl', 'lighthouse', 'responsiveness', 'technologies_and_trackers', 'carbon_footprint', 'uploads']
+type Metadata = 'html_crawl' | 'lighthouse' | 'responsiveness' | 'technologies_and_trackers' | 'carbon_footprint';
+const metadatas: Metadata[] = ['html_crawl', 'lighthouse', 'responsiveness', 'technologies_and_trackers', 'carbon_footprint']
 
 const nameMap: { [key in Metadata]: string } = {
   html_crawl: 'Crawl',
@@ -13,7 +13,6 @@ const nameMap: { [key in Metadata]: string } = {
   responsiveness: 'Responsive',
   technologies_and_trackers: 'Technologies',
   carbon_footprint: 'Empreinte carbone',
-  uploads: 'Upload'
 }
 
 function downloadFiles(url: string) {

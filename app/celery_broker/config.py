@@ -10,7 +10,6 @@ class BaseConfig:
     TECHNOLOGIES_QUEUE_NAME = "technologies_queue"
     RESPONSIVENESS_QUEUE_NAME = "responsiveness_queue"
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
-    UPLOAD_QUEUE_NAME = "upload_queue"
 
     # The following two lines make celery execute tasks locally
     # task_always_eager = True
@@ -45,11 +44,6 @@ class BaseConfig:
             Exchange(CARBON_QUEUE_NAME),
             routing_key=CARBON_QUEUE_NAME,
         ),
-        Queue(
-            UPLOAD_QUEUE_NAME,
-            Exchange(UPLOAD_QUEUE_NAME),
-            routing_key=UPLOAD_QUEUE_NAME,
-        ),
     )
 
     task_routes = {
@@ -69,11 +63,7 @@ class BaseConfig:
         "get_carbon_footprint": {
             "queue": CARBON_QUEUE_NAME,
             "routing_key": CARBON_QUEUE_NAME,
-        },
-        "upload_html": {
-            "queue": UPLOAD_QUEUE_NAME,
-            "routing_key": UPLOAD_QUEUE_NAME,
-        },
+        }
     }
 
     def get(self, attribute_name: str):

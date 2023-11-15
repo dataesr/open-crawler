@@ -131,7 +131,9 @@ To access the two collections, use a MongoDB console (such as MongoDB Compass fo
 **website_crawl_parameters** collection:
 ![mongodb_config](./demo/mongodb_crawl_configuration.png)## Acces simple storage service
 
-At the end of the crawl process, all crawled html pages and metadata files are uploaded to a simple storage service (s3).
+At the end of the crawl process, all crawled html pages are uploaded to a simple storage service (s3).
+The metadata are directly uploaded to the storage service.
+
 The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090. (by default)
 
 ![minio](./demo/minio.png)

@@ -35,7 +35,6 @@ class CrawlModel(BaseModel):
     technologies_and_trackers: MetadataTask | None = None
     responsiveness: MetadataTask | None = None
     carbon_footprint: MetadataTask | None = None
-    uploads: BaseTaskModel = Field(default_factory=BaseTaskModel)
 
     @property
     def enabled_metadata(self) -> list[MetadataType]:

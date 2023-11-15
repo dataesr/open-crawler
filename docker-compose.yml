@@ -42,6 +42,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      replicas: 1
 
   lighthouse_worker:
     <<: *worker
@@ -49,6 +50,8 @@ services:
       context: .
       dockerfile: Lighthouse.Dockerfile
     command: watchfiles --filter python '/bin/bash -c "source /opt/venv/bin/activate && celery -A celery_broker.main.celery_app worker -l info -P solo -n lighthouse_worker -Q lighthouse_queue"'
+    deploy:
+      replicas: 1
 
   technologies_worker:
     <<: *worker
@@ -56,19 +59,21 @@ services:
       context: .
       dockerfile: Wappalyzer.Dockerfile
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
+    deploy:
+      replicas: 1
 
   responsiveness_worker:
     <<: *worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n responsiveness_worker -Q responsiveness_queue'
+    deploy:
+      replicas: 1
 
   carbon_footprint_worker:
     <<: *worker
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n carbon_footprint_worker -Q carbon_footprint_queue'
+    deploy:
+      replicas: 1
 
-  upload_worker:
-    <<: *worker
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n upload_worker -Q upload_queue'
-    env_file: .env
 
 
 
