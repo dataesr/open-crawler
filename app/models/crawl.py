@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.celery_broker.utils import french_datetime
 from app.models.enums import MetadataType, ProcessStatus
-from app.models.metadata import MetadataConfig, AccessibilityModel, MetadataTask
+from app.models.metadata import MetadataConfig, LighthouseModel, MetadataTask
 from app.models.utils import get_uuid, BaseTaskModel
 
 
@@ -31,12 +31,10 @@ class CrawlModel(BaseModel):
     finished_at: datetime | None = None
     status: ProcessStatus = ProcessStatus.PENDING
     html_crawl: BaseTaskModel = Field(default_factory=BaseTaskModel)
-    accessibility: AccessibilityModel | None = None
+    lighthouse: LighthouseModel | None = None
     technologies_and_trackers: MetadataTask | None = None
     responsiveness: MetadataTask | None = None
-    good_practices: MetadataTask | None = None
     carbon_footprint: MetadataTask | None = None
-    uploads: BaseTaskModel = Field(default_factory=BaseTaskModel)
 
     @property
     def enabled_metadata(self) -> list[MetadataType]:
@@ -47,14 +45,12 @@ class CrawlModel(BaseModel):
         ]
 
     def init_tasks(self) -> None:
-        if MetadataType.ACCESSIBILITY in self.enabled_metadata:
-            self.accessibility = AccessibilityModel()
+        if MetadataType.LIGHTHOUSE in self.enabled_metadata:
+            self.lighthouse = LighthouseModel()
         if MetadataType.TECHNOLOGIES in self.enabled_metadata:
             self.technologies_and_trackers = MetadataTask()
         if MetadataType.RESPONSIVENESS in self.enabled_metadata:
             self.responsiveness = MetadataTask()
-        if MetadataType.GOOD_PRACTICES in self.enabled_metadata:
-            self.good_practices = MetadataTask()
         if MetadataType.CARBON_FOOTPRINT in self.enabled_metadata:
             self.carbon_footprint = MetadataTask()
 

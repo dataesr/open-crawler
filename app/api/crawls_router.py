@@ -1,10 +1,5 @@
-import io
-import os
-from zipfile import ZipFile, ZIP_DEFLATED
-
 from fastapi import HTTPException, APIRouter, status as statuscode
 from fastapi.responses import StreamingResponse
-from minio import Minio
 
 import app.repositories as repositories
 from app.api.utils import create_crawl, start_crawl
@@ -58,34 +53,23 @@ def list_crawls(
     status_code=statuscode.HTTP_200_OK,
     summary="Get a zip of all files from a crawl",
 )
-def get_crawl_files(website_id: str, crawl_id: str) -> StreamingResponse:
+def get_crawl_files(crawl_id: str) -> StreamingResponse:
     """Zip the files from the storage service"""
-    client = Minio(
-        endpoint=os.environ["STORAGE_SERVICE_URL"],
-        access_key=os.environ["STORAGE_SERVICE_USERNAME"],
-        secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
-        secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
-        region=os.environ.get("STORAGE_SERVICE_REGION", None),
-    )
-
-    bucket = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
-    zip_io = io.BytesIO()
-    if not (crawl := repositories.crawls.get(website_id, crawl_id)):
-        raise HTTPException(
-            status_code=statuscode.HTTP_404_NOT_FOUND,
-            detail="Crawl not found",
-        )
-    url = crawl.config.url.replace("https://", "").replace("http://", "")
-    prefix = f"{url}/{crawl_id}"
-    objects = client.list_objects(bucket, prefix=prefix, recursive=True)
-    with ZipFile(zip_io, "a", ZIP_DEFLATED, False) as zipper:
-        for obj in objects:
-            file = client.get_object(bucket, obj.object_name).read()
-            zipper.writestr(obj.object_name, file)
+    zip_io = repositories.files.zip_all_crawl_files(crawl_id)
     return StreamingResponse(
         iter([zip_io.getvalue()]),
         media_type="application/x-zip-compressed",
         headers={
-            "Content-Disposition": f"attachment; filename={url}-{crawl_id}.zip"
+            "Content-Disposition": f"attachment; filename={crawl_id}.zip"
         },
     )
+
+
+@crawls_router.delete(
+    "/{website_id}/crawls/{crawl_id}",
+    status_code=statuscode.HTTP_204_NO_CONTENT,
+    summary="Delete a crawl",
+)
+def delete_crawl(crawl_id: str) -> None:
+    """Zip the files from the storage service"""
+    return repositories.files.delete_all_crawl_files(crawl_id)

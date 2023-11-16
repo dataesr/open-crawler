@@ -32,3 +32,14 @@ def start_crawler_process(crawl_process: CrawlProcess, results: dict):
     process.crawl(MenesrSpider, crawl_process=crawl_process)
     process.start()
     results["metadata"] = dict(crawl_process.metadata.items())
+
+
+def set_html_crawl_status(crawl: CrawlModel, request_id: str, status: ProcessStatus):
+    crawl.html_crawl.update(
+        task_id=request_id, status=status
+    )
+    repositories.crawls.update_task(
+        crawl_id=crawl.id,
+        task_name="html_crawl",
+        task=crawl.html_crawl,
+    )

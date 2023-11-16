@@ -5,6 +5,8 @@
 import os
 from pathlib import Path
 
+from app.config import settings
+
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
 from scrapy.exceptions import IgnoreRequest
 from scrapy.extensions.closespider import CloseSpider
@@ -46,14 +48,14 @@ class HtmlStorageMiddleware:
 
     def _format_file_path(self, response, spider) -> Path:
         domain = spider.allowed_domains[0]
-        base_file_path = f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{spider.crawl_process.id}"
+        base_file_path = f"/{settings.LOCAL_FILES_PATH.strip('/')}/{spider.crawl_process.id}"
         file_name = response.url.split(f"{domain}")[-1]
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
         if file_name == ".html":
             file_name = "index.html"
         return Path(
-            f"{base_file_path}/{os.environ['HTML_FOLDER_NAME'].strip('/')}/{file_name.lstrip('/')}"
+            f"{base_file_path}/{settings.HTML_FOLDER_NAME.strip('/')}/{file_name.lstrip('/')}"
         )
 
     def _save_html_locally(self, response, spider):

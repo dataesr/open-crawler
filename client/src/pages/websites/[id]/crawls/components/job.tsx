@@ -11,14 +11,14 @@ export default function Job({ job }: { job: Crawl }) {
   const duration = timeBetween(new Date(job.started_at), new Date(job.finished_at));
   return (
     <>
-      <div className="job" key={job.id}>
+      <div className="fr-p-1w" key={job.id}>
         <div className={`fr-card fr-card--shadow ${job.status}-border`}>
           <div className="fr-card__body fr-p-2w fr-enlarge-link">
             <Row>
               <Link className="card-button" onClick={() => setOpen((prev) => !prev)} />
               <div style={{ flexGrow: "1" }}>
                 <span className="fr-m-0 fr-pr-1w fr-text--sm fr-text--bold fr-card__detail ">
-                  {(['success', 'error'].includes(job.status)) && (
+                  {(['success', 'error', 'partial_error'].includes(job.status)) && (
                     <>
                       <span className="fr-icon--sm fr-mr-1w fr-icon-calendar-line" />
                       il y a
@@ -39,7 +39,7 @@ export default function Job({ job }: { job: Crawl }) {
                       <span className="fr-icon--sm fr-mr-1w fr-icon-calendar-line" />
                       en attente depuis
                       {' '}
-                      {timeSince(new Date(job.started_at))}
+                      {timeSince(new Date(job.created_at))}
                     </>
                   )}
                 </span>

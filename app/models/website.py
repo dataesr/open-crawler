@@ -10,7 +10,6 @@ from app.models.enums import MetadataType
 from app.models.metadata import MetadataConfig
 from app.models.utils import get_uuid
 
-DEFAULT_RECRAWL_INTERVAL = os.environ.get("DEFAULT_RECRAWL_INTERVAL", 30)
 
 
 class WebsiteModel(BaseModel):
@@ -18,10 +17,9 @@ class WebsiteModel(BaseModel):
     url: str
     depth: int
     limit: int
-    accessibility: MetadataConfig
+    lighthouse: MetadataConfig
     technologies_and_trackers: MetadataConfig
     responsiveness: MetadataConfig
-    good_practices: MetadataConfig
     carbon_footprint: MetadataConfig
     headers: dict[str, Any]
     created_at: datetime = Field(default_factory=french_datetime)
@@ -36,10 +34,9 @@ class WebsiteModel(BaseModel):
             url=self.url,
             parameters=CrawlParameters(depth=self.depth, limit=self.limit),
             metadata_config={
-                MetadataType.ACCESSIBILITY: self.accessibility,
+                MetadataType.LIGHTHOUSE: self.lighthouse,
                 MetadataType.TECHNOLOGIES: self.technologies_and_trackers,
                 MetadataType.RESPONSIVENESS: self.responsiveness,
-                MetadataType.GOOD_PRACTICES: self.good_practices,
                 MetadataType.CARBON_FOOTPRINT: self.carbon_footprint,
             },
             headers=self.headers,

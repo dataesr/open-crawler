@@ -11,10 +11,9 @@ from app.services.url_cleaner import clean_url
 class UpdateWebsiteRequest(BaseModel):
     depth: int | None = None
     limit: int | None = None
-    accessibility: MetadataConfig | None = None
+    lighthouse: MetadataConfig | None = None
     technologies_and_trackers: MetadataConfig | None = None
     responsiveness: MetadataConfig | None = None
-    good_practices: MetadataConfig | None = None
     carbon_footprint: MetadataConfig | None = None
     headers: dict[str, Any] | None = None
     tags: list[str] | None = None
@@ -26,14 +25,11 @@ class CreateWebsiteRequest(BaseModel):
     url: str
     depth: int = Field(ge=0, default=2)
     limit: int = Field(ge=0, default=400)
-    accessibility: MetadataConfig = Field(default=MetadataConfig())
+    lighthouse: MetadataConfig = Field(default=MetadataConfig())
     technologies_and_trackers: MetadataConfig = Field(
         default=MetadataConfig(enabled=False)
     )
     responsiveness: MetadataConfig = Field(
-        default=MetadataConfig(enabled=False)
-    )
-    good_practices: MetadataConfig = Field(
         default=MetadataConfig(enabled=False)
     )
     carbon_footprint: MetadataConfig = Field(

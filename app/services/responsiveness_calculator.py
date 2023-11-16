@@ -3,6 +3,8 @@ from typing import Any
 
 import requests
 
+from app.config import settings
+
 
 class ResponsivenessCalculatorError(Exception):
     pass
@@ -11,7 +13,7 @@ class ResponsivenessCalculatorError(Exception):
 class ResponsivenessCalculator:
     def __init__(self):
         self.base_url = "https://content-searchconsole.googleapis.com/v1/urlTestingTools/mobileFriendlyTest:run"
-        self._api_key = os.environ["GOOGLE_API_KEY"]
+        self._api_key = settings.GOOGLE_API_KEY
 
     def get_responsiveness(self, url: str) -> dict[str, Any]:
         response = None

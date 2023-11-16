@@ -6,15 +6,15 @@ from app.models.enums import MetadataType, ProcessStatus
 class TestMetadataType(unittest.TestCase):
     def test_enum_members(self):
         # Check if the enum has the expected members
-        self.assertEqual(MetadataType.ACCESSIBILITY, "accessibility")
-        self.assertEqual(MetadataType.TECHNOLOGIES, "technologies_and_trackers")
+        self.assertEqual(MetadataType.LIGHTHOUSE, "lighthouse")
+        self.assertEqual(MetadataType.TECHNOLOGIES,
+                         "technologies_and_trackers")
         self.assertEqual(MetadataType.RESPONSIVENESS, "responsiveness")
-        self.assertEqual(MetadataType.GOOD_PRACTICES, "good_practices")
         self.assertEqual(MetadataType.CARBON_FOOTPRINT, "carbon_footprint")
 
     def test_enum_member_count(self):
         # Check if the enum has only the expected members
-        self.assertEqual(len(MetadataType), 5)
+        self.assertEqual(len(MetadataType), 4)
 
 
 class TestProcessStatus(unittest.TestCase):

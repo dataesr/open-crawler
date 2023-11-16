@@ -28,7 +28,7 @@ class TestCrawlProcess(unittest.TestCase):
             config=CrawlConfig(
                 url="http://example.com",
                 parameters=CrawlParameters(depth=2, limit=400),
-                metadata_config={MetadataType.ACCESSIBILITY: MetadataConfig()},
+                metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
                 headers={},
                 tags=[],
             ),
@@ -42,7 +42,7 @@ class TestCrawlProcess(unittest.TestCase):
             url="http://example.com",
             parameters=CrawlParameters(depth=2, limit=400),
             metadata_config={
-                MetadataType.ACCESSIBILITY: MetadataConfig(),
+                MetadataType.LIGHTHOUSE: MetadataConfig(),
                 MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False),
             },
             headers={},
@@ -51,7 +51,7 @@ class TestCrawlProcess(unittest.TestCase):
         process = CrawlProcess(
             id="crawl_123", website_id="website_123", config=config
         )
-        self.assertEqual(process.enabled_metadata, [MetadataType.ACCESSIBILITY])
+        self.assertEqual(process.enabled_metadata, [MetadataType.LIGHTHOUSE])
 
     # Write more test methods for `save_url_for_metadata`, `set_from`, `set_metadata_status`, and `metadata_needs_save`.
 

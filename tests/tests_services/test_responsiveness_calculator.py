@@ -4,6 +4,7 @@ from unittest.mock import patch, Mock
 
 import requests.models
 
+from app.config import settings
 from app.services.responsiveness_calculator import (
     ResponsivenessCalculator,
     ResponsivenessCalculatorError,
@@ -13,7 +14,7 @@ from app.services.responsiveness_calculator import (
 class TestResponsivenessCalculator(unittest.TestCase):
     def setUp(self):
         # Set a fake API key for testing
-        os.environ["GOOGLE_API_KEY"] = "FAKE_API_KEY"
+        settings.GOOGLE_API_KEY = "FAKE_API_KEY"
 
     @patch("requests.post")
     def test_get_responsiveness(self, mock_post):

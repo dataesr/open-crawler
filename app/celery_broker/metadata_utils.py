@@ -6,10 +6,7 @@ import app.repositories as repositories
 from app.models.enums import MetadataType, ProcessStatus
 from app.models.metadata import MetadataTask
 from app.models.process import CrawlProcess
-from app.services.accessibility_best_practices_calculator import (
-    AccessibilityError,
-    BestPracticesError,
-)
+from app.services.lighthouse_calculator import LighthouseError
 from app.services.carbon_calculator import CarbonCalculatorError
 from app.services.crawler_logger import logger
 from app.services.responsiveness_calculator import ResponsivenessCalculatorError
@@ -46,14 +43,12 @@ def handle_metadata_result(
 def store_metadata_result(
     crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType
 ):
-    base_file_path = (
-        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl_process.id}"
+    return repositories.files.store_metadata_file(
+        crawl_id=crawl_process.id,
+        object_name=f"{metadata_type}.json",
+        content_type='application/json',
+        data=json.dumps(result, indent=2, default=str)
     )
-    file_path = pathlib.Path(
-        f"{base_file_path}/{os.environ['METADATA_FOLDER_NAME'].strip('/')}/{metadata_type}.json"
-    )
-    file_path.parent.mkdir(exist_ok=True, parents=True)
-    file_path.write_text(json.dumps(result, indent=4))
 
 
 def metadata_task(
@@ -78,8 +73,7 @@ def metadata_task(
                 data = calc_method(url)
                 result[url] = data
             except (
-                AccessibilityError,
-                BestPracticesError,
+                LighthouseError,
                 TechnologiesError,
                 ResponsivenessCalculatorError,
                 CarbonCalculatorError,

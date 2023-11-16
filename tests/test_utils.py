@@ -1,6 +1,6 @@
 import unittest
 
-from celery_broker.utils import assume_content_type
+from app.celery_broker.utils import assume_content_type
 
 
 class TestAssumeContentType(unittest.TestCase):

@@ -89,8 +89,7 @@ This endpoint allows you to create a new website configuration end execute a cra
 | `depth` | `integer` | Maximum depth to crawl (**Default**: 2) |
 | `limit` | `integer` | Maximum pages to crawl (**Default**: 400) |
 | `headers` | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {})|
-| `accessibility` | `MetadataConfig` | Accessibility configuration (**Default**: {'enabled':True, 'depth' 0}) |
-| `good_practices` | `MetadataConfig` | Good Practices configuration (**Default**: {'enabled': False}) |
+| `lighthouse` | `MetadataConfig` | Lighthouse configuration (**Default**: {'enabled':True, 'depth' 0}) |
 | `technologies` | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False}) |
 | `responsiveness` | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False}) |
 | `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False}) |
@@ -132,7 +131,9 @@ To access the two collections, use a MongoDB console (such as MongoDB Compass fo
 **website_crawl_parameters** collection:
 ![mongodb_config](./demo/mongodb_crawl_configuration.png)## Acces simple storage service
 
-At the end of the crawl process, all crawled html pages and metadata files are uploaded to a simple storage service (s3).
+At the end of the crawl process, all crawled html pages are uploaded to a simple storage service (s3).
+The metadata are directly uploaded to the storage service.
+
 The docker-compose file deploys a MinIO service that can be accessed at http://localhost:9090. (by default)
 
 ![minio](./demo/minio.png)
