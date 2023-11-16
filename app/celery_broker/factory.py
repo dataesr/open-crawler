@@ -2,14 +2,14 @@ import os
 
 from celery import Celery
 
-from app.celery_broker.config import settings
+from app.config import settings
 
 
 def create_celery_app() -> Celery:
     celery_app = Celery(
         "scanr",
-        broker=os.environ.get("CELERY_BROKER_URL"),
-        backend=os.environ.get("CELERY_RESULT_BACKEND"),
+        broker=settings.CELERY_BROKER_URL,
+        backend=settings.CELERY_RESULT_BACKEND,
         broker_connection_retry_on_startup=True,
         include=["app.celery_broker.tasks"],
     )

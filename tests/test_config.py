@@ -1,13 +1,10 @@
 import unittest
 from unittest.mock import patch
 
-from app.celery_broker.config import get_settings, BaseConfig
+from app.config import get_settings, BaseConfig
 
 
 class TestSettings(unittest.TestCase):
-    def setUp(self):
-        # Clear the lru_cache before each test
-        get_settings.cache_clear()
 
     def test_default_setting_is_development(self):
         with patch.dict(

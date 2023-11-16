@@ -2,16 +2,17 @@ import os
 from functools import wraps
 from minio import Minio
 
+from app.config import settings
 
 s3 = Minio(
-    endpoint=os.environ["STORAGE_SERVICE_URL"],
-    access_key=os.environ["STORAGE_SERVICE_USERNAME"],
-    secret_key=os.environ["STORAGE_SERVICE_PASSWORD"],
-    secure=os.environ.get("STORAGE_SERVICE_SECURE", False),
-    region=os.environ.get("STORAGE_SERVICE_REGION", None),
+    endpoint=settings.STORAGE_SERVICE_URL,
+    access_key=settings.STORAGE_SERVICE_USERNAME,
+    secret_key=settings.STORAGE_SERVICE_PASSWORD,
+    secure=settings.STORAGE_SERVICE_SECURE,
+    region=settings.STORAGE_SERVICE_REGION,
 )
 
-bucket = os.environ["STORAGE_SERVICE_BUCKET_NAME"]
+bucket = settings.STORAGE_SERVICE_BUCKET_NAME
 
 if not s3.bucket_exists(bucket):
     s3.make_bucket(bucket)

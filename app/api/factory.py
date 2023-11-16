@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.crawls_router import crawls_router
 from app.api.websites_router import websites_router
+from app.config import settings
 
 
 def create_api_app() -> FastAPI:
@@ -18,7 +19,7 @@ def create_api_app() -> FastAPI:
     )
 
     # Configure CORS for non-production modes
-    deployment_mode = os.environ.get("MODE", "production")
+    deployment_mode = settings.MODE
     if deployment_mode != "production":
         api_app.add_middleware(
             CORSMiddleware,
@@ -27,6 +28,7 @@ def create_api_app() -> FastAPI:
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    # TODO: Configure CORS for production mode
 
     api_app.include_router(websites_router)
     api_app.include_router(crawls_router)

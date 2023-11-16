@@ -10,7 +10,6 @@ from app.models.enums import MetadataType
 from app.models.metadata import MetadataConfig
 from app.models.utils import get_uuid
 
-DEFAULT_RECRAWL_INTERVAL = os.environ.get("DEFAULT_RECRAWL_INTERVAL", 30)
 
 
 class WebsiteModel(BaseModel):

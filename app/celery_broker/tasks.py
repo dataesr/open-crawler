@@ -10,6 +10,7 @@ from app.celery_broker.crawler_utils import start_crawler_process, set_html_craw
 from app.celery_broker.main import celery_app
 from app.celery_broker.metadata_utils import metadata_task
 from app.celery_broker.utils import assume_content_type
+from app.config import settings
 from app.models.crawl import CrawlModel
 from app.models.enums import MetadataType, ProcessStatus
 from app.models.metadata import MetadataTask
@@ -122,9 +123,9 @@ METADATA_TASK_REGISTRY = {
 
 def upload_html(crawl: CrawlModel):
     crawl_files_path = pathlib.Path(
-        f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}/{crawl.id}"
+        f"/{settings.LOCAL_FILES_PATH.strip('/')}/{crawl.id}"
     )
-    local_files_folder = f"/{os.environ['LOCAL_FILES_PATH'].strip('/')}"
+    local_files_folder = f"/{settings.LOCAL_FILES_PATH.strip('/')}"
 
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
