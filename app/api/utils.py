@@ -2,13 +2,12 @@ from urllib.parse import urlparse
 
 from celery import group, chain
 
-import app.repositories as repositories
+from app.repositories.crawls import crawls
 from app.celery_broker.tasks import (
     METADATA_TASK_REGISTRY,
     start_crawl_process,
 )
 from app.models.crawl import CrawlModel
-from app.models.enums import ProcessStatus
 from app.models.website import WebsiteModel
 from app.services.crawler_logger import logger
 
@@ -27,7 +26,7 @@ def create_crawl(website: WebsiteModel) -> CrawlModel:
         config=website.to_config(),
     )
     crawl.init_tasks()
-    repositories.crawls.create(crawl)
+    crawls.create(crawl)
     return crawl
 
 

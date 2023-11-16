@@ -5,7 +5,8 @@ import shutil
 from multiprocessing import Process, Manager
 
 # Local imports
-import app.repositories as repositories
+from app.repositories.crawls import crawls
+from app.repositories.files import files
 from app.celery_broker.crawler_utils import start_crawler_process, set_html_crawl_status
 from app.celery_broker.main import celery_app
 from app.celery_broker.metadata_utils import metadata_task
@@ -30,7 +31,7 @@ from app.services.technologies_calculator import (
 
 @celery_app.task(bind=True, name="crawl")
 def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
-    repositories.crawls.update_status(
+    crawls.update_status(
         crawl_id=crawl.id, status=ProcessStatus.STARTED
     )
     logger.debug("Html crawl started!")
@@ -130,7 +131,7 @@ def upload_html(crawl: CrawlModel):
     for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
         file_path = str(file)
         file_name = file_path.removeprefix(local_files_folder).lstrip('/')
-        repositories.files.store_html_file(
+        files.store_html_file(
             object_name=file_name,
             file_path=file_path,
             content_type=assume_content_type(file_path),

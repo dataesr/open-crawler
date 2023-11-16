@@ -2,7 +2,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from scrapy.utils.python import without_none_values
 
-import app.repositories as repositories
+from app.repositories.crawls import crawls
 from app.crawler.spider import MenesrSpider
 from app.models.crawl import CrawlModel
 from app.models.enums import ProcessStatus
@@ -11,7 +11,7 @@ from app.models.process import CrawlProcess
 
 def update_crawl_status(crawl: CrawlModel, status: ProcessStatus):
     crawl.update_status(status=status)
-    repositories.crawls.update(crawl)
+    crawls.update(crawl)
 
 
 def init_crawler_settings(crawl_process: CrawlProcess):
@@ -38,7 +38,7 @@ def set_html_crawl_status(crawl: CrawlModel, request_id: str, status: ProcessSta
     crawl.html_crawl.update(
         task_id=request_id, status=status
     )
-    repositories.crawls.update_task(
+    crawls.update_task(
         crawl_id=crawl.id,
         task_name="html_crawl",
         task=crawl.html_crawl,

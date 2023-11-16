@@ -7,14 +7,13 @@ from app.config import settings
 from app.models.enums import ProcessStatus
 from app.models.request import UpdateWebsiteRequest
 from app.models.website import WebsiteModel, ListWebsiteResponse
-from app.mongo import db, init_database
+from app.mongo import db
 
 
 class WebsitesRepository:
     """Operations for websites collection"""
 
     def __init__(self):
-        init_database()
         self.collection = db[settings.MONGO_WEBSITES_COLLECTION]
 
     def list(
