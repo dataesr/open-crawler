@@ -52,7 +52,7 @@ ul {
     flex-grow: 1 !important;
   }
 
-  .fr-nav__list:child() {
+  .fr-nav__list>* {
     margin-left: 0 !important;
   }
 }
