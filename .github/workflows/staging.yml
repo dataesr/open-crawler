@@ -88,13 +88,13 @@ jobs:
         with:
           namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
           restart: oc-carbon-footprint-worker
-      - name: Restart oc-lighthouse deployment
+      - name: Restart oc-lighthouse-worker deployment
         uses: dataesr/kubectl-deploy@v1.1
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DOAD_STAGING }}
         with:
           namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
-          restart: oc-lighthouse
+          restart: oc-lighthouse-worker
       - name: Restart oc-client deployment
         uses: dataesr/kubectl-deploy@v1.1
         env:
