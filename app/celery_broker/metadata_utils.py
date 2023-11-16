@@ -1,6 +1,4 @@
 import json
-import os
-import pathlib
 
 import app.repositories as repositories
 from app.models.enums import MetadataType, ProcessStatus

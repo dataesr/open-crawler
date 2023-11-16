@@ -1,4 +1,3 @@
-import os
 from pymongo.results import InsertOneResult
 
 from app.celery_broker.utils import french_datetime
@@ -6,13 +5,14 @@ from app.config import settings
 from app.models.crawl import CrawlModel, ListCrawlResponse
 from app.models.enums import ProcessStatus
 from app.models.metadata import MetadataTask
-from app.mongo import db
+from app.mongo import db, init_database
 
 
 class CrawlsRepository:
     """Operations for crawls collection"""
 
     def __init__(self):
+        init_database()
         self.collection = db[settings.MONGO_CRAWLS_COLLECTION]
 
     def create(self, data: CrawlModel) -> str:
