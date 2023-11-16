@@ -1,7 +1,9 @@
 from fastapi import HTTPException, APIRouter, status as statuscode
 from fastapi.responses import StreamingResponse
 
-import app.repositories as repositories
+from app.repositories.crawls import crawls
+from app.repositories.files import files
+from app.repositories.websites import websites
 from app.api.utils import create_crawl, start_crawl
 from app.models.crawl import CrawlModel, ListCrawlResponse
 
@@ -19,10 +21,10 @@ crawls_router = APIRouter(
     summary="Start a new crawl for an existing website, using stored configuration.",
 )
 def crawl_website(website_id: str):
-    if website := repositories.websites.get(website_id):
+    if website := websites.get(website_id):
         crawl = create_crawl(website)
         start_crawl(crawl)
-        repositories.websites.refresh_next_crawl(crawl.website_id)
+        websites.refresh_next_crawl(crawl.website_id)
         return crawl
     else:
         raise HTTPException(
@@ -42,10 +44,10 @@ def list_crawls(
     skip: int = 0,
     limit: int = 10,
 ):
-    crawls = repositories.crawls.list(
+    crawls_list = crawls.list(
         website_id=website_id, skip=skip, limit=limit
     )
-    return crawls
+    return crawls_list
 
 
 @crawls_router.get(
@@ -55,7 +57,7 @@ def list_crawls(
 )
 def get_crawl_files(crawl_id: str) -> StreamingResponse:
     """Zip the files from the storage service"""
-    zip_io = repositories.files.zip_all_crawl_files(crawl_id)
+    zip_io = files.zip_all_crawl_files(crawl_id)
     return StreamingResponse(
         iter([zip_io.getvalue()]),
         media_type="application/x-zip-compressed",
@@ -72,4 +74,4 @@ def get_crawl_files(crawl_id: str) -> StreamingResponse:
 )
 def delete_crawl(crawl_id: str) -> None:
     """Zip the files from the storage service"""
-    return repositories.files.delete_all_crawl_files(crawl_id)
+    return files.delete_all_crawl_files(crawl_id)

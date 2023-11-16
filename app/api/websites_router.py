@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status as statuscode
 from pymongo.errors import DuplicateKeyError
 
-import app.repositories as repositories
+from app.repositories.websites import websites
 from app.api.utils import create_crawl, start_crawl
 from app.models.request import UpdateWebsiteRequest, CreateWebsiteRequest
 from app.models.website import WebsiteModel, ListWebsiteResponse
@@ -23,7 +23,7 @@ websites_router = APIRouter(
 def create_website(data: CreateWebsiteRequest):
     website = data.to_website_model()
     try:
-        repositories.websites.create(website)
+        websites.create(website)
     except DuplicateKeyError as e:
         raise HTTPException(
             status_code=statuscode.HTTP_409_CONFLICT,
@@ -49,7 +49,7 @@ def list_websites(
     status: str | None = None,
     sort: str = "created_at",
 ):
-    return repositories.websites.list(
+    return websites.list(
         query=query, tags=tags, status=status, skip=skip, limit=limit, sort=sort
     )
 
@@ -61,7 +61,7 @@ def list_websites(
     summary="Get a single website by its unique ID",
 )
 def get_website(website_id: str):
-    if data := repositories.websites.get(website_id):
+    if data := websites.get(website_id):
         return data
     else:
         raise HTTPException(
@@ -77,7 +77,7 @@ def get_website(website_id: str):
 )
 def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
     try:
-        repositories.websites.update(website_id, data)
+        websites.update(website_id, data)
     except AssertionError as e:
         raise HTTPException(
             status_code=statuscode.HTTP_404_NOT_FOUND,
@@ -91,7 +91,7 @@ def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
     summary="Delete a website by its unique ID",
 )
 def delete_website(website_id: str):
-    repositories.websites.delete(website_id)
+    websites.delete(website_id)
 
 
 @websites_router.post(
@@ -100,8 +100,8 @@ def delete_website(website_id: str):
     summary="Recrawl websites with next_crawl_at date passed",
 )
 def recrawl_cron():
-    for website in repositories.websites.list_to_recrawl().data:
+    for website in websites.list_to_recrawl().data:
         crawl = create_crawl(website)
         start_crawl(crawl)
-        repositories.websites.refresh_next_crawl(crawl.website_id)
+        websites.refresh_next_crawl(crawl.website_id)
         return crawl

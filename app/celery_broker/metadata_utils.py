@@ -1,6 +1,7 @@
 import json
 
-import app.repositories as repositories
+from app.repositories.crawls import crawls
+from app.repositories.files import files
 from app.models.enums import MetadataType, ProcessStatus
 from app.models.metadata import MetadataTask
 from app.models.process import CrawlProcess
@@ -19,7 +20,7 @@ def handle_metadata_result(
 ):
     if not result:
         task.update(status=ProcessStatus.ERROR)
-        repositories.crawls.update_task(
+        crawls.update_task(
             crawl_id=crawl_process.id,
             task_name=metadata_type,
             task=task,
@@ -29,7 +30,7 @@ def handle_metadata_result(
     store_metadata_result(crawl_process, result, metadata_type)
     if task.status == ProcessStatus.STARTED:
         task.update(status=ProcessStatus.SUCCESS)
-        repositories.crawls.update_task(
+        crawls.update_task(
             crawl_id=crawl_process.id,
             task_name=metadata_type,
             task=task,
@@ -41,7 +42,7 @@ def handle_metadata_result(
 def store_metadata_result(
     crawl_process: CrawlProcess, result: dict, metadata_type: MetadataType
 ):
-    return repositories.files.store_metadata_file(
+    return files.store_metadata_file(
         crawl_id=crawl_process.id,
         object_name=f"{metadata_type}.json",
         content_type='application/json',
@@ -60,7 +61,7 @@ def metadata_task(
     result = {}
     task.update(status=ProcessStatus.STARTED)
     logger.debug(f"{metadata_type} started!")
-    repositories.crawls.update_task(
+    crawls.update_task(
         crawl_id=crawl_process.id,
         task_name=metadata_type,
         task=task,
@@ -81,7 +82,7 @@ def metadata_task(
                 )
                 if task.status != ProcessStatus.PARTIAL_ERROR:
                     task.update(status=ProcessStatus.PARTIAL_ERROR)
-                    repositories.crawls.update_task(
+                    crawls.update_task(
                         crawl_id=crawl_process.id,
                         task_name=metadata_type,
                         task=task,
@@ -93,7 +94,7 @@ def metadata_task(
                 )
                 if task.status != ProcessStatus.PARTIAL_ERROR:
                     task.update(status=ProcessStatus.PARTIAL_ERROR)
-                    repositories.crawls.update_task(
+                    crawls.update_task(
                         crawl_id=crawl_process.id,
                         task_name=metadata_type,
                         task=task,
