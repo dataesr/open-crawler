@@ -16,6 +16,7 @@ class WebsiteModel(BaseModel):
     url: str
     depth: int
     limit: int
+    use_playwright: bool
     lighthouse: MetadataConfig
     technologies_and_trackers: MetadataConfig
     responsiveness: MetadataConfig
@@ -31,7 +32,7 @@ class WebsiteModel(BaseModel):
     def to_config(self) -> CrawlConfig:
         return CrawlConfig(
             url=self.url,
-            parameters=CrawlParameters(depth=self.depth, limit=self.limit),
+            parameters=CrawlParameters(depth=self.depth, limit=self.limit, use_playwright=self.use_playwright),
             metadata_config={
                 MetadataType.LIGHTHOUSE: self.lighthouse,
                 MetadataType.TECHNOLOGIES: self.technologies_and_trackers,
