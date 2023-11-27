@@ -12,7 +12,7 @@ from app.models.metadata import MetadataConfig, LighthouseModel
 
 class TestCrawlParametersConfig(unittest.TestCase):
     def test_instantiation(self):
-        params = CrawlParameters(depth=2, limit=400)
+        params = CrawlParameters(depth=2, limit=400, use_playwright=False)
         config = CrawlConfig(
             url="http://example.com",
             parameters=params,
@@ -29,7 +29,7 @@ class TestCrawlModel(unittest.TestCase):
     def test_default_values(self):
         config = CrawlConfig(
             url="http://example.com",
-            parameters=CrawlParameters(depth=2, limit=400),
+            parameters=CrawlParameters(depth=2, limit=400, use_playwright=False),
             metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
@@ -43,7 +43,7 @@ class TestCrawlModel(unittest.TestCase):
     def test_enabled_metadata_property(self):
         config = CrawlConfig(
             url="http://example.com",
-            parameters=CrawlParameters(depth=2, limit=400),
+            parameters=CrawlParameters(depth=2, limit=400, use_playwright=True),
             metadata_config={
                 MetadataType.LIGHTHOUSE: MetadataConfig(),
                 MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False),
@@ -57,7 +57,7 @@ class TestCrawlModel(unittest.TestCase):
     def test_init_tasks_method(self):
         config = CrawlConfig(
             url="http://example.com",
-            parameters=CrawlParameters(depth=2, limit=400),
+            parameters=CrawlParameters(depth=2, limit=400, use_playwright=True),
             metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
@@ -73,7 +73,7 @@ class TestListCrawlResponse(unittest.TestCase):
     def test_instantiation(self):
         config = CrawlConfig(
             url="http://example.com",
-            parameters=CrawlParameters(depth=2, limit=400),
+            parameters=CrawlParameters(depth=2, limit=400, use_playwright=True),
             metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
             headers={},
             tags=[],
