@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 
+from scrapy import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
@@ -9,15 +10,49 @@ from app.models.process import CrawlProcess
 class MenesrSpider(CrawlSpider):
     name = "menesr"
     rules = (Rule(),)
+    use_playwright = False
+    allowed_url = None
 
     def __init__(self, crawl_process: CrawlProcess, *a, **kw):
         parsed_url = urlparse(crawl_process.config.url)
+        self.use_playwright = crawl_process.config.parameters.use_playwright
         if parsed_url.path:
-            self.rules = (Rule(LinkExtractor(allow=parsed_url.path)),)
+            self.allowed_url = parsed_url.path
         self.allowed_domains = [parsed_url.netloc]
         self.start_urls = [crawl_process.config.url]
         self.crawl_process = crawl_process
         super().__init__(*a, **kw)
+
+    
+    def start_requests(self):
+        for url in self.start_urls:
+            if self.use_playwright:
+                yield Request(url, self.parse, meta={
+                    "depth": 0, # Set the initial depth to 0
+                    "playwright": True,
+                    "playwright_page_methods": [
+                        ("evaluate", 'window.scrollTo(0, document.body.scrollHeight)')
+                    ]
+                })
+            else:
+                yield Request(url, self.parse, meta={
+                    "depth": 0, # Set the initial depth to 0
+                })
+
+
+    def parse(self, response, **kwargs):
+        # Crawl the links in the response page and continue to crawl the next page
+        links = LinkExtractor(allow=self.allowed_url).extract_links(response)
+        for link in links:
+            if self.use_playwright:
+                yield Request(link.url, self.parse, meta={
+                    "playwright": True,
+                    "playwright_page_methods": [
+                        ("evaluate", 'window.scrollTo(0, document.body.scrollHeight)')
+                    ]
+                })
+            else:
+                yield Request(link.url, self.parse)
 
 
 if __name__ == "__main__":

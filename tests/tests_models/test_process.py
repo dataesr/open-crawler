@@ -27,7 +27,7 @@ class TestCrawlProcess(unittest.TestCase):
             website_id="website_123",
             config=CrawlConfig(
                 url="http://example.com",
-                parameters=CrawlParameters(depth=2, limit=400),
+                parameters=CrawlParameters(depth=2, limit=400, use_playwright=False),
                 metadata_config={MetadataType.LIGHTHOUSE: MetadataConfig()},
                 headers={},
                 tags=[],
@@ -40,7 +40,7 @@ class TestCrawlProcess(unittest.TestCase):
     def test_enabled_metadata_property(self):
         config = CrawlConfig(
             url="http://example.com",
-            parameters=CrawlParameters(depth=2, limit=400),
+            parameters=CrawlParameters(depth=2, limit=400, use_playwright=False),
             metadata_config={
                 MetadataType.LIGHTHOUSE: MetadataConfig(),
                 MetadataType.TECHNOLOGIES: MetadataConfig(enabled=False),

@@ -1,5 +1,6 @@
 import json
 import subprocess
+from retry import retry
 from typing import Any
 
 
@@ -8,6 +9,8 @@ class TechnologiesError(Exception):
 
 
 class TechnologiesCalculator:
+
+    @retry(TechnologiesError, tries=3, delay=2, backoff=2)
     def get_technologies(self, url: str) -> list[dict[str, Any]]:
         try:
             technologies_process = subprocess.run(

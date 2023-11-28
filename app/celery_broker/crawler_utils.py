@@ -24,6 +24,12 @@ def init_crawler_settings(crawl_process: CrawlProcess):
         }
     )
     settings.update(custom_settings)
+    if crawl_process.config.parameters.use_playwright:
+        settings.set('DOWNLOAD_HANDLERS', {
+            'http': 'scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler',
+            'https': 'scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler',
+        })
+
     return settings
 
 

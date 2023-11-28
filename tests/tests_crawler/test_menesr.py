@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 from urllib.parse import urlparse
 
+from scrapy.http import HtmlResponse
 from scrapy.spiders import Rule
 
 from app.crawler.spider import MenesrSpider
@@ -36,6 +37,23 @@ class TestMenesrSpider(unittest.TestCase):
 
     def test_name(self):
         self.assertEqual(MenesrSpider.name, "menesr")
+
+    def test_start_requests(self):
+        self.mock_crawl_process.config.url = "http://www.example.com/"
+        spider = MenesrSpider(self.mock_crawl_process)
+        request = next(spider.start_requests())
+        self.assertEqual(request.url, 'http://www.example.com/')
+        self.assertEqual(request.callback, spider.parse)
+
+    def test_parse(self):
+        self.mock_crawl_process.config.url = "http://example.com/"
+        spider = MenesrSpider(self.mock_crawl_process)
+        body = ('<html><a href="/recherche/lactualite-de-la-recherche"><span>L\'actualité de la '
+                'recherche</span></a></html>').encode('utf-8')
+        response = HtmlResponse(url='http://www.example.com', body=body, encoding='utf-8')
+        result = next(spider.parse(response))
+        assert result.url == 'http://www.example.com/recherche/lactualite-de-la-recherche'
+        # Add assertions here to check the result
 
 
 if __name__ == "__main__":

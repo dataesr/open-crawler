@@ -1,4 +1,4 @@
-FROM python:3.11-alpine3.18
+FROM python:3.11
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -8,7 +8,8 @@ WORKDIR /open-crawler
 
 COPY ./requirements.txt /open-crawler
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt \
+    && playwright install --with-deps chromium
 
 COPY ./app/ /open-crawler/app
 

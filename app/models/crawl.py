@@ -12,6 +12,7 @@ from app.models.utils import get_uuid, BaseTaskModel
 class CrawlParameters(BaseModel):
     depth: int
     limit: int
+    use_playwright: bool
 
 
 class CrawlConfig(BaseModel):
