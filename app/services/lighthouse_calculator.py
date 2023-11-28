@@ -1,5 +1,6 @@
 import json
 import subprocess
+from retry import retry
 from typing import Any
 
 
@@ -8,6 +9,8 @@ class LighthouseError(Exception):
 
 
 class LighthouseCalculator:
+
+    @retry(LighthouseError, tries=3, delay=2, backoff=2)
     def get_lighthouse(self, url: str) -> dict[str, Any]:
         try:
             lighthouse_process = subprocess.run(

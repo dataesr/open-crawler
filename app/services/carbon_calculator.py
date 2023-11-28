@@ -1,6 +1,6 @@
-from typing import Any
-
 import requests
+from retry import retry
+from typing import Any
 
 
 class CarbonCalculatorError(Exception):
@@ -11,6 +11,7 @@ class CarbonCalculator:
     BASE_URL = "https://api.websitecarbon.com/site"
     TIMEOUT = 300  # 5 minutes timeout for the API request
 
+    @retry(CarbonCalculatorError, tries=3, delay=2, backoff=2)
     def get_carbon_footprint(self, url: str) -> dict[str, Any]:
         if not url:
             raise ValueError("URL cannot be empty.")

@@ -1,8 +1,7 @@
-from typing import Any
-
 import requests
-
 from app.config import settings
+from retry import retry
+from typing import Any
 
 
 class ResponsivenessCalculatorError(Exception):
@@ -14,6 +13,7 @@ class ResponsivenessCalculator:
         self.base_url = "https://content-searchconsole.googleapis.com/v1/urlTestingTools/mobileFriendlyTest:run"
         self._api_key = settings.GOOGLE_API_KEY
 
+    @retry(ResponsivenessCalculatorError, tries=3, delay=2, backoff=2)
     def get_responsiveness(self, url: str) -> dict[str, Any]:
         response = None
         try:
