@@ -8,7 +8,6 @@ on:
 env:
   # Must match k8s deployment name
   DEPLOYMENT: open-crawler
-  CLIENT_DEPLOYMENT: open-crawler-client
   DEPLOYMENT_NAMESPACE: open-crawler
   DEPLOYMENT_URL: https://open-crawler.dataesr.ovh
   MM_NOTIFICATION_CHANNEL: 'bots'
