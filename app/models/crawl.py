@@ -20,19 +20,19 @@ class CrawlConfig(BaseModel):
     parameters: CrawlParameters
     metadata_config: dict[MetadataType, MetadataConfig] = Field(default_factory=dict, examples=[
                                                                                 {
-                                                                                    "lighthouse": {
+                                                                                    MetadataType.LIGHTHOUSE: {
                                                                                         "enabled": True,
                                                                                         "depth": 0
                                                                                     },
-                                                                                    "technologies_and_trackers": {
+                                                                                    MetadataType.TECHNOLOGIES: {
                                                                                         "enabled": True,
                                                                                         "depth": 0
                                                                                     },
-                                                                                    "responsiveness": {
+                                                                                    MetadataType.RESPONSIVENESS: {
                                                                                         "enabled": True,
                                                                                         "depth": 0
                                                                                     },
-                                                                                    "carbon_footprint": {
+                                                                                    MetadataType.CARBON_FOOTPRINT: {
                                                                                         "enabled": True,
                                                                                         "depth": 0
                                                                                     }
