@@ -11,7 +11,7 @@ from app.services.url_cleaner import clean_url
 class UpdateWebsiteRequest(BaseModel):
     depth: int | None = None
     limit: int | None = None
-    use_playwright: bool = True
+    use_playwright: bool = False
     lighthouse: MetadataConfig | None = None
     technologies_and_trackers: MetadataConfig | None = None
     responsiveness: MetadataConfig | None = None
@@ -26,7 +26,7 @@ class CreateWebsiteRequest(BaseModel):
     url: str
     depth: int = Field(ge=0, default=2)
     limit: int = Field(ge=0, default=400)
-    use_playwright: bool = Field(default=True)
+    use_playwright: bool = Field(default=False)
     lighthouse: MetadataConfig = Field(default=MetadataConfig())
     technologies_and_trackers: MetadataConfig = Field(
         default=MetadataConfig(enabled=False)
