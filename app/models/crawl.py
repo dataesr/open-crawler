@@ -18,7 +18,26 @@ class CrawlParameters(BaseModel):
 class CrawlConfig(BaseModel):
     url: str
     parameters: CrawlParameters
-    metadata_config: dict[MetadataType, MetadataConfig]
+    metadata_config: dict[MetadataType, MetadataConfig] = Field(default_factory=dict, examples=[
+                                                                                {
+                                                                                    MetadataType.LIGHTHOUSE: {
+                                                                                        "enabled": True,
+                                                                                        "depth": 0
+                                                                                    },
+                                                                                    MetadataType.TECHNOLOGIES: {
+                                                                                        "enabled": True,
+                                                                                        "depth": 0
+                                                                                    },
+                                                                                    MetadataType.RESPONSIVENESS: {
+                                                                                        "enabled": True,
+                                                                                        "depth": 0
+                                                                                    },
+                                                                                    MetadataType.CARBON_FOOTPRINT: {
+                                                                                        "enabled": True,
+                                                                                        "depth": 0
+                                                                                    }
+                                                                                }
+                                                                            ])
     headers: dict[str, Any]
     tags: list[str]
 

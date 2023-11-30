@@ -105,3 +105,10 @@ FEED_EXPORT_ENCODING = "utf-8"
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
 SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
+
+def should_abort_request(request):
+    return request.resource_type in ["stylesheet", "font"]
+
+
+PLAYWRIGHT_ABORT_REQUEST = should_abort_request
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 60 * 1000  # 60 seconds

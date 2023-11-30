@@ -128,7 +128,8 @@ def upload_html(crawl: CrawlModel):
     )
     local_files_folder = f"/{settings.LOCAL_FILES_PATH.strip('/')}"
 
-    for file in crawl_files_path.rglob("*.[hj][ts][mo][ln]"):
+    file_counter = 0
+    for file in crawl_files_path.rglob("*.html"):
         file_path = str(file)
         file_name = file_path.removeprefix(local_files_folder).lstrip('/')
         files.store_html_file(
@@ -136,5 +137,10 @@ def upload_html(crawl: CrawlModel):
             file_path=file_path,
             content_type=assume_content_type(file_path),
         )
+        file_counter += 1
         os.remove(file)
     shutil.rmtree(crawl_files_path, ignore_errors=True)
+
+    # If there is no html file, we consider the crawl as failed
+    if file_counter == 0:
+        raise Exception("No html is crawled for the website")

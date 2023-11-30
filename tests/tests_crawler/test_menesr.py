@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 from urllib.parse import urlparse
 
+from scrapy import Request
 from scrapy.http import HtmlResponse
 from scrapy.spiders import Rule
 
@@ -46,11 +47,15 @@ class TestMenesrSpider(unittest.TestCase):
         self.assertEqual(request.callback, spider.parse)
 
     def test_parse(self):
-        self.mock_crawl_process.config.url = "http://example.com/"
+        self.mock_crawl_process.config.url = "http://www.example.com/"
+        url = self.mock_crawl_process.config.url
         spider = MenesrSpider(self.mock_crawl_process)
+        spider.depth_limit = 1
+        spider.page_limit = 2
+        request = Request(url)
         body = ('<html><a href="/recherche/lactualite-de-la-recherche"><span>L\'actualité de la '
                 'recherche</span></a></html>').encode('utf-8')
-        response = HtmlResponse(url='http://www.example.com', body=body, encoding='utf-8')
+        response = HtmlResponse(url=url, body=body, encoding='utf-8', request=request)
         result = next(spider.parse(response))
         assert result.url == 'http://www.example.com/recherche/lactualite-de-la-recherche'
         # Add assertions here to check the result
