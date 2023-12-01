@@ -54,6 +54,9 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
     except Exception as e:
         logger.error(f"Error while crawling html files: {e}")
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
+        crawls.update_status(
+            crawl_id=crawl.id, status=ProcessStatus.ERROR
+        )
         self.update_state(state='FAILURE')
         return crawl_process
     try:
@@ -63,6 +66,9 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         logger.error(f"Error while uploading html files: {e}")
         # Html crawl will be considered failed if we can't upload the html files
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
+        crawls.update_status(
+            crawl_id=crawl.id, status=ProcessStatus.ERROR
+        )
         self.update_state(state='FAILURE')
         return crawl_process
 
@@ -122,11 +128,20 @@ def finalize_crawl_process(self, crawl_process: Optional[CrawlProcess], crawl: C
         f"Crawl process ({crawl.id}) for website {crawl.config.url} ended"
     )
 
+    # Retrieve the current status of the crawl
+    current_crawl = crawls.get(crawl_id=crawl.id)
+
+    if current_crawl.status == ProcessStatus.STARTED:
+        crawls.update_status(
+            crawl_id=crawl.id, status=ProcessStatus.SUCCESS
+        )
+
     websites.store_last_crawl(
         website_id=crawl.website_id,
         crawl=crawls.get(crawl_id=crawl.id).model_dump(),
     )
-
+    
+    # This task will always succeed, since it retrieves the last crawl
     self.update_state(state='SUCCESS')
 
 
