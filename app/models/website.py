@@ -27,7 +27,68 @@ class WebsiteModel(BaseModel):
     tags: list[str]
     crawl_every: int
     next_crawl_at: Optional[datetime] = None
-    last_crawl: Optional[dict[str, Any]] = None
+    last_crawl: Optional[dict[str, Any]] = Field(None, examples=[{
+                                                        "id": "string",
+                                                        "website_id": "string",
+                                                        "config": {
+                                                          "url": "website_url",
+                                                          "parameters": {
+                                                            "depth": 2,
+                                                            "limit": 2,
+                                                            "use_playwright": False
+                                                          },
+                                                          "metadata_config": {
+                                                            "lighthouse": {
+                                                              "enabled": True,
+                                                              "depth": 0
+                                                            },
+                                                            "technologies_and_trackers": {
+                                                              "enabled": True,
+                                                              "depth": 0
+                                                            },
+                                                            "responsiveness": {
+                                                              "enabled": False,
+                                                              "depth": 0
+                                                            },
+                                                            "carbon_footprint": {
+                                                              "enabled": True,
+                                                              "depth": 0
+                                                            }
+                                                          },
+                                                          "headers": {},
+                                                          "tags": []
+                                                        },
+                                                        "created_at": "2023-12-01T07:53:38.330000",
+                                                        "started_at": "2023-12-01T07:53:38.493000",
+                                                        "finished_at": "2023-12-01T07:54:01.324000",
+                                                        "status": "success",
+                                                        "html_crawl": {
+                                                          "task_id": "task_id_html",
+                                                          "started_at": "2023-12-01T07:53:38.512000",
+                                                          "finished_at": "2023-12-01T07:53:40.829000",
+                                                          "status": "success"
+                                                        },
+                                                        "lighthouse": {
+                                                          "task_id": "task_id_lighthouse",
+                                                          "started_at": "2023-12-01T07:53:40.848000",
+                                                          "finished_at": "2023-12-01T07:54:01.295000",
+                                                          "status": "success",
+                                                          "score": 98
+                                                        },
+                                                        "technologies_and_trackers": {
+                                                          "task_id": "task_id_technologies_and_trackers",
+                                                          "started_at": "2023-12-01T07:53:40.850000",
+                                                          "finished_at": "2023-12-01T07:53:50.030000",
+                                                          "status": "success"
+                                                        },
+                                                        "responsiveness": None,
+                                                        "carbon_footprint": {
+                                                          "task_id": "task_id_carbon_footprint",
+                                                          "started_at": "2023-12-01T07:53:40.853000",
+                                                          "finished_at": "2023-12-01T07:53:41.044000",
+                                                          "status": "success"
+                                                        }
+                                                      }])
 
     def to_config(self) -> CrawlConfig:
         return CrawlConfig(
