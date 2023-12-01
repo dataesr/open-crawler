@@ -72,7 +72,7 @@ class WebsitesRepository:
         result: UpdateResult = self.collection.update_one(
             filter={"id": website_id}, update={"$set": {"last_crawl": crawl}}
         )
-        assert result.modified_count == 1
+        assert result.modified_count <= 1
 
     def refresh_next_crawl(self, website_id: str):
         website = self.get(website_id=website_id)

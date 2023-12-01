@@ -36,14 +36,16 @@ class BaseConfig:
     MONGO_CRAWLS_COLLECTION = os.getenv("MONGO_CRAWLS_COLLECTION", default="crawls")
 
     # Celery
-    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", default="redis://redis:6379")
-    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", default="redis://redis:6379")
+    broker_url = os.getenv("CELERY_BROKER_URL", default="redis://redis:6379")
+    result_backend = os.getenv("CELERY_RESULT_BACKEND", default="redis://redis:6379")
+    broker_heartbeat = os.getenv("CELERY_BROKER_HEARTBEAT", default=2)
 
     CRAWL_QUEUE_NAME = "crawl_queue"
     LIGHTHOUSE_QUEUE_NAME = "lighthouse_queue"
     TECHNOLOGIES_QUEUE_NAME = "technologies_queue"
     RESPONSIVENESS_QUEUE_NAME = "responsiveness_queue"
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
+    FINALIZE_CRAWL_QUEUE_NAME = "finalize_crawl_queue"
 
     # The following two lines make celery execute tasks locally
     # task_always_eager = True
@@ -78,6 +80,11 @@ class BaseConfig:
             Exchange(CARBON_QUEUE_NAME),
             routing_key=CARBON_QUEUE_NAME,
         ),
+        Queue(
+            FINALIZE_CRAWL_QUEUE_NAME,
+            Exchange(FINALIZE_CRAWL_QUEUE_NAME),
+            routing_key=FINALIZE_CRAWL_QUEUE_NAME,
+        ),
     )
 
     task_routes = {
@@ -97,7 +104,11 @@ class BaseConfig:
         "get_carbon_footprint": {
             "queue": CARBON_QUEUE_NAME,
             "routing_key": CARBON_QUEUE_NAME,
-        }
+        },
+        "finalize_crawl": {
+            "queue": FINALIZE_CRAWL_QUEUE_NAME,
+            "routing_key": FINALIZE_CRAWL_QUEUE_NAME,
+        },
     }
 
     def get(self, attribute_name: str):

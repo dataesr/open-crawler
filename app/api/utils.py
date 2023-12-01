@@ -1,11 +1,11 @@
 from urllib.parse import urlparse
 
-from celery import group, chain
+from celery import group, chain, chord
 
 from app.repositories.crawls import crawls
 from app.celery_broker.tasks import (
     METADATA_TASK_REGISTRY,
-    start_crawl_process,
+    start_crawl_process, finalize_crawl_process,
 )
 from app.models.crawl import CrawlModel
 from app.models.website import WebsiteModel
@@ -38,9 +38,12 @@ def start_crawl(crawl: CrawlModel) -> None:
         METADATA_TASK_REGISTRY.get(metadata).s()
         for metadata in crawl.enabled_metadata
     )
+    # If a task in a chain fails, the remaining tasks in the chain will not be executed.
+    # To ensure that `finalize_crawl` is executed regardless of whether the previous tasks in the chain fail or succeed,
+    # We need to put it in the `link_error` callback in start_crawl_process and do a chord with the metadata tasks.
     chain(
-        start_crawl_process.s(crawl),
-        metadata_tasks,
+        start_crawl_process.s(crawl).on_error(finalize_crawl_process.s(crawl)),
+        chord(metadata_tasks, finalize_crawl_process.s(crawl)),
     ).apply_async(task_id=crawl.id)
 
 

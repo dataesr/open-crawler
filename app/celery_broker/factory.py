@@ -6,8 +6,8 @@ from app.config import settings
 def create_celery_app() -> Celery:
     celery_app = Celery(
         "scanr",
-        broker=settings.CELERY_BROKER_URL,
-        backend=settings.CELERY_RESULT_BACKEND,
+        broker=settings.broker_url,
+        backend=settings.result_backend,
         broker_connection_retry_on_startup=True,
         include=["app.celery_broker.tasks"],
     )

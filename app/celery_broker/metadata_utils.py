@@ -17,7 +17,7 @@ def handle_metadata_result(
     crawl_process: CrawlProcess,
     result: dict,
     metadata_type: MetadataType,
-):
+) -> CrawlProcess:
     if not result:
         task.update(status=ProcessStatus.ERROR)
         crawls.update_task(
@@ -26,7 +26,7 @@ def handle_metadata_result(
             task=task,
         )
         logger.error(f"{metadata_type} failed.")
-        return
+        return crawl_process
     store_metadata_result(crawl_process, result, metadata_type)
     if task.status == ProcessStatus.STARTED:
         task.update(status=ProcessStatus.SUCCESS)
@@ -36,7 +36,7 @@ def handle_metadata_result(
             task=task,
         )
         logger.debug(f"{metadata_type} ended!")
-    return result
+    return crawl_process
 
 
 def store_metadata_result(
@@ -56,7 +56,7 @@ def metadata_task(
     metadata_type: MetadataType,
     calculator,
     method_name: str,
-):
+) -> CrawlProcess:
     calc_method = getattr(calculator, method_name)
     result = {}
     task.update(status=ProcessStatus.STARTED)
@@ -87,6 +87,9 @@ def metadata_task(
                         task_name=metadata_type,
                         task=task,
                     )
+                    crawls.update_status(
+                        crawl_id=crawl_process.id, status=ProcessStatus.PARTIAL_ERROR
+                    )
                 continue
             except Exception as e:
                 logger.error(
@@ -98,6 +101,9 @@ def metadata_task(
                         crawl_id=crawl_process.id,
                         task_name=metadata_type,
                         task=task,
+                    )
+                    crawls.update_status(
+                        crawl_id=crawl_process.id, status=ProcessStatus.PARTIAL_ERROR
                     )
                 continue
     return handle_metadata_result(task, crawl_process, result, metadata_type)
