@@ -3,10 +3,12 @@ import os
 import pathlib
 import shutil
 from multiprocessing import Process, Manager
+from typing import Optional
 
 # Local imports
 from app.repositories.crawls import crawls
 from app.repositories.files import files
+from app.repositories.websites import websites
 from app.celery_broker.crawler_utils import start_crawler_process, set_html_crawl_status
 from app.celery_broker.main import celery_app
 from app.celery_broker.metadata_utils import metadata_task
@@ -112,6 +114,20 @@ def get_carbon_footprint(self, crawl_process: CrawlProcess):
         calculator=CarbonCalculator(),
         method_name="get_carbon_footprint",
     )
+
+
+@celery_app.task(bind=True, name="finalize_crawl")
+def finalize_crawl_process(self, crawl_process: Optional[CrawlProcess], crawl: CrawlModel):
+    logger.info(
+        f"Crawl process ({crawl.id}) for website {crawl.config.url} ended"
+    )
+
+    websites.store_last_crawl(
+        website_id=crawl.website_id,
+        crawl=crawls.get(crawl_id=crawl.id).model_dump(),
+    )
+
+    self.update_state(state='SUCCESS')
 
 
 METADATA_TASK_REGISTRY = {

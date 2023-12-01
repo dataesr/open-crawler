@@ -17,7 +17,7 @@ def handle_metadata_result(
     crawl_process: CrawlProcess,
     result: dict,
     metadata_type: MetadataType,
-):
+) -> CrawlProcess:
     if not result:
         task.update(status=ProcessStatus.ERROR)
         crawls.update_task(
@@ -26,7 +26,7 @@ def handle_metadata_result(
             task=task,
         )
         logger.error(f"{metadata_type} failed.")
-        return
+        return crawl_process
     store_metadata_result(crawl_process, result, metadata_type)
     if task.status == ProcessStatus.STARTED:
         task.update(status=ProcessStatus.SUCCESS)
@@ -36,7 +36,7 @@ def handle_metadata_result(
             task=task,
         )
         logger.debug(f"{metadata_type} ended!")
-    return result
+    return crawl_process
 
 
 def store_metadata_result(
@@ -56,7 +56,7 @@ def metadata_task(
     metadata_type: MetadataType,
     calculator,
     method_name: str,
-):
+) -> CrawlProcess:
     calc_method = getattr(calculator, method_name)
     result = {}
     task.update(status=ProcessStatus.STARTED)
