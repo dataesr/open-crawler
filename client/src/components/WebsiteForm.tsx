@@ -29,7 +29,7 @@ function sanitize(form: Record<string, any>): WebsiteFormBody {
   const fields = [
     'url', 'crawl_every', 'depth', 'limit', 'tags', 'headers',
     'lighthouse', 'carbon_footprint', 'responsiveness',
-    'technologies_and_trackers'
+    'technologies_and_trackers', 'use_playwright',
   ];
   const body: Record<string, any> = {};
   Object.keys(form).forEach((key) => { if (fields.includes(key)) { body[key] = form[key]; } });
@@ -98,6 +98,18 @@ export default function WebsiteForm({
         <hr />
         <Text size="lead" bold>Paramètres de crawl</Text>
         <Row className="fr-mb-5w">
+          <Col xs="12" sm="8" md="6">
+            <Toggle
+              defaultChecked={form.use_playwright}
+              hasLabelLeft
+              label="Utiliser un émulateur de navigateur"
+              hint="Activer cette option si vous souhaitez utiliser un émulateur de navigateur pour crawler le site web."
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ use_playwright: e.target.checked })}
+            />
+          </Col>
+        </Row>
+        <Row className="fr-mb-5w">
+
           <Col>
             <Input
               css={{ 'fr-input': "input10" }}
