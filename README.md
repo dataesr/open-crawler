@@ -83,18 +83,19 @@ This endpoint allows you to create a new website configuration end execute a cra
   POST http://127.0.0.1:8080/api/websites
 ```
 
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `url` | `string` | **Required**. Starting url to crawl from |
-| `depth` | `integer` | Maximum depth to crawl (**Default**: 2) |
-| `limit` | `integer` | Maximum pages to crawl (**Default**: 400) |
-| `headers` | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {})|
-| `lighthouse` | `MetadataConfig` | Lighthouse configuration (**Default**: {'enabled':True, 'depth' 0}) |
-| `technologies` | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False}) |
-| `responsiveness` | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False}) |
-| `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False}) |
-| `tags` | `list[str]` | List of tags to associate to this website (**Default**: [])|
-| `crawl_every` | `integer` | Time to wait between each crawl (In days, >= 0, **Default**: 30)|
+| Parameter          | Type             | Description                                                         |
+|:-------------------|:-----------------|:--------------------------------------------------------------------|
+| `url`              | `string`         | **Required**. Starting url to crawl from                            |
+| `depth`            | `integer`        | Maximum depth to crawl (**Default**: 2)                             |
+| `limit`            | `integer`        | Maximum pages to crawl (**Default**: 400)                           |
+| `use_playwright`   | `boolean`        | Activation of scrapy-playwright (**Default**: false)                |
+| `headers`          | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {}) |
+| `lighthouse`       | `MetadataConfig` | Lighthouse configuration (**Default**: {'enabled':True, 'depth' 0}) |
+| `technologies`     | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False})        |
+| `responsiveness`   | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False})      |
+| `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False})    |
+| `tags`             | `list[str]`      | List of tags to associate to this website (**Default**: [])         |
+| `crawl_every`      | `integer`        | Time to wait between each crawl (In days, >= 0, **Default**: 30)    |
 
 **MetadataConfig**
 
