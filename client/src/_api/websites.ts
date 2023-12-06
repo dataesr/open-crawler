@@ -1,6 +1,8 @@
 import { CrawlList } from "../_types/crawls";
 import { Website, WebsiteFormBody, WebsiteList } from "../_types/websites";
 
+
+
 export const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/websites` : '/api/websites';
 
 export async function getWebsites(search: string): Promise<WebsiteList> {
@@ -22,6 +24,12 @@ export async function getCrawls(id: string): Promise<CrawlList> {
     .then(res => res.json())
     .catch(() => ({ data: [], count: 0 }));
   return crawls;
+}
+
+export async function getCrawlMetadataFile(id: string, crawlId: string, metadata: string): Promise<Record<string, string>> {
+  return fetch(`${API_URL}/${id}/crawls/${crawlId}/metadata/${metadata}`)
+    .then(res => res.json())
+    .catch(() => ({}));
 }
 
 export async function createWebsite(body: WebsiteFormBody): Promise<Website> {

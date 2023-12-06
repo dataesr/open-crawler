@@ -2,6 +2,7 @@
   --jobs-success-color: #32e477;
   --jobs-pending-color: #a4b9f7;
   --jobs-started-color: #edb82f;
+  --jobs-warning-color: #ff7a55;
   --jobs-error-color: #f7aaaa;
 }
 
@@ -9,6 +10,7 @@
   --jobs-success-color: #32e477;
   --jobs-pending-color: #a4b9f7;
   --jobs-started-color: #edb82f;
+  --jobs-warning-color: #ff7a55;
   --jobs-error-color: #f7aaaa;
 }
 
@@ -59,6 +61,10 @@ ul {
 
 .icon--status.fr-icon-success-line {
   color: var(--jobs-success-color) !important;
+}
+
+.icon--status.fr-icon-warning-line {
+  color: var(--jobs-warning-color) !important;
 }
 
 .icon--status.fr-icon-error-line {

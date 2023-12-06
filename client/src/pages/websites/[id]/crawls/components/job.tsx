@@ -1,12 +1,11 @@
-import { Badge, Link, Row } from '../../../../../_dsfr';
+import { Link, Row } from '../../../../../_dsfr';
 import { timeBetween, timeSince, timeTo } from '../utils/dates';
-import { getJobStatus } from '../utils/status';
 import { Crawl } from '../../../../../_types/crawls';
 import SelectedJob from './selected-job';
 import { useState } from 'react';
+import StatusBadge from '../../../../../components/StatusBadge';
 
 export default function Job({ job }: { job: Crawl }) {
-  const [badgeType, badgeLabel] = getJobStatus(job.status);
   const [open, setOpen] = useState(false);
   const duration = timeBetween(new Date(job.started_at), new Date(job.finished_at));
   return (
@@ -51,7 +50,7 @@ export default function Job({ job }: { job: Crawl }) {
                     {duration}
                   </span>
                 )}
-                <Badge isSmall variant={badgeType}>{badgeLabel}</Badge>
+                <StatusBadge status={job.status} />
                 <span className={`fr-ml-2w ${open ? 'fr-icon-arrow-down-s-line' : 'fr-icon-arrow-left-s-line'}`} />
               </div>
             </Row>

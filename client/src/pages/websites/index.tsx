@@ -15,7 +15,7 @@ import { Website } from '../../_types/websites';
 import { getWebsites } from '../../_api/websites';
 import { useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
-import classNames from 'classnames';
+import StatusBadge from '../../components/StatusBadge';
 
 const PER_PAGE: number = 10
 
@@ -155,15 +155,9 @@ export default function WebsiteList() {
                 {' '}
                 {website.last_crawl?.created_at && new Date(website.last_crawl?.created_at)
                   .toLocaleDateString('FR-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                <span className={classNames(
-                  "icon--status fr-pl-1w fr-icon--sm", {
-                  "fr-icon-success-line": website.last_crawl?.status === 'success',
-                  "fr-icon-error-line": ['error', 'partial_error'].includes(website.last_crawl?.status || ''),
-                  "fr-icon-lock-line": website.last_crawl?.status === 'pending',
-                  "fr-icon-refresh-line": website.last_crawl?.status === 'started',
-                })} />
               </Text>
             </Row>)}
+            <StatusBadge status={website.last_crawl?.status} />
           </li>
         ))}
       </ul>
