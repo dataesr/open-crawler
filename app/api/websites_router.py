@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException, status as statuscode
 from pymongo.errors import DuplicateKeyError
+from fastapi.responses import StreamingResponse
+
 
 from app.repositories.websites import websites
+from app.repositories.files import files
 from app.api.utils import create_crawl, start_crawl
 from app.models.request import UpdateWebsiteRequest, CreateWebsiteRequest
 from app.models.website import WebsiteModel, ListWebsiteResponse
@@ -70,6 +73,29 @@ def get_website(website_id: str):
         )
 
 
+@websites_router.get(
+    "/{website_id}/files",
+    response_model=WebsiteModel,
+    status_code=statuscode.HTTP_200_OK,
+    summary="Get a website's zip of last crawl files by its unique ID",
+)
+def get_website_files(website_id: str) -> StreamingResponse:
+    if data := websites.get(website_id):
+        if last_crawl_id := data.get("last_crawl", {}).get("id"):
+            zip_io = files.zip_all_crawl_files(last_crawl_id)
+            return StreamingResponse(
+                iter([zip_io.getvalue()]),
+                media_type="application/x-zip-compressed",
+                headers={
+                    "Content-Disposition": f"attachment; filename={website_id}.zip"
+                },
+            )
+    raise HTTPException(
+        status_code=statuscode.HTTP_404_NOT_FOUND,
+        detail="Website not found",
+    )
+
+
 @websites_router.patch(
     "/{website_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
@@ -91,6 +117,9 @@ def patch_website(website_id: str, data: UpdateWebsiteRequest) -> None:
     summary="Delete a website by its unique ID",
 )
 def delete_website(website_id: str):
+    cursor = websites.get_website_crawl_cursor(website_id)
+    for crawl in cursor:
+        files.delete_all_crawl_files(crawl["id"])
     websites.delete(website_id)
 
 

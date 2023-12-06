@@ -35,6 +35,10 @@ class CrawlsRepository:
         count = self.collection.count_documents(filters)
         return ListCrawlResponse(count=count, data=data)
 
+    def get_website_crawl_cursor(self, website_id: str):
+        filters = {"website_id": website_id}
+        return self.collection.find(filters)
+
     def get(
         self, website_id: str | None = None, crawl_id: str | None = None
     ) -> CrawlModel:
@@ -45,6 +49,9 @@ class CrawlsRepository:
             filters["website_id"] = website_id
         crawl = self.collection.find_one(filters)
         return CrawlModel(**crawl)
+
+    def delete(self, crawl_id: str):
+        self.collection.delete_one({"id": crawl_id})
 
     def update(self, data: CrawlModel):
         self.collection.update_one(

@@ -1,4 +1,5 @@
 import io
+import json
 from zipfile import ZipFile, ZIP_DEFLATED
 from app.s3 import with_s3
 
@@ -43,6 +44,17 @@ class FileRepository:
                 file = s3.get_object(bucket, obj.object_name).read()
                 zipper.writestr(obj.object_name.strip(crawl_id), file)
         return zip_io
+
+    @staticmethod
+    @with_s3
+    def get_metadata_file(s3, bucket, crawl_id, metadata):
+        """Get a crawl metadata json file from the storage service"""
+        try:
+            file = s3.get_object(
+                bucket, f"{crawl_id}/metadata/{metadata}.json").read()
+        except:
+            return None
+        return json.loads(file)
 
 
 files = FileRepository()

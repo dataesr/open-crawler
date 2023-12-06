@@ -67,6 +67,22 @@ def get_crawl_files(crawl_id: str) -> StreamingResponse:
     )
 
 
+@crawls_router.get(
+    "/{website_id}/crawls/{crawl_id}/metadata/{metadata}",
+    status_code=statuscode.HTTP_200_OK,
+    summary="Get a crawl metadata result",
+)
+def get_metadata_file(crawl_id: str, metadata):
+    """Get a crawl metadata json file from the storage service and return it as a JSON response"""
+    if result := files.get_metadata_file(crawl_id, metadata):
+        return result
+    else:
+        raise HTTPException(
+            status_code=statuscode.HTTP_404_NOT_FOUND,
+            detail="Metadata file not found",
+        )
+
+
 @crawls_router.delete(
     "/{website_id}/crawls/{crawl_id}",
     status_code=statuscode.HTTP_204_NO_CONTENT,
@@ -74,4 +90,5 @@ def get_crawl_files(crawl_id: str) -> StreamingResponse:
 )
 def delete_crawl(crawl_id: str) -> None:
     """Zip the files from the storage service"""
-    return files.delete_all_crawl_files(crawl_id)
+    files.delete_all_crawl_files(crawl_id)
+    crawls.delete(crawl_id)
