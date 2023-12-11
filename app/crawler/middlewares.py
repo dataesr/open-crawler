@@ -48,7 +48,7 @@ class HtmlStorageMiddleware:
     def _format_file_path(self, response, spider) -> Path:
         domain = spider.allowed_domains[0]
         base_file_path = f"/{settings.LOCAL_FILES_PATH.strip('/')}/{spider.crawl_process.id}"
-        file_name = response.url.split(f"{domain}")[-1].lstrip('/')
+        file_name = response.url.split(f"{domain}")[-1].strip('/')
         if not file_name.endswith(".html"):
             file_name = f"{file_name}.html"
         if file_name == ".html":
