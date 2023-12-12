@@ -63,11 +63,14 @@ class CrawlsRepository:
             },
         )
 
-    def update_status(self, crawl_id: str, status: ProcessStatus):
+    def update_status(self, crawl_id: str, status: ProcessStatus, final_status: bool = False):
         update_dict = {"status": status}
         if status == ProcessStatus.STARTED:
             update_dict["started_at"] = french_datetime()
-        if status == ProcessStatus.SUCCESS:
+        elif status == ProcessStatus.SUCCESS:
+            update_dict["finished_at"] = french_datetime()
+        # In finalize task, we should update the finished_at field regardless of the status
+        if final_status:
             update_dict["finished_at"] = french_datetime()
         self.collection.update_one(
             filter={"id": crawl_id},

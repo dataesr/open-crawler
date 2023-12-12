@@ -2,7 +2,6 @@
 import os
 import pathlib
 import shutil
-from multiprocessing import Process, Manager
 from typing import Optional
 
 # Local imports
@@ -124,9 +123,11 @@ def finalize_crawl_process(self, crawl_process: Optional[CrawlProcess], crawl: C
     current_crawl = crawls.get(crawl_id=crawl.id)
 
     if current_crawl.status == ProcessStatus.STARTED:
-        crawls.update_status(
-            crawl_id=crawl.id, status=ProcessStatus.SUCCESS
-        )
+        current_crawl.status = ProcessStatus.SUCCESS
+
+    crawls.update_status(
+        crawl_id=crawl.id, status=current_crawl.status, final_status=True
+    )
 
     websites.store_last_crawl(
         website_id=crawl.website_id,
