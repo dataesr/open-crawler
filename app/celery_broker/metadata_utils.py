@@ -25,11 +25,6 @@ def handle_metadata_result(
             task_name=metadata_type,
             task=task,
         )
-        # when the metadata task fails, the crawl process is considered partially failed.
-        # Because metadata tasks are exécuted only if the html_crawl is successful,
-        crawls.update_status(
-            crawl_id=crawl_process.id, status=ProcessStatus.PARTIAL_ERROR
-        )
         logger.error(f"{metadata_type} failed.")
         return crawl_process
     store_metadata_result(crawl_process, result, metadata_type)
