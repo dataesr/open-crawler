@@ -122,8 +122,23 @@ def finalize_crawl_process(self, crawl_process: Optional[CrawlProcess], crawl: C
     # Retrieve the current status of the crawl
     current_crawl = crawls.get(crawl_id=crawl.id)
 
+    have_success = False
+
+    # Retrieve the status of all the sub tasks (html_crawl, lighthouse, technologies, responsiveness, carbon_footprint)
+    # If one of the sub tasks failed, we consider the crawl as partially failed
+    all_tasks = [current_crawl.html_crawl, current_crawl.lighthouse, current_crawl.technologies_and_trackers, current_crawl.responsiveness, current_crawl.carbon_footprint]
+    for task in all_tasks:
+        if task is None:
+            continue
+        if task.status != ProcessStatus.SUCCESS:
+            current_crawl.status = ProcessStatus.PARTIAL_ERROR
+        else:
+            have_success = True
+
     if current_crawl.status == ProcessStatus.STARTED:
         current_crawl.status = ProcessStatus.SUCCESS
+    elif not have_success:
+        current_crawl.status = ProcessStatus.ERROR
 
     crawls.update_status(
         crawl_id=crawl.id, status=current_crawl.status, final_status=True
