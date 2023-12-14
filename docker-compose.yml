@@ -32,8 +32,6 @@ services:
     build: .
     env_file: .env
     command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue,finalize_crawl_queue'
-    # An example with prefork.
-    #command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P prefork -c 4 -n crawl_worker -Q crawl_queue,finalize_crawl_queue'
     volumes:
       - ./app:/open-crawler/app
       - local_files:${LOCAL_FILES_PATH}

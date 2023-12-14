@@ -33,10 +33,11 @@ def init_crawler_settings(crawl_process: CrawlProcess):
     return settings
 
 
-def start_crawler_process(crawl_process: CrawlProcess):
+def start_crawler_process(crawl_process: CrawlProcess, results: dict):
     process = CrawlerProcess(settings=init_crawler_settings(crawl_process))
     process.crawl(MenesrSpider, crawl_process=crawl_process)
     process.start()
+    results["metadata"] = dict(crawl_process.metadata.items())
 
 
 def set_html_crawl_status(crawl: CrawlModel, request_id: str, status: ProcessStatus):

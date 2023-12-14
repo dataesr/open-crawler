@@ -41,7 +41,15 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
     crawl_process = CrawlProcess.from_model(crawl)
 
     try:
-        start_crawler_process(crawl_process=crawl_process)
+        with Manager() as manager:
+            shared_dict = manager.dict()
+            p = Process(
+                target=start_crawler_process,
+                kwargs={"crawl_process": crawl_process, "results": shared_dict},
+            )
+            p.start()
+            p.join()  # TODO define and add a timeout
+            crawl_process.metadata.update(shared_dict["metadata"])
     except Exception as e:
         logger.error(f"Error while crawling html files: {e}")
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
