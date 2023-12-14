@@ -1,5 +1,3 @@
-from urllib.parse import urlparse
-
 from scrapy import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
@@ -11,18 +9,15 @@ class MenesrSpider(CrawlSpider):
     rules = (Rule(),)
     use_playwright = False
     allowed_url = None
+    first_real_url = None
     page_count = 0
     page_limit = 0
     depth_limit = 0
 
     def __init__(self, crawl_process: CrawlProcess, *a, **kw):
-        parsed_url = urlparse(crawl_process.config.url)
         self.use_playwright = crawl_process.config.parameters.use_playwright
-        if parsed_url.path:
-            self.allowed_url = parsed_url.path
         self.page_limit = crawl_process.config.parameters.limit
         self.depth_limit = crawl_process.config.parameters.depth
-        self.allowed_domains = [parsed_url.netloc]
         self.start_urls = [crawl_process.config.url]
         self.crawl_process = crawl_process
         super().__init__(*a, **kw)
@@ -30,18 +25,17 @@ class MenesrSpider(CrawlSpider):
     
     def start_requests(self):
         for url in self.start_urls:
+            meta = {
+                "depth": 0,  # Set the initial depth to 0
+            }
             if self.use_playwright:
-                yield Request(url, self.parse, meta={
-                    "depth": 0, # Set the initial depth to 0
+                meta.update({
                     "playwright": True,
                     "playwright_page_methods": [
                         ("evaluate", 'window.scrollTo(0, document.body.scrollHeight)')
-                    ]
+                    ],
                 })
-            else:
-                yield Request(url, self.parse, meta={
-                    "depth": 0, # Set the initial depth to 0
-                })
+            yield Request(url, self.parse, meta=meta)
 
     def parse(self, response, **kwargs):
         # Crawl the links in the response page and continue to crawl the next page
