@@ -1,7 +1,9 @@
 # Standard library imports
+import asyncio
 import os
 import pathlib
 import shutil
+from multiprocessing import Manager, Process
 from typing import Optional
 
 # Local imports
@@ -48,8 +50,14 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
                 kwargs={"crawl_process": crawl_process, "results": shared_dict},
             )
             p.start()
-            p.join()  # TODO define and add a timeout
+            p.join(120)  # Wait 120 seconds for the crawler to finish
+            if p.is_alive():
+                logger.error("Crawler timed out, the crawl may not contain enough pages")
+                p.terminate()
+                p.join()
+
             crawl_process.metadata.update(shared_dict["metadata"])
+
     except Exception as e:
         logger.error(f"Error while crawling html files: {e}")
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
