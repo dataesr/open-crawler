@@ -1,8 +1,9 @@
 # Standard library imports
+import asyncio
 import os
 import pathlib
 import shutil
-from multiprocessing import Process, Manager
+from multiprocessing import Manager, Process
 from typing import Optional
 
 # Local imports
@@ -49,14 +50,17 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
                 kwargs={"crawl_process": crawl_process, "results": shared_dict},
             )
             p.start()
-            p.join()  # TODO define and add a timeout
+            p.join(120)  # Wait 120 seconds for the crawler to finish
+            if p.is_alive():
+                logger.error("Crawler timed out, the crawl may not contain enough pages")
+                p.terminate()
+                p.join()
+
             crawl_process.metadata.update(shared_dict["metadata"])
+
     except Exception as e:
         logger.error(f"Error while crawling html files: {e}")
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
-        crawls.update_status(
-            crawl_id=crawl.id, status=ProcessStatus.ERROR
-        )
         self.update_state(state='FAILURE')
         return crawl_process
     try:
@@ -66,9 +70,6 @@ def start_crawl_process(self, crawl: CrawlModel) -> CrawlProcess:
         logger.error(f"Error while uploading html files: {e}")
         # Html crawl will be considered failed if we can't upload the html files
         set_html_crawl_status(crawl, self.request.id, ProcessStatus.ERROR)
-        crawls.update_status(
-            crawl_id=crawl.id, status=ProcessStatus.ERROR
-        )
         self.update_state(state='FAILURE')
         return crawl_process
 
@@ -131,10 +132,27 @@ def finalize_crawl_process(self, crawl_process: Optional[CrawlProcess], crawl: C
     # Retrieve the current status of the crawl
     current_crawl = crawls.get(crawl_id=crawl.id)
 
+    have_success = False
+
+    # Retrieve the status of all the sub tasks (html_crawl, lighthouse, technologies, responsiveness, carbon_footprint)
+    # If one of the sub tasks failed, we consider the crawl as partially failed
+    all_tasks = [current_crawl.html_crawl, current_crawl.lighthouse, current_crawl.technologies_and_trackers, current_crawl.responsiveness, current_crawl.carbon_footprint]
+    for task in all_tasks:
+        if task is None:
+            continue
+        if task.status != ProcessStatus.SUCCESS:
+            current_crawl.status = ProcessStatus.PARTIAL_ERROR
+        else:
+            have_success = True
+
     if current_crawl.status == ProcessStatus.STARTED:
-        crawls.update_status(
-            crawl_id=crawl.id, status=ProcessStatus.SUCCESS
-        )
+        current_crawl.status = ProcessStatus.SUCCESS
+    elif not have_success:
+        current_crawl.status = ProcessStatus.ERROR
+
+    crawls.update_status(
+        crawl_id=crawl.id, status=current_crawl.status
+    )
 
     websites.store_last_crawl(
         website_id=crawl.website_id,

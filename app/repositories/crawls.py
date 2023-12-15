@@ -67,7 +67,7 @@ class CrawlsRepository:
         update_dict = {"status": status}
         if status == ProcessStatus.STARTED:
             update_dict["started_at"] = french_datetime()
-        if status == ProcessStatus.SUCCESS:
+        else:
             update_dict["finished_at"] = french_datetime()
         self.collection.update_one(
             filter={"id": crawl_id},

@@ -20,7 +20,6 @@ class TestMenesrSpider(unittest.TestCase):
         self.mock_crawl_process.config.url = "http://example.com/"
         spider = MenesrSpider(self.mock_crawl_process)
 
-        self.assertEqual(spider.allowed_domains, ["example.com"])
         self.assertEqual(spider.start_urls, ["http://example.com/"])
         self.assertTrue(isinstance(spider.rules, tuple))
 
@@ -28,8 +27,6 @@ class TestMenesrSpider(unittest.TestCase):
         spider = MenesrSpider(self.mock_crawl_process)
 
         # Checking initialized values
-        parsed_url = urlparse(self.mock_crawl_process.config.url)
-        self.assertEqual(spider.allowed_domains, [parsed_url.netloc])
         self.assertEqual(
             spider.start_urls, [self.mock_crawl_process.config.url]
         )

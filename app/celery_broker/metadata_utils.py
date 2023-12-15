@@ -87,9 +87,6 @@ def metadata_task(
                         task_name=metadata_type,
                         task=task,
                     )
-                    crawls.update_status(
-                        crawl_id=crawl_process.id, status=ProcessStatus.PARTIAL_ERROR
-                    )
                 continue
             except Exception as e:
                 logger.error(
@@ -101,9 +98,6 @@ def metadata_task(
                         crawl_id=crawl_process.id,
                         task_name=metadata_type,
                         task=task,
-                    )
-                    crawls.update_status(
-                        crawl_id=crawl_process.id, status=ProcessStatus.PARTIAL_ERROR
                     )
                 continue
     return handle_metadata_result(task, crawl_process, result, metadata_type)
