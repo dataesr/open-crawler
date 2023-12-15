@@ -70,6 +70,17 @@ class HtmlStorageMiddleware:
                 f"Page limit reached. Ignoring request {request}"
             )
 
+        # Parse the domain from the response URL
+        response_domain = urlparse(response.url).netloc
+
+        # Check if the response domain is in the allowed domains
+        if spider.allowed_domains is not None and response_domain not in spider.allowed_domains:
+            raise IgnoreRequest(f"Domain not in allowed domains: {response.url}")
+
+        # Check if the response URL matches the allowed URL
+        if spider.allowed_url is not None and not response.url.rstrip('/').endswith(spider.allowed_url):
+            raise IgnoreRequest(f"URL not allowed: {response.url}")
+
         if request.url.endswith("robots.txt"):
             return response
 
@@ -79,11 +90,8 @@ class HtmlStorageMiddleware:
             spider.first_real_url = response.url
             parsed_url = urlparse(spider.first_real_url)
             if parsed_url.path:
-                spider.allowed_url = parsed_url.path
-            else:
-                spider.allowed_url = parsed_url.netloc
+                spider.allowed_url = parsed_url.path.strip('/')
             spider.allowed_domains = [parsed_url.netloc]
-
 
         if response.status == 200:
             self.current_page_count += 1

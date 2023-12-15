@@ -9,6 +9,7 @@ class MenesrSpider(CrawlSpider):
     rules = (Rule(),)
     use_playwright = False
     allowed_url = None
+    allowed_domains = None
     first_real_url = None
     page_count = 0
     page_limit = 0
