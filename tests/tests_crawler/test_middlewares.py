@@ -87,8 +87,10 @@ class TestHtmlStorageMiddleware(BaseTest):
     )
     def test_process_response(self, mock_mkdir, mock_write_text):
         mock_response = self.mock_response()
+        mock_spider = self.mock_spider()
+        mock_spider.allowed_url = "/test"
         result = self.middleware.process_response(
-            self.mock_request(), mock_response, self.mock_spider()
+            self.mock_request(), mock_response, mock_spider
         )
         mock_mkdir.assert_called_once()
         mock_write_text.assert_called_once_with(self.mock_response().text)
@@ -101,10 +103,12 @@ class TestHtmlStorageMiddleware(BaseTest):
     )
     def test_robots_txt_skip(self, mock_mkdir, mock_write_text):
         mock_response = self.mock_response(url="http://example.com/robots.txt")
+        mock_spider = self.mock_spider()
+        mock_spider.allowed_url = "/robots.txt"
         result = self.middleware.process_response(
             self.mock_request(url="http://example.com/robots.txt"),
             mock_response,
-            self.mock_spider(),
+            mock_spider,
         )
         mock_mkdir.assert_not_called()
         mock_write_text.assert_not_called()
