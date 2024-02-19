@@ -40,14 +40,23 @@ def get_html_crawl(self, crawl_id):
 
     # We start the crawl in a separate process so each
     # crawl creates its own Twisted reactor
-    process = Process(
-        target=start_crawl,
-        kwargs={"html_crawl": html_crawl, "url": crawl.url, "crawl_id": crawl.id})
-    process.start()
-    process.join(120)  # Wait 120 seconds for the crawler to finish
-    if process.is_alive():
-        logger.error(
-            "Crawler timed out, the crawl may not contain enough pages")
-        process.terminate()
-        process.join()
+    try:
+        process = Process(
+            target=start_crawl,
+            kwargs={"html_crawl": html_crawl,
+                    "url": crawl.url, "crawl_id": crawl.id}
+        )
+        process.start()
+        process.join(180)  # Wait 120 seconds for the crawler to finish
+        if process.is_alive():
+            logger.error(
+                "Crawler timed out, the crawl may not contain enough pages")
+            process.terminate()
+            process.join()
+
+    except Exception as e:
+        logger.error(f"Error while crawling html files: {e}")
+        html_crawl.update(status=ProcessStatus.ERROR, task_id=self.request.id)
+        crawls.update_task(crawl_id=crawl.id,
+                           task_name="html_crawl", task=html_crawl)
     return
