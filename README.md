@@ -8,12 +8,6 @@ Make sure you have installed :
 * git
 * docker-compose
 
-A Google Cloud API KEY is requested in order for the responsiveness metadata to work properly:
-https://developers.google.com/webmaster-tools/search-console-api/v1/configure?hl=fr
-
-Once you created the API KEY, you need to store its value in `GOOGLE_API_KEY` in the .env file.
-
-You also need to activate Google Search Console API: https://console.cloud.google.com/apis/dashboard
 ## Installation
 
 Git clone project
@@ -92,7 +86,6 @@ This endpoint allows you to create a new website configuration end execute a cra
 | `headers`          | `dict[str, str]` | Headers that will be passed to all crawl requests (**Default**: {}) |
 | `lighthouse`       | `MetadataConfig` | Lighthouse configuration (**Default**: {'enabled':True, 'depth' 0}) |
 | `technologies`     | `MetadataConfig` | Technologies configuration (**Default**: {'enabled': False})        |
-| `responsiveness`   | `MetadataConfig` | Responsiveness configuration (**Default**: {'enabled': False})      |
 | `carbon_footprint` | `MetadataConfig` | Carbon Footprint configuration (**Default**: {'enabled': False})    |
 | `tags`             | `list[str]`      | List of tags to associate to this website (**Default**: [])         |
 | `crawl_every`      | `integer`        | Time to wait between each crawl (In days, >= 0, **Default**: 30)    |

@@ -1,11 +1,14 @@
+from datetime import datetime
 from pymongo.results import InsertOneResult
+from typing import TypeVar, Generic
 
-from app.celery_broker.utils import french_datetime
 from app.config import settings
-from app.models.crawl import CrawlModel, ListCrawlResponse
+from app.models.crawl import CrawlModel, ListCrawlResponse, HTMLCrawlModel, LighthouseModel, TechnologiesAndTrackersModel, CarbonFootprintModel
 from app.models.enums import ProcessStatus
-from app.models.metadata import MetadataTask
-from app.mongo import db
+from app.services.mongo import db
+
+MetadataModels = TypeVar('MetadataModels', HTMLCrawlModel, LighthouseModel,
+                         TechnologiesAndTrackersModel, CarbonFootprintModel)
 
 
 class CrawlsRepository:
@@ -15,7 +18,8 @@ class CrawlsRepository:
         self.collection = db[settings.MONGO_CRAWLS_COLLECTION]
 
     def create(self, data: CrawlModel) -> str:
-        result: InsertOneResult = self.collection.insert_one(data.model_dump())
+        result: InsertOneResult = self.collection.insert_one(
+            data.model_dump(exclude_defaults=True))
         assert result.acknowledged
         return data.id
 
@@ -48,7 +52,9 @@ class CrawlsRepository:
         if website_id:
             filters["website_id"] = website_id
         crawl = self.collection.find_one(filters)
-        return CrawlModel(**crawl)
+        if crawl:
+            return CrawlModel(**crawl)
+        return None
 
     def delete(self, crawl_id: str):
         self.collection.delete_one({"id": crawl_id})
@@ -62,23 +68,27 @@ class CrawlsRepository:
                 )
             },
         )
+        return
 
     def update_status(self, crawl_id: str, status: ProcessStatus):
         update_dict = {"status": status}
         if status == ProcessStatus.STARTED:
-            update_dict["started_at"] = french_datetime()
-        else:
-            update_dict["finished_at"] = french_datetime()
+            update_dict["started_at"] = datetime.utcnow()
+        if status not in [ProcessStatus.PENDING, ProcessStatus.STARTED]:
+            update_dict["finished_at"] = datetime.utcnow()
         self.collection.update_one(
             filter={"id": crawl_id},
             update={"$set": update_dict},
         )
+        return self.get(crawl_id=crawl_id)
 
-    def update_task(self, crawl_id: str, task_name: str, task: MetadataTask):
+    def update_task(self, crawl_id: str, task_name: str, task: Generic[MetadataModels]) -> MetadataModels:
         self.collection.update_one(
             filter={"id": crawl_id},
-            update={"$set": {task_name: task.model_dump()}},
+            update={"$set": {task_name: task.model_dump(
+                exclude_defaults=True)}},
         )
+        return self.get(crawl_id=crawl_id)
 
 
 crawls = CrawlsRepository()

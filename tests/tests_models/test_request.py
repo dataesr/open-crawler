@@ -1,9 +1,8 @@
 import unittest
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from pydantic import ValidationError
 
-from app.celery_broker.utils import french_datetime
 from app.models.metadata import MetadataConfig
 from app.models.request import CreateWebsiteRequest, UpdateWebsiteRequest
 from app.models.website import WebsiteModel
@@ -23,7 +22,6 @@ class TestCreateWebsiteRequest(unittest.TestCase):
         # Assuming MetadataConfig has a property called "enabled"
         self.assertTrue(request.lighthouse.enabled)
         self.assertFalse(request.technologies_and_trackers.enabled)
-        self.assertFalse(request.responsiveness.enabled)
         self.assertFalse(request.carbon_footprint.enabled)
 
     def test_depth_field_constraints(self):
@@ -47,7 +45,7 @@ class TestCreateWebsiteRequest(unittest.TestCase):
         self.assertEqual(website.depth, 2)
         self.assertTrue(
             (
-                (french_datetime() + timedelta(days=30)).replace(
+                (datetime.utcnow() + timedelta(days=30)).replace(
                     hour=0, minute=0, second=0
                 )
                 - website.next_crawl_at
@@ -70,7 +68,6 @@ class TestUpdateWebsiteRequest(unittest.TestCase):
         # For MetadataConfig properties
         self.assertIsNone(request.lighthouse)
         self.assertIsNone(request.technologies_and_trackers)
-        self.assertIsNone(request.responsiveness)
         self.assertIsNone(request.carbon_footprint)
 
     def test_crawl_every_field_constraints(self):
@@ -78,7 +75,7 @@ class TestUpdateWebsiteRequest(unittest.TestCase):
             UpdateWebsiteRequest(crawl_every=-1)
 
     def test_assigning_values(self):
-        now = french_datetime()
+        now = datetime.utcnow()
         request = UpdateWebsiteRequest(
             depth=3,
             limit=500,

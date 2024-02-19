@@ -5,7 +5,7 @@ services:
     container_name: web_api
     build: .
     env_file: .env
-    command: uvicorn api.main:api_app --reload --port 80 --host 0.0.0.0
+    command: uvicorn main:api_app --reload --port 80 --host 0.0.0.0
     ports:
       - "8080:80"
     depends_on:
@@ -31,7 +31,7 @@ services:
   crawl_worker: &worker
     build: .
     env_file: .env
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue,finalize_crawl_queue'
+    command: watchfiles --filter python 'celery -A main.celery_app worker -l info -P solo -n crawl_worker -Q crawl_queue,finalize_crawl_queue'
     volumes:
       - ./app:/open-crawler/app
       - local_files:${LOCAL_FILES_PATH}
@@ -49,7 +49,7 @@ services:
     build:
       context: .
       dockerfile: Lighthouse.Dockerfile
-    command: watchfiles --filter python '/bin/bash -c "source /opt/venv/bin/activate && celery -A celery_broker.main.celery_app worker -l info -P solo -n lighthouse_worker -Q lighthouse_queue"'
+    command: watchfiles --filter python '/bin/bash -c "source /opt/venv/bin/activate && celery -A main.celery_app worker -l info -P solo -n lighthouse_worker -Q lighthouse_queue"'
     deploy:
       replicas: 1
 
@@ -58,19 +58,14 @@ services:
     build:
       context: .
       dockerfile: Wappalyzer.Dockerfile
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
+    command: watchfiles --filter python 'celery -A main.celery_app worker -l info -P solo -n technologies_worker -Q technologies_queue'
     deploy:
       replicas: 1
 
-  responsiveness_worker:
-    <<: *worker
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n responsiveness_worker -Q responsiveness_queue'
-    deploy:
-      replicas: 1
 
   carbon_footprint_worker:
     <<: *worker
-    command: watchfiles --filter python 'celery -A celery_broker.main.celery_app worker -l info -P solo -n carbon_footprint_worker -Q carbon_footprint_queue'
+    command: watchfiles --filter python 'celery -A main.celery_app worker -l info -P solo -n carbon_footprint_worker -Q carbon_footprint_queue'
     deploy:
       replicas: 1
 

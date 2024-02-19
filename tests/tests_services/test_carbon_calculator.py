@@ -46,7 +46,8 @@ class TestCarbonCalculator(unittest.TestCase):
     @patch('app.services.carbon_calculator.requests.get')
     def test_http_error_raises_carbon_calculator_error(self, mock_get):
         mock_response = Mock()
-        mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
+        mock_response.raise_for_status.side_effect = requests.HTTPError(
+            "404 Not Found")
         mock_get.return_value = mock_response
 
         with self.assertRaisesRegex(CarbonCalculatorError, "Request to Carbon Calculator API failed: 404 Not Found"):

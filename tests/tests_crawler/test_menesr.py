@@ -6,7 +6,7 @@ from scrapy import Request
 from scrapy.http import HtmlResponse
 from scrapy.spiders import Rule
 
-from app.crawler.spider import MenesrSpider
+from app.tasks.html_crawl.spider import MenesrSpider
 
 
 class TestMenesrSpider(unittest.TestCase):
@@ -52,7 +52,8 @@ class TestMenesrSpider(unittest.TestCase):
         request = Request(url)
         body = ('<html><a href="/recherche/lactualite-de-la-recherche"><span>L\'actualité de la '
                 'recherche</span></a></html>').encode('utf-8')
-        response = HtmlResponse(url=url, body=body, encoding='utf-8', request=request)
+        response = HtmlResponse(
+            url=url, body=body, encoding='utf-8', request=request)
         result = next(spider.parse(response))
         assert result.url == 'http://www.example.com/recherche/lactualite-de-la-recherche'
         # Add assertions here to check the result

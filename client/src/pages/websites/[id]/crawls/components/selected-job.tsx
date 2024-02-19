@@ -6,13 +6,12 @@ import StatusBadge from '../../../../../components/StatusBadge';
 import { timeBetween } from '../utils/dates';
 import { queryClient } from '../../../../../main';
 
-type Metadata = 'html_crawl' | 'lighthouse' | 'responsiveness' | 'technologies_and_trackers' | 'carbon_footprint';
-const metadatas: Metadata[] = ['html_crawl', 'lighthouse', 'responsiveness', 'technologies_and_trackers', 'carbon_footprint']
+type Metadata = 'html_crawl' | 'lighthouse' | 'technologies_and_trackers' | 'carbon_footprint';
+const metadatas: Metadata[] = ['html_crawl', 'lighthouse', 'technologies_and_trackers', 'carbon_footprint']
 
 const nameMap: { [key in Metadata]: string } = {
   html_crawl: 'Crawl',
   lighthouse: 'LightHouse',
-  responsiveness: 'Responsive',
   technologies_and_trackers: 'Technologies',
   carbon_footprint: 'Empreinte carbone',
 }
@@ -32,14 +31,14 @@ function MetadataReport({ name, data, url }: { name: Metadata, data: MetadataRes
   return (
     <>
       <Text size="sm" className="fr-card__detail" bold>{nameMap[name]}</Text>
-      {data?.status ? <StatusBadge status={data?.status} /> : <Badge isSmall>Désactivé</Badge>}
+      {data?.enabled ? <StatusBadge status={data?.status} /> : <Badge isSmall>Désactivé</Badge>}
       {duration && (
         <>
           <Text size="sm" bold className="fr-mb-0 fr-card__detail ">
             <span className="fr-icon--sm fr-mr-1w fr-icon-timer-line" />
             {duration}
           </Text>
-          {(name === 'lighthouse') && (
+          {(name === 'lighthouse' && data.status === "success") && (
             <Link size="sm" target="_blank" href={`${url}/${name}`}>Voir le rapport</Link>
           )}
         </>

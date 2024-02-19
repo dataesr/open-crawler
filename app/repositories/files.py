@@ -1,7 +1,12 @@
 import io
 import json
 from zipfile import ZipFile, ZIP_DEFLATED
-from app.s3 import with_s3
+from app.services.s3 import with_s3
+from app.config import settings
+
+
+HTML_FOLDER_NAME = settings.HTML_FOLDER_NAME.strip('/')
+METADATA_FOLDER_NAME = settings.METADATA_FOLDER_NAME.strip('/')
 
 
 class FileRepository:
@@ -18,20 +23,21 @@ class FileRepository:
 
     @staticmethod
     @with_s3
-    def store_html_file(s3, bucket, object_name, file_path, content_type):
+    def store_metadata_file(s3, bucket, crawl_id, key, data):
         """Store a crawl file in the storage service"""
-        return s3.fput_object(bucket, object_name=object_name, file_path=file_path, content_type=content_type)
+        _key = f"{crawl_id}/{METADATA_FOLDER_NAME}/{key}"
+        _bytes = data.encode('utf-8')
+        _data = io.BytesIO(_bytes)
+        return s3.put_object(bucket, object_name=_key, length=len(_bytes), content_type="application/json", data=_data)
 
     @staticmethod
     @with_s3
-    def store_metadata_file(s3, bucket, crawl_id, object_name, content_type, data):
+    def store_html_file(s3, bucket, crawl_id, key, data):
         """Store a crawl file in the storage service"""
-        object_path = f"{crawl_id}/metadata/{object_name}"
-        # Convert the string to bytes
-        data_bytes = data.encode('utf-8')
-        # Create a BytesIO object to make the bytes readable
-        data_stream = io.BytesIO(data_bytes)
-        return s3.put_object(bucket, object_name=object_path, length=len(data_bytes), content_type=content_type, data=data_stream)
+        _key = f"{crawl_id}/{HTML_FOLDER_NAME}/{key}"
+        _bytes = data.encode('utf-8')
+        _data = io.BytesIO(_bytes)
+        return s3.put_object(bucket, object_name=_key, length=len(_bytes), content_type='text/html', data=_data)
 
     @staticmethod
     @with_s3
@@ -51,7 +57,7 @@ class FileRepository:
         """Get a crawl metadata json file from the storage service"""
         try:
             file = s3.get_object(
-                bucket, f"{crawl_id}/metadata/{metadata}.json").read()
+                bucket, f"{crawl_id}/{METADATA_FOLDER_NAME}/{metadata}.json").read()
         except:
             return None
         return json.loads(file)

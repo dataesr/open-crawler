@@ -10,10 +10,10 @@ const DEFAULT_INITIAL_FORM = {
   depth: 2,
   limit: 5,
   tags: [],
+  identifiers: [],
   headers: {},
   lighthouse: { enabled: true, depth: 0 },
   carbon_footprint: { enabled: true, depth: 0 },
-  responsiveness: { enabled: true, depth: 0 },
   technologies_and_trackers: { enabled: true, depth: 0 },
 } as WebsiteFormBody;
 
@@ -25,13 +25,13 @@ type WebsiteFormProps = {
   notice?: null | React.ReactNode
 }
 
-function sanitize(form: Record<string, any>): WebsiteFormBody {
+function sanitize(form: Record<string, unknown>): WebsiteFormBody {
   const fields = [
-    'url', 'crawl_every', 'depth', 'limit', 'tags', 'headers',
-    'lighthouse', 'carbon_footprint', 'responsiveness',
+    'url', 'crawl_every', 'depth', 'limit', 'tags', 'identifiers',
+    'headers', 'lighthouse', 'carbon_footprint',
     'technologies_and_trackers', 'use_playwright',
   ];
-  const body: Record<string, any> = {};
+  const body: Record<string, unknown> = {};
   Object.keys(form).forEach((key) => { if (fields.includes(key)) { body[key] = form[key]; } });
   return body as WebsiteFormBody;
 }
@@ -78,6 +78,16 @@ export default function WebsiteForm({
           </Col>
         </Row>
         <hr />
+        <Row className="fr-mb-5w">
+          <Col>
+            <TagInput
+              label="Ajouter des identifiants au site web"
+              tags={form.identifiers}
+              onTagsChange={(ids) => updateForm({ identifiers: ids.map((id) => id.toUpperCase()) })}
+            />
+          </Col>
+        </Row>
+        <hr />
         <Text size="lead" bold>Récurrence</Text>
         <Row className="fr-mb-5w">
           <Col>
@@ -96,20 +106,7 @@ export default function WebsiteForm({
           </Col>
         </Row>
         <hr />
-        <Text size="lead" bold>Paramètres de crawl</Text>
         <Row className="fr-mb-5w">
-          <Col xs="12" sm="8" md="6">
-            <Toggle
-              defaultChecked={form.use_playwright}
-              hasLabelLeft
-              label="Utiliser un émulateur de navigateur"
-              hint="Activer cette option si vous souhaitez utiliser un émulateur de navigateur pour crawler le site web."
-              onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ use_playwright: e.target.checked })}
-            />
-          </Col>
-        </Row>
-        <Row className="fr-mb-5w">
-
           <Col>
             <Input
               css={{ 'fr-input': "input10" }}
@@ -163,13 +160,6 @@ export default function WebsiteForm({
                 label="Technology et tracker"
                 hint="Désactivez cette option si vous ne souhaitez pas crawler les informations de technologies et de trackers."
                 onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ technologies_and_trackers: { enabled: e.target.checked, depth: 0 } })}
-              />
-              <Toggle
-                defaultChecked={form.responsiveness.enabled}
-                hasLabelLeft
-                label="Responsive"
-                hint="Désactivez cette option si vous ne souhaitez pas crawler les informations de responsive."
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateForm({ responsiveness: { enabled: e.target.checked, depth: 0 } })}
               />
               <Toggle
                 defaultChecked={form.carbon_footprint.enabled}

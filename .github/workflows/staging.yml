@@ -106,13 +106,6 @@ jobs:
         with:
           namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
           restart: oc-client
-      - name: Restart oc-responsiveness-worker deployment
-        uses: dataesr/kubectl-deploy@v1.1
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DOAD_STAGING }}
-        with:
-          namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
-          restart: oc-responsiveness-worker
       - name: Restart oc-technologies-worker deployment
         uses: dataesr/kubectl-deploy@v1.1
         env:

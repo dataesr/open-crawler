@@ -2,12 +2,14 @@ from fastapi import APIRouter, HTTPException, status as statuscode
 from pymongo.errors import DuplicateKeyError
 from fastapi.responses import StreamingResponse
 
-
+from app.repositories.crawls import crawls
 from app.repositories.websites import websites
 from app.repositories.files import files
-from app.api.utils import create_crawl, start_crawl
-from app.models.request import UpdateWebsiteRequest, CreateWebsiteRequest
-from app.models.website import WebsiteModel, ListWebsiteResponse
+from app.api.utils import start_crawl
+from app.models.website import (
+    WebsiteModel, ListWebsiteResponse,
+    UpdateWebsiteRequest, CreateWebsiteRequest
+)
 
 websites_router = APIRouter(
     prefix="/api/websites",
@@ -33,7 +35,8 @@ def create_website(data: CreateWebsiteRequest):
             detail="Website already exists.",
         ) from e
 
-    crawl = create_crawl(website)
+    crawl = website.to_crawl()
+    crawls.create(crawl)
     start_crawl(crawl)
     return website
 
@@ -49,11 +52,18 @@ def list_websites(
     skip: int = 0,
     limit: int = 10,
     tags: str | None = None,
+    identifiers: str | None = None,
     status: str | None = None,
     sort: str = "created_at",
 ):
     return websites.list(
-        query=query, tags=tags, status=status, skip=skip, limit=limit, sort=sort
+        query=query,
+        tags=tags,
+        identifiers=identifiers,
+        status=status,
+        skip=skip,
+        limit=limit,
+        sort=sort
     )
 
 
@@ -75,7 +85,6 @@ def get_website(website_id: str):
 
 @websites_router.get(
     "/{website_id}/files",
-    response_model=WebsiteModel,
     status_code=statuscode.HTTP_200_OK,
     summary="Get a website's zip of last crawl files by its unique ID",
 )
@@ -87,7 +96,34 @@ def get_website_files(website_id: str) -> StreamingResponse:
                 iter([zip_io.getvalue()]),
                 media_type="application/x-zip-compressed",
                 headers={
-                    "Content-Disposition": f"attachment; filename={website_id}.zip"
+                    "Content-Disposition": f"attachment; filename={last_crawl_id}.zip"
+                },
+            )
+    raise HTTPException(
+        status_code=statuscode.HTTP_404_NOT_FOUND,
+        detail="Website not found",
+    )
+
+
+@websites_router.get(
+    "/files/{identifiers_id}",
+    status_code=statuscode.HTTP_200_OK,
+    summary="Get a website's zip of last crawl files by identifiers",
+)
+def get_website_files(identifiers_id: str) -> StreamingResponse:
+    if data := websites.list(
+        query=None,
+        tags=None,
+        status=None,
+        identifiers=identifiers_id
+    ).data[0]:
+        if last_crawl_id := data.last_crawl.get("id"):
+            zip_io = files.zip_all_crawl_files(last_crawl_id)
+            return StreamingResponse(
+                iter([zip_io.getvalue()]),
+                media_type="application/x-zip-compressed",
+                headers={
+                    "Content-Disposition": f"attachment; filename={last_crawl_id}.zip"
                 },
             )
     raise HTTPException(
@@ -130,7 +166,7 @@ def delete_website(website_id: str):
 )
 def recrawl_cron():
     for website in websites.list_to_recrawl().data:
-        crawl = create_crawl(website)
+        crawl = website.to_crawl()
+        crawls.create(crawl)
         start_crawl(crawl)
         websites.refresh_next_crawl(crawl.website_id)
-        return crawl

@@ -9,7 +9,6 @@ class TestMetadataType(unittest.TestCase):
         self.assertEqual(MetadataType.LIGHTHOUSE, "lighthouse")
         self.assertEqual(MetadataType.TECHNOLOGIES,
                          "technologies_and_trackers")
-        self.assertEqual(MetadataType.RESPONSIVENESS, "responsiveness")
         self.assertEqual(MetadataType.CARBON_FOOTPRINT, "carbon_footprint")
 
     def test_enum_member_count(self):

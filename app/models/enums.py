@@ -4,7 +4,6 @@ from enum import StrEnum
 class MetadataType(StrEnum):
     LIGHTHOUSE = "lighthouse"
     TECHNOLOGIES = "technologies_and_trackers"
-    RESPONSIVENESS = "responsiveness"
     CARBON_FOOTPRINT = "carbon_footprint"
 
 

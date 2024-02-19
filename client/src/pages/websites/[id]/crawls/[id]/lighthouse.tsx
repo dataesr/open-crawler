@@ -13,6 +13,5 @@ export default function Lighthouse() {
   });
   if (isLoading || !data) return <p>Loading...</p>;
   if (error) return <p>error</p>;
-  const report = data?.[Object.keys(data)?.[0]];
-  return <ReportViewer json={report} />
+  return <ReportViewer json={data} />
 }

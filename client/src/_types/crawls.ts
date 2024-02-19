@@ -1,6 +1,7 @@
 export type CrawlStatus = 'pending' | 'error' | 'success' | 'started' | 'partial_error';
 
 export type MetadataResult = {
+  enabled: boolean;
   task_id: string;
   started_at: string;
   finished_at: string;
@@ -20,7 +21,6 @@ export type Crawl = {
   next_run_at: string;
   lighthouse: MetadataResult;
   technologies_and_trackers: MetadataResult;
-  responsiveness: MetadataResult;
   carbon_footprint: MetadataResult;
   html_crawl: MetadataResult;
 }

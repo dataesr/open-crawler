@@ -1,6 +1,5 @@
 import unittest
-
-from app.celery_broker.utils import french_datetime
+from datetime import datetime
 from app.models.crawl import CrawlConfig
 from app.models.metadata import MetadataConfig
 from app.models.website import WebsiteModel, ListWebsiteResponse
@@ -15,7 +14,6 @@ class TestWebsiteModel(unittest.TestCase):
             use_playwright=False,
             lighthouse=MetadataConfig(),
             technologies_and_trackers=MetadataConfig(),
-            responsiveness=MetadataConfig(),
             carbon_footprint=MetadataConfig(),
             headers={},
             tags=[],
@@ -36,7 +34,6 @@ class TestWebsiteModel(unittest.TestCase):
             use_playwright=True,
             lighthouse=MetadataConfig(),
             technologies_and_trackers=MetadataConfig(),
-            responsiveness=MetadataConfig(),
             carbon_footprint=MetadataConfig(),
             headers={},
             tags=["test"],
@@ -57,7 +54,6 @@ class TestWebsiteModel(unittest.TestCase):
             use_playwright=True,
             lighthouse=MetadataConfig(),
             technologies_and_trackers=MetadataConfig(),
-            responsiveness=MetadataConfig(),
             carbon_footprint=MetadataConfig(),
             headers={},
             tags=[],
@@ -65,7 +61,7 @@ class TestWebsiteModel(unittest.TestCase):
         )
         website.refresh_next_crawl_date()
         self.assertIsNotNone(website.next_crawl_at)
-        self.assertTrue(website.next_crawl_at > french_datetime())
+        self.assertTrue(website.next_crawl_at > datetime.utcnow())
 
 
 class TestListWebsiteResponse(unittest.TestCase):
@@ -77,7 +73,6 @@ class TestListWebsiteResponse(unittest.TestCase):
             use_playwright=True,
             lighthouse=MetadataConfig(),
             technologies_and_trackers=MetadataConfig(),
-            responsiveness=MetadataConfig(),
             carbon_footprint=MetadataConfig(),
             headers={},
             tags=[],
@@ -90,7 +85,6 @@ class TestListWebsiteResponse(unittest.TestCase):
             use_playwright=False,
             lighthouse=MetadataConfig(enabled=False),
             technologies_and_trackers=MetadataConfig(),
-            responsiveness=MetadataConfig(),
             carbon_footprint=MetadataConfig(),
             headers={},
             tags=["sample"],

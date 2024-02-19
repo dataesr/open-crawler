@@ -1,13 +1,11 @@
 from typing import Any
-
+from datetime import datetime
 from pymongo.results import InsertOneResult, UpdateResult
 
-from app.celery_broker.utils import french_datetime
 from app.config import settings
 from app.models.enums import ProcessStatus
-from app.models.request import UpdateWebsiteRequest
-from app.models.website import WebsiteModel, ListWebsiteResponse
-from app.mongo import db
+from app.models.website import WebsiteModel, ListWebsiteResponse, UpdateWebsiteRequest
+from app.services.mongo import db
 
 
 class WebsitesRepository:
@@ -20,6 +18,7 @@ class WebsitesRepository:
         self,
         query: str | None,
         tags: str | None,
+        identifiers: str | None,
         status: str | None,
         skip: int = 0,
         limit: int = 20,
@@ -30,6 +29,9 @@ class WebsitesRepository:
             filters["url"] = {"$regex": query}
         if tags:
             filters["tags"] = {"$elemMatch": {"$in": tags.split(",")}}
+        if identifiers:
+            filters["identifiers"] = {
+                "$elemMatch": {"$in": identifiers.split(",")}}
         if status:
             filters["last_crawl.status"] = {"$in": status.split(",")}
         if sort[0] == "-":
@@ -64,6 +66,7 @@ class WebsitesRepository:
             {"id": website_id}, {"$set": data.model_dump(exclude_unset=True)}
         )
         assert result.matched_count == 1
+        return self.get(website_id=website_id)
 
     def delete(self, website_id: str) -> None:
         self.collection.delete_one({"id": website_id})
@@ -83,7 +86,7 @@ class WebsitesRepository:
         )
 
     def list_to_recrawl(self) -> ListWebsiteResponse:
-        filters = {"next_crawl_at": {"$lte": french_datetime()}}
+        filters = {"next_crawl_at": {"$lte": datetime.utcnow()}}
 
         cursor = self.collection.find(filters)
         data = [WebsiteModel(**website) for website in cursor]

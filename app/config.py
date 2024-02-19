@@ -8,8 +8,7 @@ class BaseConfig:
     LOGGER_LEVEL = "INFO"
     LOGGER_FORMAT = "[%(asctime)s] [%(process)d] [%(levelname)s] [%(name)s] %(message)s"
 
-
-    DEFAULT_RECRAWL_INTERVAL=os.getenv("DEFAULT_RECRAWL_INTERVAL", 30)
+    DEFAULT_RECRAWL_INTERVAL = os.getenv("DEFAULT_RECRAWL_INTERVAL", 30)
 
     MODE = os.getenv("MODE", "production")
 
@@ -24,26 +23,30 @@ class BaseConfig:
     STORAGE_SERVICE_PASSWORD = os.getenv("STORAGE_SERVICE_PASSWORD")
     STORAGE_SERVICE_URL = os.getenv("STORAGE_SERVICE_URL")
     STORAGE_SERVICE_REGION = os.getenv("STORAGE_SERVICE_REGION", default=None)
-    STORAGE_SERVICE_SECURE = os.getenv("STORAGE_SERVICE_SECURE", default='False').lower() in ('true', '1', 't')
+    STORAGE_SERVICE_SECURE = os.getenv(
+        "STORAGE_SERVICE_SECURE", default='False').lower() in ('true', '1', 't')
     STORAGE_SERVICE_BUCKET_NAME = os.getenv("STORAGE_SERVICE_BUCKET_NAME")
     HTML_FOLDER_NAME = os.getenv("HTML_FOLDER_NAME", default="html")
-    METADATA_FOLDER_NAME = os.getenv("METADATA_FOLDER_NAME", default="metadata")
+    METADATA_FOLDER_NAME = os.getenv(
+        "METADATA_FOLDER_NAME", default="metadata")
 
     # Mongo
     MONGO_URI = os.getenv("MONGO_URI", default="mongodb://mongodb:27017")
     MONGO_DBNAME = os.getenv("MONGO_DBNAME", default="open-crawler")
-    MONGO_WEBSITES_COLLECTION = os.getenv("MONGO_WEBSITES_COLLECTION", default="websites")
-    MONGO_CRAWLS_COLLECTION = os.getenv("MONGO_CRAWLS_COLLECTION", default="crawls")
+    MONGO_WEBSITES_COLLECTION = os.getenv(
+        "MONGO_WEBSITES_COLLECTION", default="websites")
+    MONGO_CRAWLS_COLLECTION = os.getenv(
+        "MONGO_CRAWLS_COLLECTION", default="crawls")
 
     # Celery
     broker_url = os.getenv("CELERY_BROKER_URL", default="redis://redis:6379")
-    result_backend = os.getenv("CELERY_RESULT_BACKEND", default="redis://redis:6379")
+    result_backend = os.getenv(
+        "CELERY_RESULT_BACKEND", default="redis://redis:6379")
     broker_heartbeat = os.getenv("CELERY_BROKER_HEARTBEAT", default=2)
 
     CRAWL_QUEUE_NAME = "crawl_queue"
     LIGHTHOUSE_QUEUE_NAME = "lighthouse_queue"
     TECHNOLOGIES_QUEUE_NAME = "technologies_queue"
-    RESPONSIVENESS_QUEUE_NAME = "responsiveness_queue"
     CARBON_QUEUE_NAME = "carbon_footprint_queue"
     FINALIZE_CRAWL_QUEUE_NAME = "finalize_crawl_queue"
 
@@ -71,11 +74,6 @@ class BaseConfig:
             routing_key=TECHNOLOGIES_QUEUE_NAME,
         ),
         Queue(
-            RESPONSIVENESS_QUEUE_NAME,
-            Exchange(RESPONSIVENESS_QUEUE_NAME),
-            routing_key=RESPONSIVENESS_QUEUE_NAME,
-        ),
-        Queue(
             CARBON_QUEUE_NAME,
             Exchange(CARBON_QUEUE_NAME),
             routing_key=CARBON_QUEUE_NAME,
@@ -96,10 +94,6 @@ class BaseConfig:
         "get_technologies": {
             "queue": TECHNOLOGIES_QUEUE_NAME,
             "routing_key": TECHNOLOGIES_QUEUE_NAME,
-        },
-        "get_responsiveness": {
-            "queue": RESPONSIVENESS_QUEUE_NAME,
-            "routing_key": RESPONSIVENESS_QUEUE_NAME,
         },
         "get_carbon_footprint": {
             "queue": CARBON_QUEUE_NAME,

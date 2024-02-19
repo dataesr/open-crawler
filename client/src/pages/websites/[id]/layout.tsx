@@ -46,6 +46,17 @@ export default function WebsiteLayout() {
             </BadgeGroup>
           </>)
         : null}
+      {(website?.identifiers?.length > 0)
+        ? (
+          <>
+            <Text className="fr-card__detail fr-mt-0 fr-mb-1w">
+              Identifiants
+            </Text>
+            <BadgeGroup className="fr-mt-0 fr-mb-1w">
+              {website?.identifiers?.map((id) => <Badge noIcon variant="info" key={id}>{id}</Badge>)}
+            </BadgeGroup>
+          </>)
+        : null}
       <Nav className="with-go-back">
         <Link isSimple href={"/websites"}>
           <span className="fr-icon-arrow-left-s-line fr-icon--sm fr-mr-1w" />

@@ -44,33 +44,38 @@ COOKIES_ENABLED = False
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-    "app.crawler.middlewares.MetadataMiddleware": 1000,
-    # WARNING: Middlewares order is highly important !! Must be > 900
-}
+# SPIDER_MIDDLEWARES = {
+#     # "app.tasks.html_crawl.middlewares.PageCountMiddleware": 1,
+#     # "app.tasks.html_crawl.middlewares.MetadataMiddleware": 1000,
+#     # WARNING: Middlewares order is highly important !! Must be > 900
+# }
 
 DEPTH_LIMIT = 2
-CLOSESPIDER_PAGECOUNT = 50
-
+CLOSESPIDER_PAGECOUNT = 5000
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+DOWNLOAD_HANDLERS = {
+    'http': 'scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler',
+    'https': 'scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler',
+}
+DOWNLOAD_TIMEOUT = 10
 DOWNLOADER_MIDDLEWARES = {
-    "scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware": None,
+    # "scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware": None,
     # Disabled because replaced by the custom one
-    "app.crawler.middlewares.CustomHeadersMiddleware": 400,
+    # "app.tasks.html_crawl.middlewares.CustomHeadersMiddleware": 400,
     # Replaces the DefaultHeadersMiddleware position
-    "app.crawler.middlewares.HtmlStorageMiddleware": 99,
+    # "app.tasks.html_crawl.middlewares.HtmlStorageMiddleware": 99,
     # Just after the last middleware (because only needed when the response passed all checks from all middlewares)
 }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-EXTENSIONS = {
-    "scrapy.extensions.closespider.CloseSpider": None,
-    # Disabled because replaced by the custom one
-    "app.crawler.middlewares.CustomCloseSpider": 0,
-    # It doesn't depend on any other extension, therefore we can set it at the same level as the others
-}
+# EXTENSIONS = {
+#     "scrapy.extensions.closespider.CloseSpider": None,
+#     # Disabled because replaced by the custom one
+#     "app.tasks.html_crawl.middlewares.CustomCloseSpider": 0,
+#     # It doesn't depend on any other extension, therefore we can set it at the same level as the others
+# }
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
@@ -105,6 +110,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
 SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
+
 
 def should_abort_request(request):
     return request.resource_type in ["stylesheet", "font"]

@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from app.repositories.crawls import crawls
 from app.repositories.files import files
 from app.repositories.websites import websites
-from app.api.utils import create_crawl, start_crawl
+from app.api.utils import start_crawl
 from app.models.crawl import CrawlModel, ListCrawlResponse
 
 crawls_router = APIRouter(
@@ -22,7 +22,8 @@ crawls_router = APIRouter(
 )
 def crawl_website(website_id: str):
     if website := websites.get(website_id):
-        crawl = create_crawl(website)
+        crawl = website.to_crawl()
+        crawls.create(crawl)
         start_crawl(crawl)
         websites.refresh_next_crawl(crawl.website_id)
         return crawl

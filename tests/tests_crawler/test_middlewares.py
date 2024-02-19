@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from app.crawler.middlewares import (
+from app.tasks.html_crawl.middlewares import (
     CustomCloseSpider,
     CustomHeadersMiddleware,
     HtmlStorageMiddleware,

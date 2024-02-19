@@ -21,8 +21,6 @@ def with_s3(f):
     """Decorate a function for s3 connexion."""
     @wraps(f)
     def wrapper(*args, **kwargs):
-        print(f"Calling {f.__name__} with s3 connexion", flush=True)
-        print(f"args: {','.join(map(str,args))}", flush=True)
         response = f(s3, bucket, *args, **kwargs)
         return response
     return wrapper

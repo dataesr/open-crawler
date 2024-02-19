@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@gouvfr/dsfr": "^1.10.0",
+    "@gouvfr/dsfr": "^1.11.0",
     "@tanstack/react-query": "^4.33.0",
     "@tanstack/react-query-devtools": "^4.33.0",
     "classnames": "^2.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-intl": "^6.5.5",
     "react-lighthouse-viewer": "^6.0.3",
     "react-router-dom": "^6.15.0"
   },
